@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Boss Battles</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --boss-health: #e74c3c;
+            --group-health: #2ecc71;
+            --phase-1: #e74c3c;
+            --phase-2: #f39c12;
+            --phase-3: #c0392b;
+            --chat-bg: #1e272e00;
+        }
+        body {
+            background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse {
+            animation: pulse 0.5s 2;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0);
+        }
+        .progress-bar {
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s;
+        }
+        #battle-log {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800">
+    <div class="container max-w-6xl mx-auto p-6">
+        <audio src="../static/sounds/Juhani Junkala - Epic Boss Battle [Seamlessly Looping].wav"></audio>
+        <h1 class="text-3xl text-white font-bold mb-8 flex items-center fade-in">
+            <i class="fas fa-dragon mr-2"></i> Group Boss Battles
+        </h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Left Column: Live Battle -->
+            <div class="card p-6 rounded-lg shadow-lg fade-in">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-fire mr-2"></i> Current Battle
+                </h2>
+                <div class="inline-block px-4 py-2 bg-gradient-to-r from-[var(--phase-1)] to-[var(--phase-2)] text-white rounded-full font-bold mb-4" id="boss-phase">Phase 1</div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between mb-2 text-sm font-medium">
+                        <span><i class="fas fa-skull mr-1"></i> Boss Health</span>
+                        <span id="boss-health-text">1000/1000</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-[var(--boss-health)]" id="boss-health-bar" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between mb-2 text-sm font-medium">
+                        <span><i class="fas fa-users mr-1"></i> Group Health</span>
+                        <span id="group-health-text">500/500</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-[var(--group-health)]" id="group-health-bar" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    <button class="action-btn bg-blue-500 text-white py-3 rounded-md font-bold flex items-center justify-center hover:-translate-y-1 hover:shadow-lg transition-all" id="attack-btn">
+                        <i class="fas fa-sword mr-2"></i> Attack
+                    </button>
+                    <button class="action-btn bg-purple-500 text-white py-3 rounded-md font-bold flex items-center justify-center hover:-translate-y-1 hover:shadow-lg transition-all" id="special-btn">
+                        <i class="fas fa-bolt mr-2"></i> Special (3 SP)
+                    </button>
+                    <button class="action-btn bg-green-500 text-white py-3 rounded-md font-bold flex items-center justify-center hover:-translate-y-1 hover:shadow-lg transition-all" id="heal-btn">
+                        <i class="fas fa-heart mr-2"></i> Heal
+                    </button>
+                </div>
+                
+                <div id="battle-log" class="bg-[var(--chat-bg)] text-gray-200 p-4 rounded-md max-h-[30vh] overflow-y-auto border border-gray-700 mb-6"></div>
+                
+                <div class="group-chat">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-comments mr-2"></i> Group Chat
+                    </h3>
+                    <div id="chat-messages" class="bg-white p-4 rounded-md border border-gray-300 max-h-[25vh] overflow-y-auto mb-4"></div>
+                    <div class="flex gap-3">
+                        <input type="text" id="chat-input" class="flex-1 p-3 border border-gray-300 rounded-md placeholder-white/70" placeholder="Coordinate your attack...">
+                        <button id="send-chat-btn" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Battle History -->
+            <div class="card p-6 rounded-lg shadow-lg fade-in">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-history mr-2"></i> Battle History
+                </h2>
+                <div id="group-boss-battles"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-2xl max-w-md w-11/12 text-center hidden z-50" id="reward-popup">
+        <h2 class="text-2xl text-green-500 font-bold mb-4"><i class="fas fa-trophy mr-2"></i> Victory Rewards!</h2>
+        <p>You've earned these items for defeating the boss:</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 my-6" id="reward-items"></div>
+        <button id="claim-rewards-btn" class="bg-green-500 text-white px-6 py-3 rounded-md font-bold hover:bg-green-600">Claim All Rewards</button>
+    </div>
+
+    <script>
+        async function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        }
+
+        class BossBattle {
+            constructor(groupId, battleId) {
+                this.groupId = groupId;
+                this.battleId = battleId;
+                this.maxBossHealth = 1000;
+                this.bossHealth = this.maxBossHealth;
+                this.maxGroupHealth = 500;
+                this.groupHealth = this.maxGroupHealth;
+                this.currentPhase = 1;
+                this.phaseThresholds = [700, 400, 150];
+                this.specialAttackCost = 3;
+                this.playerSkillPoints = 10;
+                this.battleActive = true;
+                
+                this.bossAbilities = [
+                    { 
+                        name: "Code Crash", 
+                        phase: 2, 
+                        effect: async () => {
+                            const damage = Math.floor(this.groupHealth * 0.3);
+                            this.groupHealth -= damage;
+                            await this.updateBattleState();
+                            this.logEvent(`💥 <strong>BOSS ABILITY: Code Crash!</strong> Your group takes ${damage} damage!`);
+                        } 
+                    },
+                    { 
+                        name: "Syntax Error", 
+                        phase: 3, 
+                        effect: async () => {
+                            this.logEvent(`🌀 <strong>BOSS ABILITY: Syntax Error!</strong> All skills disabled for 1 turn!`);
+                            document.getElementById('special-btn').disabled = true;
+                            document.getElementById('heal-btn').disabled = true;
+                            await new Promise(resolve => setTimeout(resolve, 1500));
+                            if (this.battleActive) {
+                                document.getElementById('special-btn').disabled = false;
+                                document.getElementById('heal-btn').disabled = false;
+                                this.logEvent(`✨ Skill restrictions lifted!`);
+                            }
+                        } 
+                    }
+                ];
+                
+                this.initEventListeners();
+                this.initChat();
+                this.initBattleStateWebSocket();
+                this.updateUI();
+                this.logEvent("🚀 <strong>Battle started!</strong> Good luck team!");
+                setTimeout(() => this.logEvent("🐉 <strong>The Ancient Code Dragon appears!</strong>"), 1000);
+            }
+            
+            async initEventListeners() {
+                document.getElementById('attack-btn').addEventListener('click', () => this.attack());
+                document.getElementById('special-btn').addEventListener('click', () => this.specialAttack());
+                document.getElementById('heal-btn').addEventListener('click', () => this.healGroup());
+                document.getElementById('send-chat-btn').addEventListener('click', () => this.sendChatMessage());
+                document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendChatMessage();
+                });
+                document.getElementById('claim-rewards-btn').addEventListener('click', () => this.claimRewards());
+                
+                await this.joinBattle();
+            }
+            
+            async joinBattle() {
+                const token = await getCookie('access_token');
+                try {
+                    const res = await fetch(`/group_boss_battles/${this.battleId}/join`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error('Failed to join battle');
+                    this.logEvent('✅ <strong>Joined battle!</strong>');
+                } catch (error) {
+                    console.error('Error joining battle:', error);
+                    this.logEvent('❌ <strong>Error joining battle</strong>');
+                }
+            }
+            
+            async attack() {
+                if (!this.validateAction()) return;
+                const damage = 50 + Math.floor(Math.random() * 30);
+                this.bossHealth = Math.max(0, this.bossHealth - damage);
+                this.logEvent(`⚔️ <strong>Attack!</strong> You dealt ${damage} damage!`);
+                await this.updateBattleState();
+            }
+            
+            async specialAttack() {
+                if (!this.validateAction() || this.playerSkillPoints < this.specialAttackCost) {
+                    this.logEvent("❌ <strong>Not enough skill points!</strong>");
+                    return;
+                }
+                this.playerSkillPoints -= this.specialAttackCost;
+                const damage = 120 + Math.floor(Math.random() * 50);
+                this.bossHealth = Math.max(0, this.bossHealth - damage);
+                this.logEvent(`💥 <strong>SPECIAL ATTACK!</strong> Dealt ${damage} damage! (Cost: ${this.specialAttackCost} SP)`);
+                await this.updateBattleState();
+            }
+            
+            async healGroup() {
+                if (!this.validateAction()) return;
+                const healAmount = 80 + Math.floor(Math.random() * 40);
+                this.groupHealth = Math.min(this.maxGroupHealth, this.groupHealth + healAmount);
+                this.logEvent(`❤️ <strong>Healed</strong> group for ${healAmount} HP!`);
+                await this.updateBattleState();
+            }
+            
+            validateAction() {
+                if (!this.battleActive || this.groupHealth <= 0 || this.bossHealth <= 0) return false;
+                return true;
+            }
+            
+            async bossTurn() {
+                if (!this.battleActive) return;
+                const damageMultiplier = 0.8 + (this.currentPhase * 0.4);
+                const damage = Math.floor((30 + Math.random() * 20) * damageMultiplier);
+                this.groupHealth = Math.max(0, this.groupHealth - damage);
+                this.logEvent(`👹 <strong>Boss attacks!</strong> Your group took ${damage} damage!`);
+                await this.updateBattleState();
+                await this.checkBossAbilities();
+            }
+            
+            async checkBossAbilities() {
+                if (!this.battleActive) return;
+                for (const ability of this.bossAbilities.filter(a => a.phase === this.currentPhase)) {
+                    if (Math.random() < 0.3) {
+                        await ability.effect();
+                        this.updateUI();
+                    }
+                }
+            }
+            
+            async checkPhaseChange() {
+                const newPhase = this.phaseThresholds.findIndex(threshold => this.bossHealth >= threshold) + 1 || 3;
+                if (newPhase !== this.currentPhase) {
+                    this.currentPhase = newPhase;
+                    const phaseElement = document.getElementById('boss-phase');
+                    phaseElement.textContent = `Phase ${this.currentPhase}`;
+                    const phaseColors = ['var(--phase-1)', 'var(--phase-2)', 'var(--phase-3)'];
+                    document.getElementById('boss-health-bar').style.backgroundColor = phaseColors[this.currentPhase - 1];
+                    this.logEvent(`🚨 <strong>BOSS ENTERED PHASE ${this.currentPhase}!</strong> It grows more powerful!`);
+                    phaseElement.classList.add('pulse');
+                    setTimeout(() => phaseElement.classList.remove('pulse'), 1000);
+                    document.querySelector('.card:first-child').classList.add('shake');
+                    setTimeout(() => document.querySelector('.card:first-child').classList.remove('shake'), 500);
+                }
+            }
+            
+            async checkBattleEnd() {
+                if (this.bossHealth <= 0) {
+                    this.battleActive = false;
+                    this.logEvent("<strong>🎉 VICTORY! Your group defeated the boss!</strong>");
+                    await this.showRewards();
+                    await this.endBattle(true);
+                } else if (this.groupHealth <= 0) {
+                    this.battleActive = false;
+                    this.logEvent("<strong>☠️ DEFEAT! Your group was overwhelmed...</strong>");
+                    await this.endBattle(false);
+                }
+            }
+            
+            async showRewards() {
+                const token = await getCookie('access_token');
+                try {
+                    const res = await fetch(`/group_boss_battles/${this.battleId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const battle = await res.json();
+                    const rewards = {
+                        xp: battle.reward_xp,
+                        sp: battle.reward_skill_points,
+                        items: battle.reward_items ? JSON.parse(battle.reward_items) : []
+                    };
+                    document.getElementById('reward-items').innerHTML = rewards.items
+                        .map(item => `
+                            <div class="p-3 border border-gray-300 rounded-md">
+                                <i class="fas fa-box-open fa-2x mb-2"></i>
+                                <div>${item}</div>
+                            </div>
+                        `).join('');
+                    document.getElementById('reward-popup').style.display = 'block';
+                } catch (error) {
+                    console.error('Error fetching rewards:', error);
+                    this.logEvent('❌ <strong>Error loading rewards</strong>');
+                }
+            }
+            
+            async claimRewards() {
+                const token = await getCookie('access_token');
+                try {
+                    const res = await fetch(`/group_boss_battles/${this.battleId}/claim`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        document.getElementById('reward-popup').style.display = 'none';
+                        const battle = await fetch(`/group_boss_battles/${this.battleId}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        }).then(res => res.json());
+                        this.logEvent(`💎 <strong>Rewards claimed!</strong> +${battle.reward_xp} XP, +${battle.reward_skill_points} SP, and items added to your inventory.`);
+                    }
+                } catch (error) {
+                    console.error('Error claiming rewards:', error);
+                    this.logEvent('❌ <strong>Error claiming rewards</strong>');
+                }
+            }
+            
+            async endBattle(victory) {
+                document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                await loadGroupBossBattles(this.groupId);
+            }
+            
+            async updateBattleState() {
+                const token = await getCookie('access_token');
+                try {
+                    const res = await fetch(`/group_boss_battles/${this.battleId}/update`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            current_health: this.bossHealth,
+                            group_health: this.groupHealth,
+                            score: Math.floor((this.maxBossHealth - this.bossHealth) / 10)
+                        })
+                    });
+                    if (!res.ok) throw new Error('Failed to update battle');
+                } catch (error) {
+                    console.error('Error updating battle:', error);
+                    this.logEvent('❌ <strong>Error updating battle state</strong>');
+                }
+            }
+            
+            updateUI() {
+                const bossHealthPercent = (this.bossHealth / this.maxBossHealth) * 100;
+                const groupHealthPercent = (this.groupHealth / this.maxGroupHealth) * 100;
+                document.getElementById('boss-health-bar').style.width = `${bossHealthPercent}%`;
+                document.getElementById('group-health-bar').style.width = `${groupHealthPercent}%`;
+                document.getElementById('boss-health-text').textContent = `${this.bossHealth}/${this.maxBossHealth}`;
+                document.getElementById('group-health-text').textContent = `${this.groupHealth}/${this.maxGroupHealth}`;
+                document.getElementById('special-btn').disabled = this.playerSkillPoints < this.specialAttackCost || !this.battleActive;
+            }
+            
+            logEvent(message) {
+                const log = document.getElementById('battle-log');
+                const entry = document.createElement('div');
+                entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+            
+            async initChat() {
+                const token = await getCookie('access_token');
+                const ws = new WebSocket(`ws://${window.location.host}/ws/groups/${this.groupId}/chat?token=${token}`);
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'chat_message') {
+                        const chatContainer = document.getElementById('chat-messages');
+                        chatContainer.innerHTML += `
+                            <div class="chat-message mb-3 pb-3 border-b border-gray-200">
+                                <span class="font-bold text-blue-500">${data.user.username}:</span>
+                                <span>${data.content}</span>
+                                <span class="text-sm text-gray-500 float-right">${new Date(data.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                        `;
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                };
+                ws.onerror = () => this.logEvent('❌ <strong>Chat connection error</strong>');
+                document.getElementById('send-chat-btn').addEventListener('click', () => {
+                    const input = document.getElementById('chat-input');
+                    const message = input.value.trim();
+                    if (message) {
+                        ws.send(JSON.stringify({ content: message }));
+                        input.value = '';
+                    }
+                });
+            }
+            
+            async initBattleStateWebSocket() {
+                const token = await getCookie('access_token');
+                const ws = new WebSocket(`ws://${window.location.host}/ws/group_boss_battles/${this.battleId}/state?token=${token}`);
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'battle_state') {
+                        this.bossHealth = data.current_health;
+                        this.groupHealth = data.group_health;
+                        this.battleActive = !data.is_completed;
+                        this.updateUI();
+                        this.checkPhaseChange();
+                        this.checkBattleEnd();
+                        this.logEvent(`🔄 <strong>Battle updated!</strong> Boss HP: ${data.current_health}, Group HP: ${data.group_health}`);
+                    }
+                };
+                ws.onerror = () => this.logEvent('❌ <strong>Battle state connection error</strong>');
+            }
+        }
+
+        async function loadGroupBossBattles(group_id) {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch(`/group_boss_battles/${group_id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Failed to load battles');
+                const battles = await res.json();
+                const div = document.getElementById('group-boss-battles');
+                div.innerHTML = battles.length === 0 ? '<p class="text-gray-600">No battles recorded yet</p>' : battles.map(b => `
+                    <div class="bg-white p-4 rounded-md shadow-md mb-4 hover:-translate-y-1 transition-transform">
+                        <h3 class="text-lg font-semibold text-gray-800">${b.title}</h3>
+                        <p class="font-bold ${b.passed ? 'text-green-500' : 'text-red-500'}">
+                            <i class="fas ${b.passed ? 'fa-trophy' : 'fa-skull'} mr-1"></i>
+                            ${b.passed ? 'Victory' : 'Defeat'} | Score: ${b.score}
+                        </p>
+                        <div class="my-2">
+                            <span class="inline-block mr-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                                <i class="fas fa-star mr-1"></i> +${b.reward_xp} XP
+                            </span>
+                            <span class="inline-block mr-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                                <i class="fas fa-bolt mr-1"></i> +${b.reward_skill_points} SP
+                            </span>
+                            ${b.reward_items ? JSON.parse(b.reward_items).map(item => `
+                                <span class="inline-block mr-2 px-2 py-1 bg-gray-100 rounded text-sm">
+                                    <i class="fas fa-box-open mr-1"></i> ${item}
+                                </span>
+                            `).join('') : ''}
+                        </div>
+                        <p><i class="fas fa-users mr-1"></i> ${b.participants_rel.map(p => p.username).join(', ')}</p>
+                        <small><i class="fas fa-clock mr-1"></i> ${new Date(b.created_at).toLocaleString()}</small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading battles:', error);
+                document.getElementById('group-boss-battles').innerHTML = '<p class="text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i> Error loading battle history</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const groupId = 1; // TODO: Dynamically set from URL or user context
+            const token = await getCookie('access_token');
+            const res = await fetch('/group_boss_battles/create', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ group_id: groupId, title: "Ancient Code Dragon", max_health: 1000, reward_xp: 250, reward_skill_points: 5, reward_items: JSON.stringify(["Dragon Scale", "Code Fragment", "Health Potion"]), group_health: 500 })
+            });
+            const battle = await res.json();
+            await loadGroupBossBattles(groupId);
+            new BossBattle(groupId, battle.id);
+        });
+    </script>
+</body>
+</html>

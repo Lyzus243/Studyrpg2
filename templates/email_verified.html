@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Email Verified</title>
+  <style>
+    body {
+      background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .confirmation-box {
+      background: #fff;
+      color: #1e3c72;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .confirmation-box img {
+      max-width: 140px;
+      margin-bottom: 1.2rem;
+    }
+
+    .confirmation-box h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #2a5298;
+    }
+
+    .confirmation-box p {
+      font-size: 1rem;
+      color: #444;
+      margin-bottom: 1.5rem;
+    }
+
+    .confirmation-box a {
+      display: inline-block;
+      background: #1e3c72;
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .confirmation-box a:hover {
+      background: #2a5298;
+    }
+  </style>
+</head>
+<body>
+  <div class="confirmation-box">
+    <img src="../static/images/studyRpg.png" alt="LeadCraft Logo">
+    <h3>Email Verified Successfully!</h3>
+    <p>You're all set to start your Study RPG journey. Let's go conquer some quests!</p>
+    <a href="/login">Back To Login</a>
+  </div>
+</body>
+</html>

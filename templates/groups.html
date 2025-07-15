@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Groups | StudyRPG</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --accent-color: #e52d27;
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --button-bg: #2a5298;
+            --button-hover: #3b6ab4;
+            --error-bg: #6b7280;
+            --error-hover: #9ca3af;
+        }
+
+        body {
+            background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            font-family: 'Nunito', sans-serif;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-container {
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .message-sent {
+            background: linear-gradient(135deg, #4e73df 0%, #2e59d9 100%);
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+        .message-received {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1050;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(26, 32, 44, 0.95);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        #create-group-modal .modal-content {
+            background: rgba(26, 32, 44, 0.95);
+            border: 1px solid var(--input-border);
+            backdrop-filter: blur(10px);
+        }
+        #create-group-modal h3 {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        #create-group-modal .space-y-4 {
+            display: grid;
+            gap: 1rem;
+        }
+        #create-group-modal label {
+            display: block;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        #create-group-modal input,
+        #create-group-modal textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #create-group-modal textarea {
+            min-height: 6rem;
+            resize: vertical;
+        }
+        #create-group-modal input:focus,
+        #create-group-modal textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+        #create-group-modal input::placeholder,
+        #create-group-modal textarea::placeholder {
+            color: var(--text-muted);
+        }
+        #create-group-modal .flex {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        #create-group-modal button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, outline 0.2s;
+        }
+        #create-group-modal button[type="submit"] {
+            background: var(--button-bg);
+        }
+        #create-group-modal button[type="submit"]:hover,
+        #create-group-modal button[type="submit"]:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+        #create-group-modal button[type="button"] {
+            background: var(--error-bg);
+        }
+        #create-group-modal button[type="button"]:hover,
+        #create-group-modal button[type="button"]:focus {
+            background: var(--error-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--error-hover);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="container max-w-6xl mx-auto p-6">
+        <div class="card p-6 rounded-lg shadow-lg fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl text-white font-bold flex items-center">
+                    <i class="fas fa-users mr-2"></i> Study Groups
+                </h1>
+                <button class="bg-blue-500 text-white px-6 py-3 rounded-md font-bold hover:bg-blue-600 flex items-center" onclick="openCreateGroupModal()">
+                    <i class="fas fa-plus mr-2"></i> Create Group
+                </button>
+            </div>
+
+            <div class="relative mb-6">
+                <input type="text" id="group-search" class="w-full p-3 rounded-full bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Search for study groups...">
+                <button class="absolute right-2 top-2 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600" onclick="searchGroups()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- User Groups -->
+                <div class="card rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold text-white p-4 flex items-center">
+                        <i class="fas fa-user-friends mr-2"></i> Your Groups
+                    </h2>
+                    <div id="user-groups-list" class="p-4">
+                        <div class="text-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Content -->
+                <div class="lg:col-span-2 card rounded-lg shadow-lg">
+                    <div class="border-b border-white/10">
+                        <ul class="flex nav-tabs">
+                            <li class="mr-1">
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500 active" href="#public-groups" onclick="switchTab('public-groups')">Public Groups</a>
+                            </li>
+                            <li class="mr-1">
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500" href="#group-chat" onclick="switchTab('group-chat')">Chat</a>
+                            </li>
+                            <li>
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500" href="#group-quests" onclick="switchTab('group-quests')">Quests</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-4">
+                        <div id="public-groups" class="tab-content">
+                            <div id="public-groups-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="text-center py-5">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="group-chat" class="tab-content hidden">
+                            <div class="chat-container">
+                                <div id="group-chat-messages" class="chat-messages p-4">
+                                    <p class="text-white/70 text-center">Select a group to start chatting</p>
+                                </div>
+                                <div class="chat-input p-4 bg-white/10">
+                                    <div class="flex">
+                                        <input type="text" id="chat-message-input" class="flex-1 p-3 rounded-l-md bg-white/10 text-white placeholder-white/60 focus:outline-none" placeholder="Type your message..." disabled>
+                                        <button id="send-message-btn" class="bg-blue-500 text-white px-4 py-3 rounded-r-md hover:bg-blue-600" disabled>
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="group-quests" class="tab-content hidden">
+                            <div id="group-quests-content" class="p-4">
+                                <p class="text-white/70 text-center">Select a group to view quests</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Details Modal -->
+    <div class="modal" id="group-details-modal">
+        <div class="modal-content">
+            <h3 id="group-details-modal-title">Group Details</h3>
+            <div id="group-details-modal-body">Loading group details...</div>
+            <div class="flex justify-end gap-4 mt-4">
+                <button class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600" onclick="document.getElementById('group-details-modal').style.display='none'">Close</button>
+                <button id="join-group-btn" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600">Join Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal" id="create-group-modal">
+        <div class="modal-content">
+            <h3>Create Study Group</h3>
+            <form id="create-group-form" class="space-y-4">
+                <div>
+                    <label class="block text-white/80">Group Name:</label>
+                    <input type="text" id="group-name" class="w-full p-3 rounded-md bg-white/10 text-white" required aria-label="Group name">
+                </div>
+                <div>
+                    <label class="block text-white/80">Description:</label>
+                    <textarea id="group-description" class="w-full p-3 rounded-md bg-white/10 text-white" required aria-label="Group description"></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600" aria-label="Create group">Create Group</button>
+                    <button type="button" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600" onclick="closeCreateGroupModal()" aria-label="Cancel group creation">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let selectedGroup = null;
+        let chatSocket = null;
+        let notificationSocket = null;
+
+        async function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        }
+
+        async function initialize() {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch('/verify-token', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Not logged in');
+                currentUser = await res.json();
+                await loadUserGroups();
+                await loadPublicGroups();
+                initializeWebSocket();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error initializing:', error);
+                document.getElementById('user-groups-list').innerHTML = '<p class="text-red-500">Please log in to view groups</p>';
+            }
+        }
+
+        function initializeWebSocket() {
+            const wsScheme = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const token = document.cookie.match(/(^| )access_token=([^;]+)/)?.[2];
+            if (!token) return showToast('Please log in for notifications', 'error');
+            notificationSocket = new WebSocket(`${wsScheme}${window.location.host}/ws/notifications?token=${token}`);
+            notificationSocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'group_update') {
+                    showToast(data.message, 'success');
+                    loadUserGroups();
+                    loadPublicGroups();
+                }
+            };
+            notificationSocket.onclose = function() {
+                console.log('Notification WebSocket disconnected, reconnecting...');
+                setTimeout(initializeWebSocket, 5000);
+            };
+            notificationSocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('.nav-tabs a').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-tabs a[href="#${tabId}"]`).classList.add('active');
+        }
+
+        async function loadUserGroups() {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch('/study-groups', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load groups');
+                const groups = await res.json();
+                renderUserGroups(groups);
+            } catch (error) {
+                console.error('Error loading user groups:', error);
+                showError(document.getElementById('user-groups-list'), 'Failed to load your groups');
+            }
+        }
+
+        function renderUserGroups(groups) {
+            const list = document.getElementById('user-groups-list');
+            list.innerHTML = groups.length === 0 ? `
+                <div class="text-center py-4">
+                    <p class="text-white/70">You haven't joined any groups yet</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="switchTab('public-groups')">
+                        Browse Public Groups
+                    </button>
+                </div>
+            ` : groups.map(group => `
+                <a href="#" class="block p-4 bg-white/10 rounded-md mb-2 hover:bg-white/20 ${selectedGroup?.id === group.id ? 'bg-blue-500/20' : ''}" data-group-id="${group.id}" onclick="selectGroup(${JSON.stringify(group)})">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h6 class="text-white font-semibold">${group.name}</h6>
+                            <p class="text-white/70 text-sm">${group.members.length} members</p>
+                        </div>
+                        ${group.unread_count ? `<span class="bg-blue-500 text-white px-2 py-1 rounded-full text-sm">${group.unread_count}</span>` : ''}
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        async function loadPublicGroups(query = '') {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch(`/study-groups${query ? `?query=${encodeURIComponent(query)}` : ''}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load public groups');
+                const groups = await res.json();
+                renderPublicGroups(groups);
+            } catch (error) {
+                console.error('Error loading public groups:', error);
+                showError(document.getElementById('public-groups-list'), 'Failed to load public groups');
+            }
+        }
+
+        function renderPublicGroups(groups) {
+            const list = document.getElementById('public-groups-list');
+            list.innerHTML = groups.length === 0 ? `
+                <div class="text-center py-5">
+                    <p class="text-white/70">No public groups available</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="openCreateGroupModal()">
+                        Create New Group
+                    </button>
+                </div>
+            ` : groups.map(group => `
+                <div class="card rounded-md shadow-md fade-in">
+                    <img src="${group.image_url || getDefaultGroupImage(group.name)}" class="h-32 w-full object-cover rounded-t-md" alt="${group.name}">
+                    <div class="p-4">
+                        <h5 class="text-white font-semibold">${group.name}</h5>
+                        <p class="text-white/70">${group.description || 'No description provided'}</p>
+                        <div class="flex justify-between items-center mt-4">
+                            <p class="text-blue-400 text-sm"><i class="fas fa-users mr-1"></i> ${group.members.length} members</p>
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" data-group-id="${group.id}" onclick="showGroupDetails(${group.id})">
+                                <i class="fas fa-door-open mr-1"></i> Join
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function selectGroup(group) {
+            selectedGroup = group;
+            updateSelectedGroupUI();
+            await loadGroupChat();
+            await loadGroupQuests();
+            connectToGroupChat(group.id);
+            switchTab('group-chat');
+        }
+
+        async function loadGroupChat() {
+            if (!selectedGroup) return;
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch(`/api/groups/${selectedGroup.id}/messages`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load chat messages');
+                const messages = await res.json();
+                renderGroupChat(messages);
+                document.getElementById('chat-message-input').disabled = false;
+                document.getElementById('send-message-btn').disabled = false;
+            } catch (error) {
+                console.error('Error loading group chat:', error);
+                showError(document.getElementById('group-chat-messages'), 'Failed to load chat messages');
+            }
+        }
+
+        function renderGroupChat(messages) {
+            const container = document.getElementById('group-chat-messages');
+            container.innerHTML = messages.length === 0 ? `
+                <p class="text-white/70 text-center">No messages yet. Start the conversation!</p>
+            ` : messages.map(m => `
+                <div class="message ${m.user.id === currentUser.id ? 'message-sent' : 'message-received'} p-3 rounded-md mb-4 max-w-[80%] fade-in">
+                    <div class="flex items-center mb-1">
+                        <img src="${m.user.avatar_url || 'https://i.pravatar.cc/40'}" class="rounded-full mr-2 w-8 h-8">
+                        <strong class="text-white">${m.user.username}</strong>
+                    </div>
+                    <p class="text-white">${m.content}</p>
+                    <small class="text-white/70 block text-right text-xs">${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function loadGroupQuests() {
+            if (!selectedGroup) return;
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch(`/quests/${currentUser.id}?group_id=${selectedGroup.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load group quests');
+                const quests = await res.json();
+                document.getElementById('group-quests-content').innerHTML = quests.length === 0 ? `
+                    <p class="text-white/70 text-center">No quests for this group</p>
+                ` : quests.map(q => `
+                    <div class="p-4 bg-white/10 rounded-md mb-4">
+                        <h3 class="text-white font-semibold">${q.title}</h3>
+                        <p class="text-white/70">${q.description}</p>
+                        <p class="text-blue-400 text-sm"><i class="fas fa-star mr-1"></i> ${q.xp_reward} XP</p>
+                        ${q.completed ? '<p class="text-green-400 text-sm"><i class="fas fa-check-circle mr-1"></i> Completed</p>' : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading group quests:', error);
+                showError(document.getElementById('group-quests-content'), 'Failed to load group quests');
+            }
+        }
+
+        async function joinGroup(groupId) {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch('/study-groups', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: groupId })
+                });
+                if (!res.ok) throw new Error('Failed to join group');
+                showToast('Joined group successfully!', 'success');
+                document.getElementById('group-details-modal').style.display = 'none';
+                await loadUserGroups();
+                await loadPublicGroups();
+            } catch (error) {
+                console.error('Error joining group:', error);
+                showToast('Failed to join group', 'error');
+            }
+        }
+
+        function updateSelectedGroupUI() {
+            document.querySelectorAll('#user-groups-list a').forEach(item => {
+                const groupId = parseInt(item.getAttribute('data-group-id'));
+                item.classList.toggle('bg-blue-500/20', selectedGroup?.id === groupId);
+            });
+        }
+
+        function showError(container, message) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-red-500">
+                    <p>${message}</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="location.reload()">Retry</button>
+                </div>
+            `;
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-md text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} fade-in`;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function getDefaultGroupImage(groupName) {
+            let hash = 0;
+            for (let i = 0; i < groupName.length; i++) {
+                hash = groupName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash % 360);
+            return `https://via.placeholder.com/300x150/${hue.toString(16).padStart(2, '0')}f5f5f5/000000?text=${encodeURIComponent(groupName)}`;
+        }
+
+        function openCreateGroupModal() {
+            document.getElementById('create-group-modal').style.display = 'flex';
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('create-group-modal').style.display = 'none';
+        }
+
+        async function showGroupDetails(groupId) {
+            const token = await getCookie('access_token');
+            try {
+                const res = await fetch(`/study-groups?group_id=${groupId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error('Failed to load group details');
+                const groups = await res.json();
+                const group = groups.find(g => g.id === groupId);
+                if (!group) throw new Error('Group not found');
+                document.getElementById('group-details-modal-title').textContent = group.name;
+                document.getElementById('group-details-modal-body').innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <img src="${group.image_url || getDefaultGroupImage(group.name)}" class="w-full h-32 object-cover rounded-md" alt="${group.name}">
+                        </div>
+                        <div class="md:col-span-2">
+                            <h4 class="text-white font-semibold">${group.name}</h4>
+                            <p class="text-blue-400 text-sm"><i class="fas fa-users mr-1"></i> ${group.members.length} members</p>
+                            <p class="text-white/70">${group.description || 'No description provided'}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('join-group-btn').textContent = group.members.some(m => m.id === currentUser.id) ? 'Leave Group' : 'Join Group';
+                document.getElementById('join-group-btn').onclick = () => joinGroup(groupId);
+                document.getElementById('group-details-modal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading group details:', error);
+                showToast('Failed to load group details', 'error');
+            }
+        }
+
+        async function searchGroups() {
+            const query = document.getElementById('group-search').value.trim().toLowerCase();
+            await loadPublicGroups(query);
+        }
+
+        function connectToGroupChat(groupId) {
+            if (chatSocket) chatSocket.close();
+            const token = document.cookie.match(/(^| )access_token=([^;]+)/)?.[2];
+            if (!token) return showToast('Please log in', 'error');
+            const wsScheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            chatSocket = new WebSocket(`${wsScheme}${window.location.host}/ws/groups/${groupId}/chat?token=${token}`);
+            chatSocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'chat_message') displayChatMessage(message);
+            };
+            chatSocket.onclose = () => {
+                console.log('Chat disconnected, reconnecting...');
+                setTimeout(() => connectToGroupChat(groupId), 5000);
+            };
+            chatSocket.onerror = (error) => console.error('WebSocket error:', error);
+        }
+
+        function displayChatMessage(message) {
+            const isCurrentUser = message.user.id === currentUser.id;
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${isCurrentUser ? 'message-sent' : 'message-received'} p-3 rounded-md mb-4 max-w-[80%] fade-in`;
+            messageElement.innerHTML = `
+                <div class="flex items-center mb-1">
+                    <img src="${message.user.avatar_url || 'https://i.pravatar.cc/40'}" class="rounded-full mr-2 w-8 h-8">
+                    <strong class="text-white">${message.user.username}</strong>
+                </div>
+                <p class="text-white">${message.content}</p>
+                <small class="text-white/70 block text-right text-xs">${new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+            `;
+            document.getElementById('group-chat-messages').appendChild(messageElement);
+            document.getElementById('group-chat-messages').scrollTop = document.getElementById('group-chat-messages').scrollHeight;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('send-message-btn').addEventListener('click', () => {
+                const message = document.getElementById('chat-message-input').value.trim();
+                if (message && selectedGroup && chatSocket?.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({ content: message }));
+                    document.getElementById('chat-message-input').value = '';
+                }
+            });
+            document.getElementById('chat-message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('send-message-btn').click();
+            });
+            document.getElementById('create-group-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = await getCookie('access_token');
+                const name = document.getElementById('group-name').value;
+                const description = document.getElementById('group-description').value;
+                try {
+                    const res = await fetch('/study-groups', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, description })
+                    });
+                    if (!res.ok) throw new Error('Failed to create group');
+                    showToast('Group created successfully!', 'success');
+                    closeCreateGroupModal();
+                    await loadUserGroups();
+                    await loadPublicGroups();
+                } catch (error) {
+                    console.error('Error creating group:', error);
+                    showToast('Failed to create group', 'error');
+                }
+            });
+            document.getElementById('group-search').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchGroups();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+      padding: 2rem;
+    }
+
+    @media (max-width: 600px) {
+  table {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    padding: 0.5rem;
+  }
+}
+
+    h1 {
+      text-align: center;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+      width: 80%;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #007BFF;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Top Scholars</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Username</th>
+        <th>XP</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard"></tbody>
+  </table>
+
+  <div id="loading-spinner" style="text-align: center;">
+  <img src="/static/images/loading-spinner.gif" alt="Loading..." />
+</div>
+
+
+  <script>
+     window.onload = async function () {
+    const response = await fetch('/api/leaderboard');
+    const leaderboard = await response.json();
+    const table = document.getElementById('leaderboard');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    loadingSpinner.style.display = 'block';  // Show loading
+    
+    loadingSpinner.style.display = 'none';  // Hide loading
+    leaderboard.sort((a, b) => b.xp - a.xp);
+    leaderboard.forEach((user, index) => {
+      const row = `<tr>
+        <td>${index + 1}</td>
+        <td>${user.username}</td>
+        <td>${user.xp}</td>
+      </tr>`;
+      table.innerHTML += row;
+    });
+  };
+
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+}
+
+users.forEach((user, index) => {
+  const row = `<tr>
+    <td>${index + 1}</td>
+    <td>${escapeHtml(user.username)}</td>
+    <td>${user.xp}</td>
+  </tr>`;
+  table.innerHTML += row;
+});
+
+
+      </script>
+</body>
+</html>

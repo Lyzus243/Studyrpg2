@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer | StudyRPG</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #1e3c72;
+      --accent-color: #e52d27;
+      --gradient: linear-gradient(135deg, #1a1a2e 0%, #1e3c72 25%, #e52d27 60%, #ffb347 85%, #6df0ff 100%);
+      --spacing-unit: 1rem;
+      --text-light: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.7);
+      --card-bg: rgba(255, 255, 255, 0.07);
+      --card-border: rgba(255, 255, 255, 0.15);
+      --input-bg: rgba(255, 255, 255, 0.1);
+      --input-border: rgba(255, 255, 255, 0.2);
+      --button-bg: #2a5298;
+      --button-hover: #3b6ab4;
+      --success-bg: #15803d;
+      --success-hover: #16a34a;
+      --error-bg: #b91c1c;
+      --error-hover: #dc2626;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--gradient);
+      background-size: 400% 400%;
+      animation: gradientPulse 15s ease infinite;
+      min-height: 100vh;
+      color: var(--text-light);
+      display: grid;
+      place-items: center;
+      padding: var(--spacing-unit);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @keyframes gradientPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      display: grid;
+      grid-template-rows: auto auto auto auto;
+      gap: calc(var(--spacing-unit) * 2);
+      max-width: 64rem;
+      width: 100%;
+      padding: calc(var(--spacing-unit) * 2);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text-light);
+      text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 var(--accent-color);
+      text-align: center;
+    }
+
+    .timer-controls {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: var(--spacing-unit);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: calc(var(--spacing-unit) * 1.5);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .form-group {
+      display: grid;
+      gap: calc(var(--spacing-unit) * 0.3);
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+
+    .form-group input {
+      padding: calc(var(--spacing-unit) * 0.7);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 1rem;
+      width: 100%;
+      max-width: 8rem;
+      text-align: center;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 5px rgba(30, 60, 114, 0.5);
+    }
+
+    #timerDisplay {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--text-light);
+      text-align: center;
+      margin: var(--spacing-unit) 0;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: calc(var(--spacing-unit) * 0.5);
+    }
+
+    .btn {
+      padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.2);
+      border: none;
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(var(--spacing-unit) * 0.3);
+      transition: background 0.2s, transform 0.2s, outline 0.2s;
+    }
+
+    #startBtn {
+      background: var(--success-bg);
+    }
+
+    #startBtn:hover:not(:disabled),
+    #startBtn:focus:not(:disabled) {
+      background: var(--success-hover);
+      transform: translateY(-2px);
+      outline: 2px solid var(--success-hover);
+      outline-offset: 2px;
+    }
+
+    #pauseBtn {
+      background: var(--button-bg);
+    }
+
+    #pauseBtn:hover:not(:disabled),
+    #pauseBtn:focus:not(:disabled) {
+      background: var(--button-hover);
+      transform: translateY(-2px);
+      outline: 2px solid var(--button-hover);
+      outline-offset: 2px;
+    }
+
+    #resetBtn {
+      background: var(--error-bg);
+    }
+
+    #resetBtn:hover:not(:disabled),
+    #resetBtn:focus:not(:disabled) {
+      background: var(--error-hover);
+      transform: translateY(-2px);
+      outline: 2px solid var(--error-hover);
+      outline-offset: 2px;
+    }
+
+    .btn:disabled {
+      background: rgba(255, 255, 255, 0.2);
+      cursor: not-allowed;
+    }
+
+    .stats-section,
+    .history-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: calc(var(--spacing-unit) * 1.5);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .stats-section h2,
+    .history-section h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text-light);
+      margin-bottom: var(--spacing-unit);
+    }
+
+    .stats-section p,
+    .history-section li {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin: calc(var(--spacing-unit) * 0.5) 0;
+    }
+
+    .stats-section span {
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    #sessionHistory {
+      list-style: none;
+    }
+
+    #sessionHistory li {
+      padding: calc(var(--spacing-unit) * 0.5);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    #sessionHistory li:last-child {
+      border-bottom: none;
+    }
+
+    .chart-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: calc(var(--spacing-unit) * 1.5);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .chart-section h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text-light);
+      margin-bottom: var(--spacing-unit);
+      text-align: center;
+    }
+
+    #statsChart {
+      max-width: 100%;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: calc(var(--spacing-unit) * 2);
+      right: calc(var(--spacing-unit) * 2);
+      padding: var(--spacing-unit);
+      background: var(--success-bg);
+      color: var(--text-light);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-out;
+      z-index: 1000;
+    }
+
+    .toast.error {
+      background: var(--error-bg);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: var(--spacing-unit);
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      #timerDisplay {
+        font-size: 2.5rem;
+      }
+
+      .timer-controls,
+      .stats-section,
+      .history-section,
+      .chart-section {
+        padding: var(--spacing-unit);
+      }
+
+      .stats-section h2,
+      .history-section h2,
+      .chart-section h2 {
+        font-size: 1.3rem;
+      }
+
+      .form-group label,
+      .stats-section p,
+      .history-section li,
+      .btn {
+        font-size: 0.9rem;
+      }
+
+      .form-group input {
+        max-width: 6rem;
+      }
+
+      .button-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 400px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      #timerDisplay {
+        font-size: 2rem;
+      }
+
+      .stats-section h2,
+      .history-section h2,
+      .chart-section h2 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⏱ Pomodoro Timer</h1>
+
+    <div class="timer-controls">
+      <div class="form-group">
+        <label for="duration">Session Length (minutes):</label>
+        <input type="number" id="duration" name="duration" value="25" min="1" aria-label="Session duration in minutes">
+      </div>
+      <div id="timerDisplay" aria-live="polite">25:00</div>
+      <div class="button-group">
+        <button class="btn" id="startBtn" aria-label="Start or resume Pomodoro timer">▶ Start Countdown</button>
+        <button class="btn" id="pauseBtn" disabled aria-label="Pause Pomodoro timer">⏸ Pause</button>
+        <button class="btn" id="resetBtn" aria-label="Reset Pomodoro timer">🔄 Reset</button>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h2>📊 Today's Stats</h2>
+      <p>Sessions Completed: <span id="sessionsCount">0</span></p>
+      <p>Total Time: <span id="totalTime">0</span> minutes</p>
+    </div>
+
+    <div class="history-section">
+      <h2>📜 Session History</h2>
+      <ul id="sessionHistory" aria-live="polite">
+        <li>Loading...</li>
+      </ul>
+    </div>
+
+    <div class="chart-section">
+      <h2>📈 Productivity Chart</h2>
+      <canvas id="statsChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+
+  <script>
+    let countdown;
+    let isRunning = false;
+    let isPaused = false;
+    let remainingSeconds = 0;
+    let autoReset = true; // Configurable flag for auto-reset after completion
+
+    let stats = { count: 0, total_minutes: 0 };
+    let sessionHistory = [];
+
+    async function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      return parts.length === 2 ? parts.pop().split(';').shift() : null;
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await fetchStats();
+      await fetchHistory();
+      updateDisplay();
+      initChart();
+    });
+
+    async function fetchStats() {
+      try {
+        const token = await getCookie('access_token');
+        const response = await fetch('/pomodoro/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
+        stats = {
+          count: data.count || 0,
+          total_minutes: data.total_minutes || 0
+        };
+        updateDisplay();
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+        showError('Failed to fetch stats');
+      }
+    }
+
+    async function fetchHistory() {
+      try {
+        const token = await getCookie('access_token');
+        const response = await fetch('/pomodoro/history', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch session history');
+        const data = await response.json();
+        sessionHistory = Array.isArray(data) ? data : [];
+        updateDisplay();
+      } catch (error) {
+        console.error('Failed to fetch session history:', error);
+        showError('Failed to fetch session history');
+      }
+    }
+
+    async function saveSession(duration, startTime) {
+      try {
+        const token = await getCookie('access_token');
+        const response = await fetch('/pomodoro/sessions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ duration, start_time: startTime })
+        });
+        if (!response.ok) throw new Error('Failed to save session');
+      } catch (error) {
+        console.error('Failed to save session:', error);
+        showError('Failed to save session');
+      }
+    }
+
+    function updateDisplay() {
+      document.getElementById('sessionsCount').textContent = stats.count || 0;
+      document.getElementById('totalTime').textContent = stats.total_minutes || 0;
+
+      const historyList = document.getElementById('sessionHistory');
+      if (sessionHistory.length === 0) {
+        historyList.innerHTML = '<li>No sessions completed yet</li>';
+      } else {
+        historyList.innerHTML = sessionHistory.map(session => {
+          try {
+            const date = new Date(session.start_time);
+            const timeString = date.toISOString().slice(0, 16).replace('T', ' ');
+            return `<li>${timeString} — ${session.duration} min</li>`;
+          } catch (e) {
+            return `<li>Invalid session data</li>`;
+          }
+        }).join('');
+      }
+    }
+
+    function startPomodoro() {
+      const duration = parseInt(document.getElementById('duration').value);
+      if (isNaN(duration) || duration < 1) {
+        showError('Please enter a valid duration (minimum 1 minute)');
+        return;
+      }
+
+      if (isPaused) {
+        isPaused = false;
+      } else {
+        remainingSeconds = duration * 60;
+      }
+
+      isRunning = true;
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = false;
+      document.getElementById('duration').disabled = true;
+
+      countdown = setInterval(() => {
+        if (remainingSeconds <= 0) {
+          clearInterval(countdown);
+          completeSession();
+          return;
+        }
+        remainingSeconds--;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function pausePomodoro() {
+      if (isRunning) {
+        clearInterval(countdown);
+        isPaused = true;
+        isRunning = false;
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('pauseBtn').disabled = true;
+        document.getElementById('startBtn').textContent = '▶ Resume';
+      }
+    }
+
+    function resetPomodoro() {
+      clearInterval(countdown);
+      isRunning = false;
+      isPaused = false;
+      const duration = parseInt(document.getElementById('duration').value) || 25;
+      remainingSeconds = duration * 60;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+      document.getElementById('duration').disabled = false;
+      document.getElementById('startBtn').textContent = '▶ Start Countdown';
+      updateTimerDisplay();
+    }
+
+    async function completeSession() {
+      playCompletionSound();
+      const sessionMinutes = parseInt(document.getElementById('duration').value) || 25;
+      const startTime = new Date().toISOString();
+      stats.count++;
+      stats.total_minutes += sessionMinutes;
+
+      await saveSession(sessionMinutes, startTime);
+
+      const timeString = startTime.slice(0, 16).replace('T', ' ');
+      sessionHistory.unshift({ start_time: timeString, duration: sessionMinutes });
+
+      if (sessionHistory.length > 10) sessionHistory = sessionHistory.slice(0, 10);
+
+      updateDisplay();
+      updateChart();
+
+      isRunning = false;
+      isPaused = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+      document.getElementById('duration').disabled = false;
+      document.getElementById('startBtn').textContent = '▶ Start Countdown';
+
+      if (autoReset) {
+        resetPomodoro();
+      }
+
+      showToast('Pomodoro Complete! Great job!', 'success');
+    }
+
+    function playCompletionSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000); // Increased to 4000ms
+    }
+
+    function showError(message) {
+      const historyList = document.getElementById('sessionHistory');
+      historyList.innerHTML = `<li style="color: var(--error-bg);">${message}</li>`;
+    }
+
+    let productivityChart;
+
+    async function initChart() {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      const today = new Date();
+      const labels = [];
+      const values = [];
+
+      try {
+        const token = await getCookie('access_token');
+        const response = await fetch('/pomodoro/history?days=7', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch chart data');
+        const history = await response.json();
+
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          const dateString = date.toISOString().slice(0, 10);
+          labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+
+          const dailyTotal = history
+            .filter(session => session.start_time.startsWith(dateString))
+            .reduce((sum, session) => sum + (session.duration || 0), 0);
+          values.push(dailyTotal);
+        }
+      } catch (error) {
+        console.error('Failed to fetch chart data:', error);
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - i);
+          labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+          values.push(i === 0 ? stats.total_minutes : 0);
+        }
+      }
+
+      productivityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Minutes Focused',
+            data: values,
+            backgroundColor: 'rgba(30, 60, 114, 0.6)', // Uses --primary-color
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function updateChart() {
+      if (productivityChart) {
+        const todayIndex = productivityChart.data.labels.length - 1;
+        productivityChart.data.datasets[0].data[todayIndex] = stats.total_minutes;
+        productivityChart.update();
+      }
+    }
+  </script>
+</body>
+</html>

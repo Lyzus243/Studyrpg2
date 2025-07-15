@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pandas
+schedule
+flask
+# sqlite3 is included with Python standard library
+
+
+uvicorn main:app --reload
+
+
+
+

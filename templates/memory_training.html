@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Training - StudyRPG</title>
+  <link href="https://cdn.tailwindcss.com/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+      min-height: 100vh;
+      color: white;
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <div class="container mx-auto px-4 py-8">
+    <a href="/dashboard" class="text-white hover:underline mb-4 inline-block">&larr; Back to Dashboard</a>
+    <h1 class="text-3xl font-bold text-center mb-6">🧠 Memory Training</h1>
+
+    <!-- Technique Selection -->
+    <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Select Technique</h2>
+      <select id="memoryTechnique" class="w-full p-2 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white">
+        <option value="spaced_repetition">Spaced Repetition</option>
+        <option value="active_recall">Active Recall</option>
+        <option value="memory_palace">Memory Palace</option>
+        <option value="mnemonics">Mnemonics</option>
+      </select>
+      <button id="startTraining" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Start Training</button>
+    </div>
+
+    <!-- Exercise Area -->
+    <div id="exerciseArea" class="bg-white bg-opacity-10 rounded-lg p-6 hidden">
+      <h2 class="text-2xl font-semibold mb-4">Exercise</h2>
+      <div id="exerciseContent"></div>
+      <input id="exerciseResponse" type="text" class="w-full p-2 mt-4 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white" placeholder="Enter your response">
+      <button id="submitResponse" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Submit Response</button>
+    </div>
+
+    <!-- Results Area -->
+    <div id="resultsArea" class="bg-white bg-opacity-10 rounded-lg p-6 hidden">
+      <h2 class="text-2xl font-semibold mb-4">Results</h2>
+      <p id="resultScore" class="mb-4"></p>
+      <div id="resultDetails"></div>
+      <button id="newExercise" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">New Exercise</button>
+    </div>
+  </div>
+
+  <script>
+    async function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      return parts.length === 2 ? parts.pop().split(';').shift() : null;
+    }
+
+    async function startTraining() {
+      const technique = document.getElementById('memoryTechnique').value;
+      try {
+        const response = await fetch(`/memory_training/exercises?technique=${technique}`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${await getCookie('access_token')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch exercise');
+        const exercise = await response.json();
+        displayExercise(exercise);
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    function displayExercise(exercise) {
+      document.querySelector('.bg-white.bg-opacity-10').classList.add('hidden');
+      document.getElementById('exerciseArea').classList.remove('hidden');
+      document.getElementById('exerciseContent').innerHTML = `
+        <p class="text-lg">${exercise.content}</p>
+        <p class="text-sm text-gray-300">Type: ${exercise.type}</p>
+      `;
+    }
+
+    async function submitResponse() {
+      const responseInput = document.getElementById('exerciseResponse').value;
+      try {
+        const response = await fetch('/memory_training/evaluate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await getCookie('access_token')}`
+          },
+          body: JSON.stringify({ response: responseInput })
+        });
+        if (!response.ok) throw new Error('Failed to evaluate response');
+        const result = await response.json();
+        displayResults(result);
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    function displayResults(result) {
+      document.getElementById('exerciseArea').classList.add('hidden');
+      document.getElementById('resultsArea').classList.remove('hidden');
+      document.getElementById('resultScore').textContent = `Score: ${result.score}`;
+      document.getElementById('resultDetails').innerHTML = `<p>${result.feedback}</p>`;
+    }
+
+    document.getElementById('startTraining').addEventListener('click', startTraining);
+    document.getElementById('submitResponse').addEventListener('click', submitResponse);
+    document.getElementById('newExercise').addEventListener('click', () => {
+      document.getElementById('resultsArea').classList.add('hidden');
+      document.querySelector('.bg-white.bg-opacity-10').classList.remove('hidden');
+      document.getElementById('exerciseResponse').value = '';
+    });
+  </script>
+</body>
+</html>

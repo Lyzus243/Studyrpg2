@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyRPG Dashboard</title>
+    
+    <!-- Font Awesome -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+    <style>
+        /* ===== BASE STYLES ===== */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1e3c72;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background-color: #1e3c72;
+            color: #fff;
+            padding: 2rem 1.5rem;
+            width: 250px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-bottom: 1rem;
+        }
+
+        .username-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .username-label h1 {
+            margin: 0;
+            font-size: inherit;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.9rem 1rem;
+            background-color: #2a5298;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            width: 100%;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-btn:hover {
+            background-color: #3a6db1;
+            transform: scale(1.03);
+        }
+
+        .sidebar-btn i {
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background-color: #e52d27;
+            border: none;
+            color: white;
+            padding: 0.6rem 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: auto;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff4c4c;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* ===== QUICK STATS ===== */
+        .quick-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-widget {
+            background: linear-gradient(120deg, #e3f0fc 60%, #ffb347 100%);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.10);
+            padding: 1.2rem 2.2rem;
+            min-width: 120px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #1e3c72;
+            font-weight: bold;
+            border: 2px solid #e52d27;
+            transition: all 0.2s ease;
+            flex: 1 1 140px;
+            max-width: 180px;
+        }
+
+        .stat-widget span {
+            display: block;
+            font-size: 2rem;
+            color: #e52d27;
+            margin-top: 0.3rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 #ffb347;
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            color: white;
+        }
+
+        #study-tools-section {
+            margin-bottom: 6rem;
+        }
+
+        /* ===== TOOL GRID ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding: 0.5rem;
+        }
+
+        /* ===== TOOL CARD ===== */
+        .tool-card {
+            background: linear-gradient(135deg, #e3f0fc 0%, #f8f8ff 100%);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: #1e3c72;
+            text-decoration: none;
+            border: 2px solid #4a5568;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+            min-height: 180px;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .tool-card i {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            color: #e52d27;
+        }
+
+        .tool-card h4 {
+            margin: 0.5rem 0;
+            font-size: 1.4rem;
+        }
+
+        .tool-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.4;
+            flex-grow: 1;
+            margin-top: 0.5rem;
+        }
+
+        /* ===== ACTIVITY FEED ===== */
+        .activity-feed {
+            background: #f8f8ff;
+            border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(44, 62, 80, 0.06);
+            padding: 1.2rem 2rem;
+            margin: 2rem auto 1rem auto;
+            max-width: 600px;
+        }
+
+        .activity-feed h4 {
+            margin-top: 0;
+            color: #2a5298;
+            font-weight: bold;
+        }
+
+        .activity-feed ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .activity-feed li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e3f0fc;
+            font-size: 1rem;
+        }
+
+        .activity-feed li:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== QUESTS SECTION ===== */
+        #quests {
+            list-style: none;
+            padding: 0;
+        }
+
+        #quests li {
+            background: #f8f8ff;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e3f0fc;
+        }
+
+        #quests button {
+            margin-left: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        #quests button:first-of-type {
+            background-color: #2a5298;
+            color: white;
+        }
+
+        #quests button:last-of-type {
+            background-color: #e52d27;
+            color: white;
+        }
+
+        /* ===== SKILL TREE ===== */
+        #skill-tree-section {
+            margin: 2rem auto;
+            max-width: 700px;
+            background: #f8f8ff;
+            border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(44, 62, 80, 0.06);
+            padding: 1.2rem 2rem;
+        }
+
+        #skill-tree-section h3 {
+            color: #2a5298;
+        }
+
+        #skill-tree-section a {
+            color: #2a5298;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #skill-tree-section a:hover {
+            text-decoration: underline;
+        }
+
+        .skill {
+            background: #e3f0fc;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .skill h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e3c72;
+        }
+
+        .skill p {
+            margin: 0;
+            color: #4a5568;
+        }
+
+        /* ===== BOSS BATTLES ===== */
+        #boss-battle-section {
+            background: #f8f8ff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 700px;
+        }
+
+        #boss-battle-section h3 {
+            color: #2a5298;
+            margin-top: 0;
+        }
+
+        .battle {
+            background: #e3f0fc;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #e52d27;
+        }
+
+        .battle h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e3c72;
+        }
+
+        .battle p {
+            margin: 0;
+            color: #4a5568;
+        }
+
+        .profile-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: #1e3c72;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .profile-btn:hover {
+            background: #2a5298;
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        /* ===== MODALS ===== */
+        .modal-rpg {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-rpg.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #1e3c72;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+
+            .sidebar .avatar-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .quick-stats {
+                gap: 1rem;
+            }
+
+            .stat-widget {
+                min-width: 80px;
+                max-width: 120px;
+                font-size: 1rem;
+                padding: 1rem;
+            }
+
+            .stat-widget span {
+                font-size: 1.5rem;
+            }
+
+            .tool-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tool-card {
+                padding: 1rem;
+                min-height: 120px;
+            }
+
+            .tool-card i {
+                font-size: 2rem;
+            }
+
+            .activity-feed,
+            #skill-tree-section,
+            #boss-battle-section {
+                max-width: 100%;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .quick-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stat-widget {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .tool-card h4 {
+                font-size: 1.1rem;
+            }
+
+            .tool-card p {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <img id="user-avatar" class="avatar-preview" src="{{ user.avatar_url | default('https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3') }}" alt="User Avatar">
+            <audio src="../static/sounds/battleThemeA.mp3"></audio>
+            <div id="user-name" class="username-label">
+                <h1>Welcome, {{ user.username }}</h1>
+            </div>
+
+            <!-- Profile Link -->
+            <a href="/profile/{{ user.id }}" class="sidebar-btn">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+
+            <!-- Inventory -->
+            <a href="/inventory" class="sidebar-btn">
+                <i class="fas fa-boxes"></i>
+                <span>Inventory</span>
+            </a>
+
+            <!-- Study Group -->
+            <a href="/study-groups" class="sidebar-btn">
+                <i class="fas fa-users"></i>
+                <span>Study Group</span>
+            </a>
+
+            <!-- Shop -->
+            <a href="/shop" class="sidebar-btn">
+                <i class="fas fa-store"></i>
+                <span>Shop</span>
+            </a>
+
+            <!-- Logout -->
+            <button onclick="logout()" class="logout-btn" tabindex="0">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-widget">
+                    XP 
+                    <span id="stat-xp">{{ user.xp }}</span>
+                </div>
+                <div class="stat-widget">
+                    Level 
+                    <span id="stat-level">{{ user.level | default(0) }}</span>
+                </div>
+                <div class="stat-widget">
+                    Streak 
+                    <span id="stat-streak">{{ user.streak }}</span>
+                </div>
+                <div class="stat-widget">
+                    Skill Points 
+                    <span id="stat-skill_points">{{ user.skill_points }}</span>
+                </div>
+            </div>
+
+            <!-- Study Tools -->
+            <div class="section" id="study-tools-section">
+                <h3>Study Tools</h3>
+                <div class="tool-grid">
+                    <a href="/pomodoro" class="tool-card">
+                        <i class="fas fa-clock"></i>
+                        <h4>Pomodoro</h4>
+                        <p>Boost focus using the Pomodoro technique</p>
+                    </a>
+                    
+                    <a href="/ai-tools" class="tool-card">
+                        <i class="fas fa-robot"></i>
+                        <h4>AI Study Tools</h4>
+                        <p>Generate practice tests, flashcards, and recommendations</p>
+                    </a>
+                  
+                    <a href="/overview" class="tool-card">
+                        <i class="fas fa-book-open"></i>
+                        <h4>Game Overview</h4>
+                        <p>Learn how StudyRPG turns study time into an epic quest</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="activity-feed">
+                <h4>Recent Activity</h4>
+                <ul id="activity-list"></ul>
+            </div>
+
+            <!-- Quests Section -->
+            <div class="section">
+                <h3>Your Quests</h3>
+                <ul id="quests"></ul>
+            </div>
+
+            <!-- Skill Tree -->
+            <div class="section" id="skill-tree-section">
+                <h3>Skill Tree</h3>
+                <a href="/skills">View Full Skill Tree</a>
+                <div id="skill-tree"></div>
+            </div>
+
+            <!-- Boss Battle -->
+            <div class="section" id="boss-battle-section">
+                <h3>Boss Battles</h3>
+                <div id="boss-battles"></div>
+                <button onclick="openBossBattleModal()" class="profile-btn">Start New Boss Battle</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="editQuestModal" class="modal-rpg">
+        <div class="modal-content">
+            <h3>Edit Quest</h3>
+            <form id="editQuestForm"></form>
+        </div>
+    </div>
+
+    <div id="bossBattleModal" class="modal-rpg">
+        <div class="modal-content">
+            <h3>Start Boss Battle</h3>
+            <form id="bossBattleForm"></form>
+        </div>
+    </div>
+
+    <script>
+        // Utility: Get token from localStorage or sessionStorage
+        async function getToken() {
+            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login';
+                throw new Error('No token found. Redirecting to login...');
+            }
+            return token;
+        }
+
+        // Initialize dashboard
+        (async function init() {
+            try {
+                await authenticateUser();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                window.location.href = '/login';
+            }
+        })();
+
+        // Authenticate user
+        async function authenticateUser() {
+            const token = await getToken();
+            const response = await fetch('/users/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Authentication failed');
+            }
+
+            currentUser = await response.json();
+
+            window.userContext = {
+                id: currentUser.id,
+                name: currentUser.username || 'User',
+                avatarUrl: currentUser.avatar_url,
+                isAuthenticated: true
+            };
+
+            updateUserInterface();
+        }
+
+        // Update user avatar and name
+        function updateUserInterface() {
+            const userNameElement = document.getElementById('user-name');
+            const userAvatarElement = document.getElementById('user-avatar');
+
+            if (userNameElement) {
+                userNameElement.textContent = currentUser.username || 'User';
+            }
+
+            if (userAvatarElement) {
+                userAvatarElement.src = currentUser.avatar_url || '/static/images/default-avatar.png';
+            }
+        }
+
+        // Load all dashboard data
+        async function loadDashboardData() {
+            await Promise.all([
+                loadUserStats(),
+                loadActivityFeed(),
+                loadQuests(),
+                loadSkillTree(),
+                loadBossBattles()
+            ]);
+        }
+
+        // Load user stats
+        async function loadUserStats() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load user stats');
+                const user = await response.json();
+
+                updateStatElement('stat-xp', user.xp);
+                updateStatElement('stat-level', user.level);
+                updateStatElement('stat-streak', user.streak);
+                updateStatElement('stat-skill_points', user.skill_points);
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+            }
+        }
+
+        // Load activity feed
+        async function loadActivityFeed() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/activity-feed', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load activity feed');
+                const activities = await response.json();
+                const container = document.getElementById('activity-list');
+
+                if (container) {
+                    container.innerHTML = activities.slice(0, 5).map(activity => `
+                        <li>
+                            <strong>${escapeHtml(activity.title)}</strong>
+                            <span>${activity.completed ? 'Completed' : 'In Progress'}</span>
+                            <small>${new Date(activity.date).toLocaleString()}</small>
+                        </li>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading activity feed:', error);
+            }
+        }
+
+        // Load quests
+        async function loadQuests() {
+            try {
+                const token = await getToken();
+                const response = await fetch(`/quests/${window.userContext.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load quests');
+                const quests = await response.json();
+                const container = document.getElementById('quests');
+
+                if (container) {
+                    container.innerHTML = quests.map(quest => `
+                        <li>
+                            <strong>${escapeHtml(quest.title)}</strong> (${escapeHtml(quest.type)})
+                            <button onclick="editQuest('${quest.id}')">Edit</button>
+                            <button onclick="deleteQuest('${quest.id}')">Delete</button>
+                        </li>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading quests:', error);
+            }
+        }
+
+        // Load skill tree
+        async function loadSkillTree() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/skills/unlocked', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load skill tree');
+                const skills = await response.json();
+                const container = document.getElementById('skill-tree');
+
+                if (container) {
+                    container.innerHTML = skills.map(skill => `
+                        <div class="skill">
+                            <h4>${escapeHtml(skill.name)}</h4>
+                            <p>${escapeHtml(skill.description)}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading skill tree:', error);
+            }
+        }
+
+        // Load boss battles
+        async function loadBossBattles() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/boss-battles', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load boss battles');
+                const battles = await response.json();
+                const container = document.getElementById('boss-battles');
+
+                if (container) {
+                    container.innerHTML = battles.map(battle => `
+                        <div class="battle">
+                            <h4>${escapeHtml(battle.name)}</h4>
+                            <p>Status: ${battle.won ? 'Won' : 'Lost'}</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading boss battles:', error);
+            }
+        }
+
+        // Update stat elements
+        function updateStatElement(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = value ?? 0;
+            }
+        }
+
+       async function editQuest(questId) {
+    const modal = document.getElementById('editQuestModal');
+    const form = document.getElementById('editQuestForm');
+    const token = await getToken();
+    const response = await fetch(`/quests/${window.userContext.id}?quest_id=${questId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch quest');
+    const quest = await response.json();
+    form.innerHTML = `
+        <input type="text" name="title" value="${escapeHtml(quest.title)}" required>
+        <input type="text" name="type" value="${escapeHtml(quest.type)}" required>
+        <button type="submit">Save</button>
+    `;
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const updatedQuest = {
+            title: form.title.value,
+            type: form.type.value
+        };
+        await fetch(`/quests/${questId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedQuest)
+        });
+        modal.classList.remove('active');
+        loadQuests();
+    };
+    modal.classList.add('active');
+}
+        function deleteQuest(questId) {
+            if (confirm('Are you sure you want to delete this quest?')) {
+                console.log('Delete quest:', questId);
+                // Call DELETE /quests/{id} from backend
+            }
+        }
+
+        // Boss battle modal
+        function openBossBattleModal() {
+            const modal = document.getElementById('bossBattleModal');
+            if (modal) modal.classList.add('active');
+            window.location.href = "/boss-battles";
+        }
+
+        // Close modals on click outside
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('modal-rpg')) {
+                event.target.classList.remove('active');
+            }
+        });
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('access_token');
+            sessionStorage.removeItem('access_token');
+            window.location.href = '/login';
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Global error handling
+        window.addEventListener('error', function (event) {
+            console.error('App error:', event.error);
+        });
+
+        window.addEventListener('unhandledrejection', function (event) {
+            console.error('Unhandled rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

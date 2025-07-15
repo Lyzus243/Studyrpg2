@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StudyRPG Intro</title>
+    <!-- <link rel="stylesheet" href="/static/css/style.css"> -->
+    <style>
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Intro Container */
+.intro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    margin: 2rem auto;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(30,60,114,0.15);
+    position: relative;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+}
+
+/* Logo Image */
+.logo-img {
+    display: block;
+    margin: 0 auto 1.5rem auto;
+    width: 120px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Global Music Button */
+.music-btn-global {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    width: 100px;
+    padding: 0.9rem;
+    font-size: 1.1rem;
+    background: #1e3c72;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: 0.92;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(30,60,114,0.13);
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
+    z-index: 9999;
+}
+
+.music-btn-global:hover {
+    background: #2a5298;
+    color: #ffd700;
+    opacity: 1;
+}
+
+/* Intro Title */
+.intro-title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #1e3c72;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 #e52d27;
+    text-align: center;
+}
+
+/* Intro Description */
+.intro-desc {
+    font-size: 1.3rem;
+    color: #2a5298;
+    margin-bottom: 2rem;
+    text-align: center;
+    max-width: 600px;
+    padding: 0 1rem;
+}
+
+/* Dashboard Button */
+.dashboard-btn {
+    margin-top: 2rem;
+    padding: 1.2rem 3.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    background: #1e3c72;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(30,60,114,0.18);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.dashboard-btn:hover {
+    background: #2a5298;
+    transform: translateY(-3px) scale(1.04);
+}
+
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .intro-container {
+        margin: 1rem;
+        max-width: 90vw;
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+    }
+    .intro-title {
+        font-size: 2.2rem;
+        letter-spacing: 1.5px;
+    }
+    .intro-desc {
+        font-size: 1.1rem;
+        max-width: 100%;
+    }
+    .dashboard-btn {
+        padding: 1rem 2.5rem;
+        font-size: 1.3rem;
+    }
+    .music-btn-global {
+        width: 90px;
+        font-size: 1rem;
+        top: 12px;
+        right: 12px;
+        padding: 0.7rem;
+    }
+    .intro-author {
+        font-size: 0.9rem;
+        padding: 0.4rem 1rem;
+        letter-spacing: 2px;
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .intro-title {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+        margin-bottom: 0.8rem;
+    }
+    .intro-desc {
+        font-size: 1rem;
+    }
+    .dashboard-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+    }
+    .music-btn-global {
+        width: 80px;
+        font-size: 0.9rem;
+        top: 10px;
+        right: 10px;
+        padding: 0.6rem;
+    }
+    .intro-author {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+        letter-spacing: 1.5px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Start Music button at the extreme top-right of the page, styled like login.html -->
+    <button onclick="document.getElementById('bgm').play()" style="
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 0.4rem 1.1rem;
+    font-size: 1rem;
+    background: linear-gradient(90deg, #2a5298 60%, #ffb347 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 100;
+    opacity: 0.92;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(30,60,114,0.13);
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
+"
+onmouseover="this.style.background='linear-gradient(90deg,#e52d27 60%,#000 100%)';this.style.color='#ffd700';this.style.opacity='1';"
+onmouseout="this.style.background='linear-gradient(90deg, #2a5298 60%, #ffb347 100%)';this.style.color='#fff';this.style.opacity='0.92';"
+>Start Music</button>
+    <div class="intro-container">
+        <img src="../static/images/studyRpg.png" alt="StudyRPG Logo" class="logo-img">
+        <div class="intro-title" style="text-align: center;">Welcome to StudyRPG</div>
+        <div class="intro-desc">
+            Level up your learning! Complete quests, earn XP, unlock abilities, and track your progress. Face boss battles, join study groups, and master skills with memory games and Pomodoro-powered sessions. Start your adventure now!
+        </div>
+        <button class="dashboard-btn" onclick="window.location.href='/auth/signup'">Get Started</button>
+    
+        <audio id="bgm" src="/static/sounds/boss theme.ogg" loop></audio>
+    </div>
+</body>
+</html>

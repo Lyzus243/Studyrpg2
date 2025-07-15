@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards - StudyRPG</title>
+    <style>
+        /* ===== CSS Variables for Consistency ===== */
+        :root {
+            --primary-color: #1e3c72;
+            --accent-color: #e52d27;
+            --gradient: linear-gradient(135deg, #1a1a2e 0%, #1e3c72 25%, #e52d27 60%, #ffb347 85%, #6df0ff 100%);
+            --spacing-unit: 1rem;
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.07);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --button-bg: #2a5298;
+            --button-hover: #3b6ab4;
+        }
+
+        /* ===== Base Styling ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            min-height: 100vh;
+            color: var(--text-light);
+            display: grid;
+            place-items: center;
+            padding: var(--spacing-unit);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== Main Container ===== */
+        .container {
+            display: grid;
+            grid-template-rows: auto auto auto auto auto;
+            gap: calc(var(--spacing-unit) * 2);
+            max-width: 80rem;
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 2);
+        }
+
+        /* ===== Header ===== */
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 var(--accent-color);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: calc(var(--spacing-unit) * 0.5);
+        }
+
+        /* ===== Sections ===== */
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: calc(var(--spacing-unit) * 1.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: var(--spacing-unit);
+        }
+
+        /* ===== Deck List ===== */
+        .deck-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--spacing-unit);
+        }
+
+        .deck-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: var(--spacing-unit);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .deck-card:hover, .deck-card:focus-within {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .deck-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .deck-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: calc(var(--spacing-unit) * 0.5) 0;
+        }
+
+        .deck-card button {
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 0.7);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .deck-card button:hover, .deck-card button:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        /* ===== Forms ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-unit);
+        }
+
+        .form-group {
+            display: grid;
+            gap: calc(var(--spacing-unit) * 0.5);
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 0.7);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+
+        .form-submit {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: calc(var(--spacing-unit) * 0.5);
+        }
+
+        .form-submit button {
+            padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.2);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .form-submit button:hover, .form-submit button:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        /* ===== Spinner ===== */
+        .spinner {
+            border: 4px solid var(--input-border);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== Status Messages ===== */
+        .status {
+            margin-top: var(--spacing-unit);
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .status.error {
+            color: var(--accent-color);
+        }
+
+        /* ===== Pomodoro Timer ===== */
+        .pomodoro-timer {
+            position: fixed;
+            bottom: var(--spacing-unit);
+            right: var(--spacing-unit);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: calc(var(--spacing-unit) * 0.75);
+            width: 12rem;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: grid;
+            gap: calc(var(--spacing-unit) * 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .pomodoro-timer.collapsed {
+            transform: translateY(calc(100% - 2.5rem));
+        }
+
+        .pomodoro-timer .toggle-button {
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: calc(var(--spacing-unit) * 0.3) calc(var(--spacing-unit) * 0.5);
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .pomodoro-timer .toggle-button:hover, .pomodoro-timer .toggle-button:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        .pomodoro-timer h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: calc(var(--spacing-unit) * 0.3);
+        }
+
+        .pomodoro-timer .timer-display {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: calc(var(--spacing-unit) * 0.3);
+        }
+
+        .pomodoro-timer input {
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 0.4);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: calc(var(--spacing-unit) * 0.3);
+        }
+
+        .pomodoro-timer input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+
+        .pomodoro-timer .timer-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--spacing-unit) * 0.3);
+        }
+
+        .pomodoro-timer button {
+            padding: calc(var(--spacing-unit) * 0.4);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .pomodoro-timer button:hover, .pomodoro-timer button:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        /* ===== Flashcard Modal ===== */
+        .flashcard-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: calc(var(--spacing-unit) * 1.5);
+            width: 100%;
+            max-width: 32rem;
+            backdrop-filter: blur(10px);
+            display: grid;
+            gap: var(--spacing-unit);
+        }
+
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .flip-card {
+            perspective: 1000px;
+            height: 16rem;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-unit);
+            color: var(--text-light);
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            background: var(--input-bg);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: calc(var(--spacing-unit) * 0.5);
+        }
+
+        .modal-buttons button, .modal-content .close-button {
+            padding: calc(var(--spacing-unit) * 0.7);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .modal-buttons button:hover, .modal-buttons button:focus,
+        .modal-content .close-button:hover, .modal-content .close-button:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        .modal-content .close-button {
+            width: 100%;
+            background: var(--accent-color);
+        }
+
+        .modal-content .close-button:hover, .modal-content .close-button:focus {
+            background: #ff4d4d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ===== Responsive Adjustments ===== */
+        @media (max-width: 600px) {
+            .container {
+                padding: var(--spacing-unit);
+            }
+
+            .deck-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pomodoro-timer {
+                width: 10rem;
+                bottom: calc(var(--spacing-unit) * 0.5);
+                right: calc(var(--spacing-unit) * 0.5);
+                padding: calc(var(--spacing-unit) * 0.5);
+            }
+
+            .pomodoro-timer h5 {
+                font-size: 0.9rem;
+            }
+
+            .pomodoro-timer .timer-display {
+                font-size: 1rem;
+            }
+
+            .pomodoro-timer input {
+                font-size: 0.8rem;
+                padding: calc(var(--spacing-unit) * 0.3);
+            }
+
+            .pomodoro-timer button {
+                font-size: 0.8rem;
+                padding: calc(var(--spacing-unit) * 0.3);
+            }
+
+            .modal-content {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .section h2 {
+                font-size: 1.5rem;
+            }
+
+            .deck-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .form-group input, .form-group select, .form-group textarea {
+                font-size: 0.9rem;
+            }
+
+            .pomodoro-timer {
+                width: 8rem;
+            }
+
+            .pomodoro-timer h5 {
+                font-size: 0.8rem;
+            }
+
+            .pomodoro-timer .timer-display {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pomodoro Timer -->
+    <div class="pomodoro-timer collapsed" aria-label="Pomodoro Timer" id="pomodoro-timer">
+        <button class="toggle-button" onclick="togglePomodoro()" aria-label="Expand Pomodoro timer">🍅 Expand</button>
+        <h5>🍅 Pomodoro</h5>
+        <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
+        <input type="number" id="customMinutes" class="form-input" min="1" max="60" value="25" aria-label="Set timer duration in minutes">
+        <div class="timer-buttons">
+            <button onclick="startTimer()" aria-label="Start Pomodoro timer">Start</button>
+            <button onclick="resetTimer()" aria-label="Reset Pomodoro timer">Reset</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1>📚 Flashcards - StudyRPG</h1>
+            <p>Manage and study your flashcard decks</p>
+        </header>
+
+        <!-- Deck List -->
+        <section class="section" aria-label="Flashcard Decks">
+            <h2>Your Flashcard Decks</h2>
+            <div class="deck-grid">
+                {% for deck in flashcard_sets %}
+                    <div class="deck-card" role="article">
+                        <h3>{{ deck.name }}</h3>
+                        <p>Topic: {{ deck.topic }}</p>
+                        <p>Created: {{ deck.created_at.strftime('%Y-%m-%d') }}</p>
+                        <button onclick="viewDeck( deck.id , '{{ deck.name | escapejs }}')" aria-label="View cards for {{ deck.name }}">View Cards</button>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if not flashcard_sets %}
+                <p class="text-muted text-center">No decks found. Create one below!</p>
+            {% endif %}
+        </section>
+
+        <!-- Manual Deck Creation -->
+        <section class="section" aria-label="Create Deck">
+            <h2>✍️ Create Your Own Deck</h2>
+            <form id="create-deck-form" class="form-grid">
+                <div class="form-group">
+                    <label for="deck-name">Deck Name</label>
+                    <input type="text" id="deck-name" name="name" required aria-required="true" placeholder="e.g., Math Basics">
+                </div>
+                <div class="form-group">
+                    <label for="deck-topic">Topic</label>
+                    <input type="text" id="deck-topic" name="topic" required aria-required="true" placeholder="e.g., Algebra">
+                </div>
+                <div class="form-submit">
+                    <div id="deck-spinner" class="spinner" aria-label="Creating deck"></div>
+                    <button type="submit" aria-label="Create deck">Create Deck</button>
+                </div>
+            </form>
+            <div id="deck-status" class="status hidden" role="alert"></div>
+        </section>
+
+        <!-- Manual Flashcard Creation -->
+        <section class="section" aria-label="Add Flashcard">
+            <h2>🎴 Add Flashcard</h2>
+            <form id="create-flashcard-form" class="form-grid">
+                <div class="form-group">
+                    <label for="deck-id">Select Deck</label>
+                    <select id="deck-id" name="deck_id" required aria-required="true">
+                        {% for deck in flashcard_sets %}
+                            <option value="{{ deck.id }}">{{ deck.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="question">Question</label>
+                    <input type="text" id="question" name="question" required aria-required="true" placeholder="e.g., What is 2+2?">
+                </div>
+                <div class="form-group">
+                    <label for="answer">Answer</label>
+                    <input type="text" id="answer" name="answer" required aria-required="true" placeholder="e.g., 4">
+                </div>
+                <div class="form-submit">
+                    <div id="flashcard-spinner" class="spinner" aria-label="Adding flashcard"></div>
+                    <button type="submit" aria-label="Add flashcard">Add Flashcard</button>
+                </div>
+            </form>
+            <div id="flashcard-status" class="status hidden" role="alert"></div>
+        </section>
+
+        <!-- Generate Flashcards -->
+        <section class="section" aria-label="Generate Flashcards">
+            <h2>🤖 Generate Flashcards</h2>
+            <form id="generate-flashcards-form" class="form-grid">
+                <div class="form-group">
+                    <label for="gen-deck-name">Deck Name</label>
+                    <input type="text" id="gen-deck-name" name="name" required aria-required="true" placeholder="e.g., AI-Generated Deck">
+                </div>
+                <div class="form-group">
+                    <label for="gen-deck-topic">Topic</label>
+                    <input type="text" id="gen-deck-topic" name="topic" required aria-required="true" placeholder="e.g., History">
+                </div>
+                <div class="form-group">
+                    <label for="gen-cards">Cards (JSON: [{question, answer}, ...])</label>
+                    <textarea id="gen-cards" name="cards" rows="6" required aria-required="true" placeholder='[{"question": "What is 2+2?", "answer": "4"}, {"question": "What is the capital of France?", "answer": "Paris"}]'></textarea>
+                </div>
+                <div class="form-submit">
+                    <div id="generate-spinner" class="spinner" aria-label="Generating flashcards"></div>
+                    <button type="submit" aria-label="Generate flashcards">Generate Flashcards</button>
+                </div>
+            </form>
+            <div id="generate-status" class="status hidden" role="alert"></div>
+        </section>
+
+        <!-- Flashcard Viewer Modal -->
+        <div id="flashcard-modal" class="flashcard-modal hidden" role="dialog" aria-labelledby="deck-title" tabindex="-1">
+            <div class="modal-content">
+                <h3 id="deck-title"></h3>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <p id="flashcard-question" aria-live="polite"></p>
+                        </div>
+                        <div class="flip-card-back">
+                            <p id="flashcard-answer" aria-live="polite"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button onclick="previousCard()" aria-label="Previous card">Previous</button>
+                    <button onclick="flipCard()" aria-label="Flip card">Flip</button>
+                    <button onclick="nextCard()" aria-label="Next card">Next</button>
+                </div>
+                <button class="close-button" onclick="closeFlashcardModal()" aria-label="Close modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDeckId = null;
+        let currentCardIndex = 0;
+        let cards = [];
+
+        // Pomodoro Timer
+        let timerInterval;
+        function togglePomodoro() {
+            const timer = document.getElementById('pomodoro-timer');
+            timer.classList.toggle('collapsed');
+            const toggleButton = timer.querySelector('.toggle-button');
+            toggleButton.textContent = timer.classList.contains('collapsed') ? '🍅 Expand' : '🍅 Collapse';
+            toggleButton.setAttribute('aria-label', timer.classList.contains('collapsed') ? 'Expand Pomodoro timer' : 'Collapse Pomodoro timer');
+        }
+
+        async function startTimer() {
+            const minutes = parseInt(document.getElementById('customMinutes').value) || 25;
+            try {
+                await fetch('/pomodoro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ duration: minutes })
+                });
+            } catch (error) {
+                console.error('Error logging pomodoro session:', error);
+            }
+            let time = minutes * 60;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(time / 60);
+                const secs = time % 60;
+                document.getElementById('timerDisplay').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if (time <= 0) clearInterval(timerInterval);
+                time--;
+            }, 1000);
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timerDisplay').textContent = '25:00';
+            document.getElementById('customMinutes').value = 25;
+        }
+
+        // Deck and Card Management
+        async function viewDeck(deckId, deckName) {
+            currentDeckId = deckId;
+            currentCardIndex = 0;
+            try {
+                document.getElementById('flashcard-modal').focus();
+                const response = await fetch(`/flashcards/${deckId}/cards`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (!response.ok) throw new Error('Failed to fetch cards');
+                cards = await response.json();
+                if (cards.length === 0) {
+                    alert('No flashcards in this deck.');
+                    return;
+                }
+                document.getElementById('deck-title').textContent = `Deck: ${deckName}`;
+                updateCard();
+                document.getElementById('flashcard-modal').classList.remove('hidden');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function updateCard() {
+            if (cards.length === 0) return;
+            const card = cards[currentCardIndex];
+            document.getElementById('flashcard-question').textContent = card.question;
+            document.getElementById('flashcard-answer').textContent = card.answer;
+            document.querySelector('.flip-card-inner').classList.remove('flipped');
+        }
+
+        function flipCard() {
+            document.querySelector('.flip-card').classList.toggle('flipped');
+        }
+
+        function previousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCard();
+            }
+        }
+
+        function nextCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                updateCard();
+            }
+        }
+
+        function closeFlashcardModal() {
+            document.getElementById('flashcard-modal').classList.add('hidden');
+            cards = [];
+            currentCardIndex = 0;
+        }
+
+        // Form Submissions
+        document.getElementById('create-deck-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const spinner = document.getElementById('deck-spinner');
+            const status = document.getElementById('deck-status');
+            spinner.style.display = 'block';
+            status.classList.add('hidden');
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                topic: formData.get('topic')
+            };
+            try {
+                const response = await fetch('/flashcards/sets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to create deck');
+                status.textContent = 'Deck created successfully!';
+                status.classList.remove('hidden', 'error');
+                status.classList.add('status');
+                e.target.reset();
+                window.location.reload();
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+                status.classList.remove('hidden', 'status');
+                status.classList.add('error');
+                spinner.style.display = 'none';
+            }
+        });
+
+        document.getElementById('create-flashcard-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const spinner = document.getElementById('flashcard-spinner');
+            const status = document.getElementById('flashcard-status');
+            spinner.style.display = 'block';
+            status.classList.add('hidden');
+            const formData = new FormData(e.target);
+            const data = {
+                deck_id: parseInt(formData.get('deck_id')),
+                question: formData.get('question'),
+                answer: formData.get('answer')
+            };
+            try {
+                const response = await fetch('/flashcards/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to create flashcard');
+                status.textContent = 'Flashcard added successfully!';
+                status.classList.remove('hidden', 'error');
+                status.classList.add('status');
+                e.target.reset();
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+                status.classList.remove('hidden', 'status');
+                status.classList.add('error');
+            } finally {
+                spinner.style.display = 'none';
+            }
+        });
+
+        document.getElementById('generate-flashcards-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const spinner = document.getElementById('generate-spinner');
+            const status = document.getElementById('generate-status');
+            spinner.style.display = 'block';
+            status.classList.add('hidden');
+            const formData = new FormData(e.target);
+            let cards;
+            try {
+                cards = JSON.parse(formData.get('cards'));
+                if (!Array.isArray(cards)) throw new Error('Cards must be a JSON array');
+            } catch (error) {
+                status.textContent = 'Invalid JSON format for cards';
+                status.classList.remove('hidden', 'status');
+                status.classList.add('error');
+                spinner.style.display = 'none';
+                return;
+            }
+            const data = {
+                name: formData.get('name'),
+                topic: formData.get('topic'),
+                cards: cards
+            };
+            try {
+                const response = await fetch('/flashcards/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error('Failed to generate flashcards');
+                status.textContent = 'Flashcards generated successfully!';
+                status.classList.remove('hidden', 'error');
+                status.classList.add('status');
+                e.target.reset();
+                window.location.reload();
+            } catch (error) {
+                status.textContent = 'Error: ' + error.message;
+                status.classList.remove('hidden', 'status');
+                status.classList.add('error');
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Keyboard Navigation for Modal
+        document.getElementById('flashcard-modal').addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') previousCard();
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                flipCard();
+            }
+            if (e.key === 'Escape') closeFlashcardModal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Badges</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 40%, #e52d27 70%, #ffb347 100%);
+      padding: 2rem 1rem;
+      margin: 0;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #fff;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    .badge-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 900px;
+      width: 100%;
+    }
+    .badge {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      flex: 1 1 120px;
+      max-width: 150px;
+      min-width: 120px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .badge:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .badge img {
+      max-width: 60px;
+      height: auto;
+      margin-bottom: 0.5rem;
+    }
+    .badge h4 {
+      margin: 0;
+      font-weight: 600;
+      color: #333;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 400px) {
+      .badge {
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Badges</h1>
+  <div class="badge-container" id="badges"></div>
+
+  <script>
+    const badges = [
+      {
+        name: "First Login",
+        icon: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png"
+      },
+      {
+        name: "Quest Master",
+        icon: "https://cdn-icons-png.flaticon.com/512/616/616408.png"
+      }
+    ];
+
+    const container = document.getElementById('badges');
+    badges.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'badge';
+      div.innerHTML = `
+        <img src="${b.icon}" alt="${b.name}">
+        <h4>${b.name}</h4>
+      `;
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>

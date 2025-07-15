@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - StudyRPG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ===== CSS Variables for Consistency ===== */
+        :root {
+            --primary-color: #1e3c72;
+            --accent-color: #e52d27;
+            --gradient: linear-gradient(135deg, #1a1a2e 0%, #1e3c72 25%, #e52d27 60%, #ffb347 85%, #6df0ff 100%);
+            --spacing-unit: 1rem;
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.07);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --button-bg: #2a5298;
+            --button-hover: #3b6ab4;
+            --table-header-bg: #2a5298;
+            --table-row-bg: rgba(255, 255, 255, 0.05);
+            --table-row-hover: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== Base Styling ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            min-height: 100vh;
+            color: var(--text-light);
+            display: grid;
+            place-items: center;
+            padding: var(--spacing-unit);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== Main Container ===== */
+        .container {
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: calc(var(--spacing-unit) * 2);
+            max-width: 80rem;
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 2);
+        }
+
+        /* ===== Header ===== */
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 var(--accent-color);
+        }
+
+        /* ===== Analytics Section ===== */
+        .analytics-section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: calc(var(--spacing-unit) * 1.5);
+            backdrop-filter: blur(10px);
+            display: grid;
+            gap: calc(var(--spacing-unit) * 1.5);
+        }
+
+        /* ===== Filter Form ===== */
+        .filter-form {
+            display: grid;
+            grid-template-columns: auto auto auto auto;
+            gap: calc(var(--spacing-unit) * 0.5);
+            align-items: center;
+        }
+
+        .form-group {
+            display: grid;
+            gap: calc(var(--spacing-unit) * 0.3);
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: calc(var(--spacing-unit) * 0.7);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+
+        .form-buttons button, .form-buttons a {
+            padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.2);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .form-buttons button:hover, .form-buttons button:focus,
+        .form-buttons a:hover, .form-buttons a:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+
+        /* ===== Chart ===== */
+        .chart-container {
+            max-width: 100%;
+            height: 20rem;
+            margin-bottom: calc(var(--spacing-unit) * 1.5);
+        }
+
+        /* ===== Table ===== */
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .analytics-table thead {
+            background: var(--table-header-bg);
+        }
+
+        .analytics-table th {
+            padding: calc(var(--spacing-unit) * 0.7);
+            color: var(--text-light);
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .analytics-table tbody tr {
+            background: var(--table-row-bg);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .analytics-table tbody tr:hover {
+            background: var(--table-row-hover);
+        }
+
+        .analytics-table td {
+            padding: calc(var(--spacing-unit) * 0.7);
+            color: var(--text-light);
+        }
+
+        /* ===== Responsive Adjustments ===== */
+        @media (max-width: 600px) {
+            .container {
+                padding: var(--spacing-unit);
+            }
+
+            .filter-form {
+                grid-template-columns: 1fr;
+                gap: calc(var(--spacing-unit) * 0.75);
+            }
+
+            .form-group label {
+                font-size: 0.8rem;
+            }
+
+            .form-group input {
+                font-size: 0.9rem;
+            }
+
+            .form-buttons button, .form-buttons a {
+                font-size: 0.9rem;
+                padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit));
+            }
+
+            .analytics-table {
+                font-size: 0.8rem;
+            }
+
+            .analytics-table th, .analytics-table td {
+                padding: calc(var(--spacing-unit) * 0.5);
+            }
+
+            .chart-container {
+                height: 15rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .analytics-table {
+                font-size: 0.7rem;
+            }
+
+            .analytics-table th, .analytics-table td {
+                padding: calc(var(--spacing-unit) * 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📊 Analytics - StudyRPG</h1>
+        </header>
+
+        <section class="analytics-section" aria-label="Analytics Data">
+            <div class="filter-form">
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" value="{{ start_date }}" aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" value="{{ end_date }}" aria-required="true">
+                </div>
+                <div class="form-buttons">
+                    <button id="updateBtn" aria-label="Update analytics">Update</button>
+                    <a id="downloadLink" href="/analytics/download?start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Download analytics as CSV">Download CSV</a>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="analyticsTable" aria-live="polite">
+                    {% for record in analytics %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.metric }}</td>
+                        <td>{{ record.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        let ws = null;
+        const userId = user_id ;
+        let chart = null;
+
+        async function getToken() {
+            const response = await fetch('/auth/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            const data = await response.json();
+            return data.access_token;
+        }
+
+        async function initializeWebSocket() {
+            const token = await getToken();
+            ws = new WebSocket(`ws://localhost:8000/analytics/ws/analytics?token=${token}`);
+            ws.onopen = () => console.log('Analytics WebSocket connected');
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'analytics_update') {
+                    updateAnalyticsTable(data.analytics);
+                    updateChart(data.analytics);
+                } else if (data.type === 'error') {
+                    console.error(data.message);
+                }
+            };
+            ws.onclose = () => console.log('Analytics WebSocket disconnected');
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            ws.send(JSON.stringify({ type: 'request_update', start_date: startDate, end_date: endDate }));
+        }
+
+        function updateAnalyticsTable(analytics) {
+            const tableBody = document.getElementById('analyticsTable');
+            tableBody.innerHTML = '';
+            analytics.forEach(record => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td>${record.metric}</td>
+                        <td>${record.value}</td>
+                    </tr>`;
+            });
+        }
+
+        function updateChart(analytics) {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            const datasets = {};
+            analytics.forEach(record => {
+                if (!datasets[record.metric]) {
+                    datasets[record.metric] = { label: record.metric, data: [], borderColor: getRandomColor(), fill: false };
+                }
+                datasets[record.metric].data.push({ x: record.date, y: record.value });
+            });
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: Object.values(datasets)
+                },
+                options: {
+                    scales: {
+                        x: { type: 'time', time: { unit: 'day' } },
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#ffffff' } },
+                        tooltip: { backgroundColor: 'rgba(255, 255, 255, 0.8)', titleColor: '#000000', bodyColor: '#000000' }
+                    },
+                    elements: {
+                        line: { tension: 0.4 },
+                        point: { radius: 5, hoverRadius: 7 }
+                    }
+                }
+            });
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            document.getElementById('downloadLink').href = `/analytics/download?start_date=${startDate}&end_date=${endDate}`;
+            if (ws) {
+                ws.send(JSON.stringify({ type: 'request_update', start_date: startDate, end_date: endDate }));
+            }
+        });
+
+        initializeWebSocket();
+    </script>
+</body>
+</html>

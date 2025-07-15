@@ -1,0 +1,74 @@
+[
+  {
+    "title": "Read a chapter of your textbook",
+    "description": "Complete one chapter.",
+    "xp_reward": 10,
+    "quest_type": "daily"
+  },
+  {
+    "title": "Take notes for 1 hour",
+    "description": "Focus on note-taking.",
+    "xp_reward": 15,
+    "quest_type": "daily"
+  },
+  {
+    "title": "Solve 5 practice problems",
+    "description": "Practice problem-solving.",
+    "xp_reward": 20,
+    "quest_type": "daily"
+  },
+  {
+    "title": "Review and summarize key concepts",
+    "description": "Summarize what you learned.",
+    "xp_reward": 15,
+    "quest_type": "daily"
+  },
+  {
+    "title": "Complete a practice exam",
+    "description": "Test your knowledge.",
+    "xp_reward": 50,
+    "quest_type": "weekly"
+  },
+  {
+    "title": "Attend a study group session",
+    "description": "Collaborate with peers.",
+    "xp_reward": 30,
+    "quest_type": "weekly"
+  },
+  {
+    "title": "Write a summary essay on a topic",
+    "description": "Deepen your understanding.",
+    "xp_reward": 40,
+    "quest_type": "weekly"
+  },
+  {
+    "title": "Create a mind map of the chapter",
+    "description": "Visualize your learning.",
+    "xp_reward": 25,
+    "quest_type": "weekly"
+  },
+  {
+    "title": "Finish a course module",
+    "description": "Complete all lessons in a module.",
+    "xp_reward": 100,
+    "quest_type": "monthly"
+  },
+  {
+    "title": "Present a topic to a peer group",
+    "description": "Teach others.",
+    "xp_reward": 75,
+    "quest_type": "monthly"
+  },
+  {
+    "title": "Achieve a high score on a major test",
+    "description": "Score above 90%.",
+    "xp_reward": 150,
+    "quest_type": "monthly"
+  },
+  {
+    "title": "Create a comprehensive study guide",
+    "description": "Summarize the whole module.",
+    "xp_reward": 90,
+    "quest_type": "monthly"
+  }
+]

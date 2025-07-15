@@ -1,0 +1,29 @@
+{
+  "xp_thresholds": [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500],
+  "level_rewards": {
+    "1": "A favorite snack or treat",
+    "2": "A day off from studying",
+    "3": "A new study tool or resource",
+    "4": "A fun outing or activity"
+  },
+  "attributes": ["memory", "focus", "comprehension", "speed"],
+  "pomodoro": {
+    "work_minutes": 25,
+    "break_minutes": 5,
+    "cycles": 4,
+    "xp_bonus_per_session": 5
+  },
+  "quest_types": ["daily", "weekly", "monthly"],
+  "boss_battles": [
+    {
+      "title": "Midterm Exam",
+      "xp_reward": 120,
+      "required_score": 70
+    },
+    {
+      "title": "Final Boss: Comprehensive Test",
+      "xp_reward": 200,
+      "required_score": 80
+    }
+  ]
+}

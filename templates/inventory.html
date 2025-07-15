@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+  margin: 0;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Inventory Grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* Item Card */
+.item-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.item-card img {
+  max-width: 80px;
+  height: auto;
+  margin-bottom: 0.75rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+  h1 {
+    font-size: 1.75rem;
+  }
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+  .item-card img {
+    max-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 0.5rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  .item-card {
+    padding: 0.75rem;
+  }
+  .item-card img {
+    max-width: 50px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <h1>Your Inventory</h1>
+  <div class="inventory-grid" id="inventory"></div>
+
+  <script>
+const sampleItems = [
+  {
+    name: "XP Potion",
+    image: "https://cdn.vectorstock.com/i/preview-1x/63/55/xp-boost-potion-game-fantasy-magic-bottle-icon-vector-49166355.jpg",
+    description: "Grants 50 XP"
+  },
+  {
+    name: "Study Token",
+    image: "https://cdn-icons-png.flaticon.com/512/138/138281.png",
+    description: "Used in the Shop"
+  }
+];
+
+    const container = document.getElementById('inventory');
+    sampleItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <img src="${item.image}" alt="${item.name}">
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+      `;
+      container.appendChild(card);
+    });
+  </script>
+</body>
+</html>
