@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Test - StudyRPG</title>
+    <style>
+        body {
+           background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-display {
+            background: #e52d27;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .input-rpg, .btn-rpg {
+            padding: 10px 15px;
+            border: 2px solid #1e3c72;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .input-rpg {
+            background: white;
+            color: #1e3c72;
+        }
+
+        .btn-rpg {
+            background: #1e3c72;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-rpg:hover {
+            background: #2a5298;
+            transform: translateY(-2px);
+        }
+
+        .question {
+            background: #f8f8ff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #1e3c72;
+            box-shadow: 0 2px 6px rgba(30, 60, 114, 0.1);
+        }
+
+        .options label {
+            display: block;
+            padding: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .options label:hover {
+            background: #e3f0fc;
+        }
+
+        .test-selection {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        #testResults, #resultsArea {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        #submitTest {
+            background: #e52d27;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #submitTest:hover {
+            background: #d12320;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Practice Test - StudyRPG</h1>
+        
+<audio src="../static/sounds/Dark Descent.mp3" autoplay controls></audio>
+        
+        <div class="test-controls">
+            <select id="materialSelect" class="input-rpg">
+                {% for material in materials %}
+                <option value="{{ material.id }}">{{ material.title }}</option>
+                {% endfor %}
+            </select>
+            <select id="testType" class="input-rpg">
+                <option value="ai">AI-Generated Test</option>
+                <option value="custom">Custom Test</option>
+            </select>
+            <button id="startTest" class="btn-rpg">
+                <i class="fas fa-play"></i> Start Test
+            </button>
+            <button onclick="location.reload()" class="btn-rpg">
+                <i class="fas fa-sync-alt"></i> New Test
+            </button>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timerDisplay" class="timer-display hidden">
+            Time: <span id="testTimer">30:00</span>
+        </div>
+
+        <!-- Test Area -->
+        <div id="testArea" class="hidden">
+            <div id="questionsContainer"></div>
+            <button id="submitTest">Submit Test</button>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsArea" class="hidden">
+            <h3>Your Score: <span id="testScore"></span></h3>
+            <div id="answerReview"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTest = null;
+        let currentAttempt = null;
+        let timerInterval = null;
+
+        // Start test handler
+        document.getElementById('startTest').addEventListener('click', async () => {
+            const testType = document.getElementById('testType').value;
+            const materialId = document.getElementById('materialSelect').value;
+            
+            try {
+                if (testType === 'ai') {
+                    const testId = await generateAITest(materialId);
+                    if (testId) {
+                        await loadAndDisplayTest(testId);
+                    }
+                } else {
+                    const response = await fetch(`/tests/create?type=${testType}`);
+                    const test = await response.json();
+                    
+                    const attempt = await startTestAttempt(test.id);
+                    displayTest(test, attempt);
+                }
+            } catch (error) {
+                console.error('Error starting test:', error);
+                alert('Failed to start test. Please try again.');
+            }
+        });
+
+        // Generate AI test
+        async function generateAITest(materialId) {
+            try {
+                const response = await fetch('/ai/generate-timed-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        material_id: parseInt(materialId),
+                        duration: 30
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to generate test');
+                
+                const result = await response.json();
+                if (result.test_id) {
+                    window.location.href = `/tests/${result.test_id}`; // Redirect to test page
+                }
+                return result.test_id;
+            } catch (error) {
+                console.error("Test generation error:", error);
+                alert("Failed to generate test. Please try again.");
+                return null;
+            }
+        }
+
+        // Load and display test
+        async function loadAndDisplayTest(testId) {
+            try {
+                const response = await fetch(`/tests/${testId}`);
+                const test = await response.json();
+                
+                const attempt = await startTestAttempt(testId);
+                displayTest(test, attempt);
+            } catch (error) {
+                console.error('Error loading test:', error);
+            }
+        }
+
+        // Start test attempt
+        async function startTestAttempt(testId) {
+            const response = await fetch(`/tests/${testId}/attempt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        }
+
+        // Display test
+        function displayTest(test, attempt) {
+            currentTest = test;
+            currentAttempt = attempt;
+            
+            // Hide controls and show test area
+            document.querySelector('.test-controls').classList.add('hidden');
+            document.getElementById('testArea').classList.remove('hidden');
+            
+            // Clear previous questions
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            // Display questions
+            test.questions.forEach((q, i) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <h4>${i+1}. ${q.question_text || q.question}</h4>
+                    <div class="options">
+                        ${renderQuestionOptions(q, i)}
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+            });
+            
+            // Start timer if timed test
+            if(test.time_limit) {
+                startTimer(test.time_limit);
+            }
+        }
+
+        // Render question options
+        function renderQuestionOptions(question, questionIndex) {
+            const options = question.options || ['Option A', 'Option B', 'Option C', 'Option D'];
+            return options.map((option, i) => `
+                <label>
+                    <input type="radio" name="q${questionIndex}" value="${i}">
+                    ${option}
+                </label>
+            `).join('');
+        }
+
+        // Start timer
+        function startTimer(minutes) {
+            let timeLeft = minutes * 60;
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerSpan = document.getElementById('testTimer');
+            
+            timerDisplay.classList.remove('hidden');
+            
+            timerInterval = setInterval(() => {
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerSpan.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitTest();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Submit test
+        document.getElementById('submitTest').addEventListener('click', submitTest);
+
+        function submitTest() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            const answers = [];
+            const questions = currentTest.questions;
+            
+            questions.forEach((_, i) => {
+                const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                answers.push(selectedOption ? parseInt(selectedOption.value) : null);
+            });
+            
+            // Calculate score
+            let score = 0;
+            questions.forEach((q, i) => {
+                const correctAnswer = q.correct_answer || 1; // Default to option 1 if not specified
+                if (answers[i] === correctAnswer) {
+                    score++;
+                }
+            });
+            
+            // Display results
+            displayResults(score, questions.length, answers);
+        }
+
+        // Display results
+        function displayResults(score, total, answers) {
+            document.getElementById('testArea').classList.add('hidden');
+            document.getElementById('resultsArea').classList.remove('hidden');
+            
+            document.getElementById('testScore').textContent = `${score}/${total}`;
+            
+            // Show answer review
+            const reviewDiv = document.getElementById('answerReview');
+            reviewDiv.innerHTML = '<h4>Answer Review:</h4>';
+            
+            currentTest.questions.forEach((q, i) => {
+                const userAnswer = answers[i];
+                const correctAnswer = q.correct_answer || 1;
+                const isCorrect = userAnswer === correctAnswer;
+                
+                reviewDiv.innerHTML += `
+                    <div class="question" style="border-left-color: ${isCorrect ? '#4CAF50' : '#f44336'}">
+                        <p><strong>Q${i+1}:</strong> ${q.question_text || q.question}</p>
+                        <p><strong>Your answer:</strong> ${userAnswer !== null ? q.options[userAnswer] : 'Not answered'}</p>
+                        <p><strong>Correct answer:</strong> ${q.options[correctAnswer]}</p>
+                        <p style="color: ${isCorrect ? '#4CAF50' : '#f44336'}">
+                            ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                        </p>
+                    </div>
+                `;
+            });
+        }
+
+        // Fallback for demo purposes
+        document.addEventListener("DOMContentLoaded", function() {
+            // If no materials are loaded, create a demo test
+            if (!document.getElementById('materialSelect').children.length) {
+                const demoTest = {
+                    id: 'demo',
+                    topic: "Mathematics - Algebra",
+                    time_limit: 5, // 5 minutes for demo
+                    questions: [
+                        {
+                            question: "What is 2 + 2?",
+                            options: ["3", "4", "5", "6"],
+                            correct_answer: 1
+                        },
+                        {
+                            question: "What is the square root of 16?",
+                            options: ["2", "4", "8", "16"],
+                            correct_answer: 1
+                        },
+                        {
+                            question: "Solve for x: 2x + 4 = 10",
+                            options: ["x = 2", "x = 3", "x = 4", "x = 5"],
+                            correct_answer: 1
+                        }
+                    ]
+                };
+                
+                // Add demo option
+                const option = document.createElement('option');
+                option.value = 'demo';
+                option.textContent = 'Demo Test';
+                document.getElementById('materialSelect').appendChild(option);
+                
+                // Override start test for demo
+                document.getElementById('startTest').addEventListener('click', function() {
+                    displayTest(demoTest, { id: 'demo-attempt' });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

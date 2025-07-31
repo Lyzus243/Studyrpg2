@@ -1,439 +1,387 @@
-
-
-from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
-from app.models import User
-from bcrypt import checkpw
-from sqlmodel import Session, select
-from app.models import User, PasswordReset, StudyGroup, GroupMember, GroupQuest, GroupBossBattle, Quest, Skill, UserSkill, MemoryTrainingSession, PomodoroSession, UserAnalytics, CourseMaterial, MaterialTestAttempt, BossBattle, FlashcardDeck, Flashcard, GroupMessage
-from app.schemas import UserCreate, StudyGroupCreate, QuestCreate, QuestUpdate, BossBattleCreate, GroupBossBattleCreate, SkillCreate, FlashcardCreate
-from fastapi import HTTPException
-from datetime import datetime, timedelta, date
-from typing import List, Optional
-from app.database import engine
-from bcrypt import hashpw, checkpw, gensalt
-import json
-
-from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
-from app.models import User
-from app.schemas import UserCreate
-from bcrypt import hashpw, gensalt
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
+from app import models, schemas
 from datetime import datetime
+from typing import List, Optional
+import json
+import logging
 
-async def create_user(db: AsyncSession, user: UserCreate):
-    """Create a new user with hashed password."""
-    hashed_password = hashpw(user.password.encode('utf-8'), gensalt()).decode('utf-8')
-    db_user = User(
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+from sqlalchemy.ext.asyncio import AsyncSession
+from app import models
+from app.schemas import SkillCreate, ItemBase
+
+async def create_skill(db: AsyncSession, skill: SkillCreate):
+    db_skill = models.Skill(**skill.dict())
+    db.add(db_skill)
+    await db.commit()
+    await db.refresh(db_skill)
+    return db_skill
+
+async def create_item(db: AsyncSession, item: ItemBase):
+    db_item = models.Item(**item.dict())
+    db.add(db_item)
+    await db.commit()
+    await db.refresh(db_item)
+    return db_item
+
+async def create_user(db: AsyncSession, user: schemas.UserCreate) -> models.User:
+    db_user = models.User(
         username=user.username,
-        email=user.email.lower(),
-        hashed_password=hashed_password,
-        avatar_url=user.avatar_url or None,
-        created_at=datetime.utcnow(),
+        email=user.email,
+        hashed_password=user.hashed_password,
         is_verified=False,
-        is_active=True
+        xp=0,
+        skill_points=100,  # Changed from 0 to 100
+        streak=0,
+        level=1,
+        currency=100
     )
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
+    logger.info(f"Created user {db_user.id}")
     return db_user
 
-def record_user_activity(db: Session, user_id: int):
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    today = datetime.utcnow().date()
-    if user.last_login:
-        last_login_date = user.last_login.date()
-        if last_login_date == today:
-            pass
-        elif last_login_date == today - timedelta(days=1):
-            user.streak += 1
-        else:
-            user.streak = 1
-    else:
-        user.streak = 1
-    user.last_login = datetime.utcnow()
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
-
-async def reset_inactive_streaks(db: Session):
-    users = db.execute(select(User).where(User.last_login < datetime.utcnow() - timedelta(days=1))).all()
-    for user in users:
-        user.streak = 0
-    db.commit()
-
-def get_user(db: Session, user_id: int):
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-def get_user_by_email(db: Session, email: str):
-    return db.execute(select(User).where(User.email == email.lower())).first()
-
-async def get_user_by_username(db: AsyncSession, username: str):
-    result = await db.execute(select(User).where(User.username == username))
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[models.User]:
+    result = await db.execute(select(models.User).where(models.User.username == username))
     return result.scalars().first()
 
-async def authenticate_user(db: AsyncSession, username: str, password: str):
-    user = await get_user_by_username(db, username)
-    if not user or not checkpw(password.encode('utf-8'), user.hashed_password.encode('utf-8')):
-        return None
-    return user
-def get_password_hash(password: str) -> str:
-    return hashpw(password.encode('utf-8'), gensalt()).decode('utf-8')
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[models.User]:
+    result = await db.execute(select(models.User).where(models.User.email == email))
+    return result.scalars().first()
 
-def create_user(db: Session, user: UserCreate):
-    if get_user_by_email(db, user.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    if get_user_by_username(db, user.username):
-        raise HTTPException(status_code=400, detail="Username already registered")
-    hashed_password = get_password_hash(user.password)
-    user_db = User(
-        username=user.username,
-        email=user.email.lower(),
-        hashed_password=hashed_password,
-        avatar_url=user.avatar_url
-    )
-    db.add(user_db)
-    db.commit()
-    db.refresh(user_db)
-    return user_db
+async def get_user_by_id(db: AsyncSession, user_id: int) -> Optional[models.User]:
+    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    return result.scalars().first()
 
-def update_user(db: Session, user_id: int, user_data: dict):
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    for key, value in user_data.items():
-        if value is not None:
-            if key == "password":
-                value = get_password_hash(value)
-            setattr(user, key, value)
+async def update_user(db: AsyncSession, user: models.User, user_update: schemas.UserUpdate) -> models.User:
+    if user_update.username:
+        user.username = user_update.username
+    if user_update.email:
+        user.email = user_update.email
+    if user_update.avatar_url:
+        user.avatar_url = user_update.avatar_url
+    user.last_active = datetime.utcnow()
     db.add(user)
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
+    logger.info(f"Updated user {user.id}")
     return user
 
-def get_study_group(db: Session, group_id: int):
-    group = db.get(StudyGroup, group_id)
-    if not group:
-        raise HTTPException(status_code=404, detail="Study group not found")
-    return group
-
-def create_study_group(db: Session, group: StudyGroupCreate, creator_id: int):
-    group_db = StudyGroup(**group.dict(), creator_id=creator_id, current_members=1)
-    db.add(group_db)
-    db.commit()
-    db.refresh(group_db)
-    db.add(GroupMember(user_id=creator_id, group_id=group_db.id, role="creator"))
-    db.commit()
-    return group_db
-
-def update_study_group(db: Session, group_id: int, group_data: dict):
-    group = db.get(StudyGroup, group_id)
-    if not group:
-        raise HTTPException(status_code=404, detail="Study group not found")
-    for key, value in group_data.items():
-        if value is not None:
-            setattr(group, key, value)
-    db.add(group)
-    db.commit()
-    db.refresh(group)
-    return group
-
-def add_group_member(db: Session, group_id: int, user_id: int, role: str = "member"):
-    group = db.get(StudyGroup, group_id)
-    if not group:
-        raise HTTPException(status_code=404, detail="Study group not found")
-    if group.current_members >= group.max_members:
-        raise HTTPException(status_code=400, detail="Group is full")
-    if db.execute(select(GroupMember).where(GroupMember.group_id == group_id, GroupMember.user_id == user_id)).first():
-        raise HTTPException(status_code=400, detail="User already in group")
-    member = GroupMember(user_id=user_id, group_id=group_id, role=role)
-    group.current_members += 1
-    db.add(member)
-    db.add(group)
-    db.commit()
-    return member
-
-def get_study_groups(db: Session, user_id: int, query: Optional[str] = None, group_id: Optional[int] = None) -> List[StudyGroup]:
-    statement = select(StudyGroup).join(GroupMember).where(GroupMember.user_id == user_id)
-    if group_id:
-        statement = select(StudyGroup).where(StudyGroup.id == group_id)
-    elif query:
-        statement = select(StudyGroup).where(StudyGroup.name.ilike(f"%{query}%") | StudyGroup.description.ilike(f"%{query}%"))
-    groups = db.execute(statement).all()
-    for group in groups:
-        last_seen = db.execute(select(GroupMember.joined_at).where(GroupMember.group_id == group.id, GroupMember.user_id == user_id)).scalar() or datetime.min
-        group.unread_count = db.execute(select(GroupMessage).where(GroupMessage.group_id == group.id, GroupMessage.timestamp > last_seen)).count()
-    return groups
-
-
-from sqlmodel import Session
-from app.models import User
-import uuid
-def generate_reset_token(db: Session, user_id: int):
-    token = str(uuid.uuid4())
-    reset = PasswordReset(
-        user_id=user_id,
-        token=token,
-        created_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+async def create_study_group(db: AsyncSession, group: schemas.StudyGroupCreate, creator_id: int) -> models.StudyGroup:
+    db_group = models.StudyGroup(
+        name=group.name,
+        description=group.description,
+        creator_id=creator_id,
+        created_at=datetime.utcnow()
     )
-    db.add(reset)
-    db.commit()
-    db.refresh(reset)
-    return token
+    db.add(db_group)
+    await db.commit()
+    await db.refresh(db_group)
+    logger.info(f"Created study group {db_group.id}")
+    return db_group
 
-def validate_reset_token(db: Session, token: str):
-    reset = db.execute(
-        select(PasswordReset).where(
-            PasswordReset.token == token,
-            PasswordReset.expires_at > datetime.utcnow()
+async def add_user_to_group(db: AsyncSession, group_id: int, user_id: int) -> models.UserStudyGroup:
+    db_user_group = models.UserStudyGroup(user_id=user_id, group_id=group_id)
+    db.add(db_user_group)
+    await db.commit()
+    logger.info(f"Added user {user_id} to study group {group_id}")
+    return db_user_group
+
+async def acquire_skill(db: AsyncSession, skill_id: int, user_id: int) -> models.UserSkill:
+    """Create a new user-skill association"""
+    db_user_skill = models.UserSkill(
+        user_id=user_id,
+        skill_id=skill_id,
+        acquired_at=datetime.utcnow()
+    )
+    db.add(db_user_skill)
+    await db.commit()
+    await db.refresh(db_user_skill)
+    logger.info(f"User {user_id} acquired skill {skill_id}")
+    return db_user_skill
+
+async def remove_user_from_group(db: AsyncSession, group_id: int, user_id: int) -> bool:
+    result = await db.execute(
+        delete(models.UserStudyGroup).where(
+            models.UserStudyGroup.group_id == group_id,
+            models.UserStudyGroup.user_id == user_id
         )
-    ).first()
-    if not reset:
-        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
-    return reset.user_id
+    )
+    await db.commit()
+    success = result.rowcount > 0
+    if success:
+        logger.info(f"Removed user {user_id} from study group {group_id}")
+    return success
 
+async def get_study_group(db: AsyncSession, group_id: int) -> Optional[models.StudyGroup]:
+    result = await db.execute(
+        select(models.StudyGroup)
+        .where(models.StudyGroup.id == group_id)
+        .options(selectinload(models.StudyGroup.members))
+    )
+    return result.scalars().first()
 
-def update_user_password(db: Session, user_id: int, new_password: str):
-    return update_user(db, user_id, {"password": new_password})
+async def get_user_study_groups(db: AsyncSession, user_id: int) -> List[models.StudyGroup]:
+    result = await db.execute(
+        select(models.StudyGroup)
+        .join(models.UserStudyGroup)
+        .where(models.UserStudyGroup.user_id == user_id)
+        .options(selectinload(models.StudyGroup.members))
+    )
+    return result.scalars().all()
 
-def get_quest(db: Session, quest_id: int):
-    quest = db.get(Quest, quest_id)
-    if not quest:
-        raise HTTPException(status_code=404, detail="Quest not found")
-    return quest
+async def create_group_message(db: AsyncSession, message: schemas.GroupMessageCreate, group_id: int, user_id: int) -> models.GroupMessage:
+    db_message = models.GroupMessage(
+        group_id=group_id,
+        user_id=user_id,
+        content=message.content,
+        timestamp=datetime.utcnow()
+    )
+    db.add(db_message)
+    await db.commit()
+    await db.refresh(db_message)
+    logger.info(f"Created group message {db_message.id} in group {group_id}")
+    return db_message
 
-def create_quest(db: Session, quest: QuestCreate, user_id: int) -> Quest:
-    quest_db = Quest(
+async def create_quest(db: AsyncSession, quest: schemas.QuestCreate, user_id: int) -> models.Quest:
+    db_quest = models.Quest(
         user_id=user_id,
         title=quest.title,
         description=quest.description,
         quest_type=quest.quest_type,
-        recurring=quest.recurring,
-        xp_reward=quest.xp_reward or 100
-    )
-    db.add(quest_db)
-    db.commit()
-    db.refresh(quest_db)
-    return quest_db
-
-def update_quest(db: Session, quest_id: int, quest: QuestUpdate, user_id: int) -> Quest:
-    quest_db = db.execute(select(Quest).where(Quest.id == quest_id, Quest.user_id == user_id)).first()
-    if not quest_db:
-        raise HTTPException(status_code=404, detail="Quest not found")
-    for key, value in quest.dict(exclude_unset=True).items():
-        setattr(quest_db, key, value)
-    db.commit()
-    db.refresh(quest_db)
-    return quest_db
-
-def complete_quest(db: Session, quest_id: int, user_id: int) -> Quest:
-    quest = db.execute(select(Quest).where(Quest.id == quest_id, Quest.user_id == user_id)).first()
-    if not quest:
-        raise HTTPException(status_code=404, detail="Quest not found")
-    if quest.completed and not quest.recurring:
-        raise HTTPException(status_code=400, detail="Quest already completed")
-    quest.completed = False if quest.recurring else True
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    user.xp += quest.xp_reward
-    db.commit()
-    db.refresh(quest)
-    return quest
-
-def delete_quest(db: Session, quest_id: int, user_id: int):
-    quest = db.execute(select(Quest).where(Quest.id == quest_id, Quest.user_id == user_id)).first()
-    if not quest:
-        raise HTTPException(status_code=404, detail="Quest not found")
-    db.delete(quest)
-    db.commit()
-    return {"message": "Quest deleted"}
-
-def get_group_quest(db: Session, group_quest_id: int):
-    quest = db.get(GroupQuest, group_quest_id)
-    if not quest:
-        raise HTTPException(status_code=404, detail="Group quest not found")
-    return quest
-
-def create_group_quest(db: Session, quest_data: dict, group_id: int, user_id: int):
-    quest = GroupQuest(**quest_data, group_id=group_id, user_id=user_id)
-    db.add(quest)
-    db.commit()
-    db.refresh(quest)
-    return quest
-
-def create_group_boss_battle(db: Session, battle: GroupBossBattleCreate, group_id: int, user_id: int):
-    battle_db = GroupBossBattle(
-        **battle.dict(),
-        group_id=group_id,
-        created_by=user_id,
-        current_health=battle.max_health,
-        score=0
-    )
-    db.add(battle_db)
-    db.commit()
-    db.refresh(battle_db)
-    return battle_db
-
-def get_group_boss_battles(db: Session, group_id: int) -> List[GroupBossBattle]:
-    return db.execute(select(GroupBossBattle).where(GroupBossBattle.group_id == group_id)).all()
-
-def get_boss_battle(db: Session, battle_id: int):
-    battle = db.get(BossBattle, battle_id)
-    if not battle:
-        raise HTTPException(status_code=404, detail="Boss battle not found")
-    return battle
-
-def has_passed_boss(db: Session, user_id: int, battle_id: int):
-    battle = db.get(BossBattle, battle_id)
-    if not battle:
-        raise HTTPException(status_code=404, detail="Boss battle not found")
-    return battle.passed
-
-def create_boss_battle(db: Session, battle: BossBattleCreate, user_id: int):
-    battle_db = BossBattle(
-        **battle.dict(),
-        user_id=user_id,
-        current_health=battle.max_health
-    )
-    db.add(battle_db)
-    db.commit()
-    db.refresh(battle_db)
-    return battle_db
-
-def get_boss_battles(db: Session, user_id: int) -> List[BossBattle]:
-    return db.execute(select(BossBattle).where(BossBattle.user_id == user_id)).all()
-
-def get_skill(db: Session, skill_id: int):
-    skill = db.get(Skill, skill_id)
-    if not skill:
-        raise HTTPException(status_code=404, detail="Skill not found")
-    return skill
-
-def create_skill(db: Session, skill: SkillCreate):
-    skill_db = Skill(**skill.dict())
-    db.add(skill_db)
-    db.commit()
-    db.refresh(skill_db)
-    return skill_db
-
-def unlock_skill(db: Session, user_id: int, skill_id: int):
-    if not db.get(User, user_id):
-        raise HTTPException(status_code=404, detail="User not found")
-    if not db.get(Skill, skill_id):
-        raise HTTPException(status_code=404, detail="Skill not found")
-    if db.execute(select(UserSkill).where(UserSkill.user_id == user_id, UserSkill.skill_id == skill_id)).first():
-        raise HTTPException(status_code=400, detail="Skill already unlocked")
-    user_skill = UserSkill(user_id=user_id, skill_id=skill_id)
-    db.add(user_skill)
-    db.commit()
-    return user_skill
-
-def get_user_skills(db: Session, user_id: int):
-    return db.execute(select(Skill).join(UserSkill).where(UserSkill.user_id == user_id)).all()
-
-def get_unlocked_skills(db: Session, user_id: int):
-    return db.execute(select(Skill).join(UserSkill).where(UserSkill.user_id == user_id)).all()
-
-def create_pomodoro_session(db: Session, user_id: int, duration: int):
-    session = PomodoroSession(user_id=user_id, start_time=datetime.utcnow(), duration=duration)
-    db.add(session)
-    db.commit()
-    db.refresh(session)
-    return session
-
-def get_pomodoro_history(db: Session, user_id: int):
-    return db.execute(select(PomodoroSession).where(PomodoroSession.user_id == user_id).order_by(PomodoroSession.start_time.desc())).all()
-
-def get_todays_stats(db: Session, user_id: int):
-    today = datetime.utcnow().date()
-    sessions = db.execute(
-        select(PomodoroSession).where(
-            PomodoroSession.user_id == user_id,
-            PomodoroSession.start_time >= today,
-            PomodoroSession.start_time < today + timedelta(days=1)
-        )
-    ).all()
-    total_duration = sum(session.duration for session in sessions if session.completed)
-    completed_sessions = len([s for s in sessions if s.completed])
-    return {"total_duration": total_duration, "completed_sessions": completed_sessions}
-
-def create_memory_session(db: Session, user_id: int, content: str, score: int, is_ai_generated: bool):
-    session = MemoryTrainingSession(user_id=user_id, content=content, score=score, is_ai_generated=is_ai_generated)
-    db.add(session)
-    db.commit()
-    db.refresh(session)
-    return session
-
-def get_memory_sessions(db: Session, user_id: int):
-    return db.execute(select(MemoryTrainingSession).where(MemoryTrainingSession.user_id == user_id)).all()
-
-def evaluate_memory_session(db: Session, session_id: int, score: int):
-    session = db.get(MemoryTrainingSession, session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Memory session not found")
-    session.score = score
-    db.add(session)
-    db.commit()
-    db.refresh(session)
-    return session
-
-def get_analytics_data(db: Session, user_id: int, start_date: date, end_date: date):
-    return db.execute(
-        select(UserAnalytics).where(
-            UserAnalytics.user_id == user_id,
-            UserAnalytics.date >= start_date,
-            UserAnalytics.date <= end_date
-        )
-    ).all()
-
-def get_chart_data(db: Session, user_id: int):
-    end_date = date.today()
-    start_date = end_date - timedelta(days=7)
-    analytics = get_analytics_data(db, user_id, start_date, end_date)
-    labels = [(start_date + timedelta(days=i)).isoformat() for i in range(7)]
-    values = [0] * 7
-    for record in analytics:
-        day_index = (record.date.date() - start_date).days
-        if 0 <= day_index < 7:
-            values[day_index] += record.value
-    return labels, values
-
-def create_flashcard_deck(db: Session, deck_data: dict):
-    deck = FlashcardDeck(**deck_data)
-    db.add(deck)
-    db.commit()
-    db.refresh(deck)
-    return deck
-
-def get_flashcards(db: Session, deck_id: int):
-    return db.execute(select(Flashcard).where(Flashcard.deck_id == deck_id)).all()
-
-def create_user_flashcard(db: Session, user_flashcard: FlashcardCreate, user_id: int):
-    deck = db.get(FlashcardDeck, user_flashcard.deck_id)
-    if not deck:
-        raise HTTPException(status_code=404, detail="Flashcard deck not found")
-    if deck.user_id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    flashcard = Flashcard(
-        deck_id=user_flashcard.deck_id,
-        question=user_flashcard.question,
-        answer=user_flashcard.answer,
+        difficulty=quest.difficulty,
+        reward_xp=quest.reward_xp,
+        reward_skill_points=quest.reward_skill_points,
         created_at=datetime.utcnow()
     )
-    db.add(flashcard)
-    db.commit()
-    db.refresh(flashcard)
-    return flashcard
+    db.add(db_quest)
+    await db.commit()
+    await db.refresh(db_quest)
+    logger.info(f"Created quest {db_quest.id} for user {user_id}")
+    return db_quest
 
-def get_flashcard_progress(db: Session, user_id: int):
-    return db.execute(
-        select(Flashcard).join(FlashcardDeck).where(FlashcardDeck.user_id == user_id)
-    ).all()
+async def get_user_quests(db: AsyncSession, user_id: int, completed: Optional[bool] = None) -> List[models.Quest]:
+    query = select(models.Quest).where(models.Quest.user_id == user_id)
+    if completed is not None:
+        query = query.where(models.Quest.is_completed == completed)
+    result = await db.execute(query.order_by(models.Quest.created_at.desc()).limit(50))
+    return result.scalars().all()
+
+async def create_boss_battle(db: AsyncSession, battle: schemas.BossBattleCreate, user_id: int) -> models.BossBattle:
+    db_battle = models.BossBattle(
+        user_id=user_id,
+        name=battle.name,
+        difficulty=battle.difficulty,
+        current_health=battle.current_health,
+        max_health=battle.max_health,
+        reward_xp=battle.reward_xp,
+        reward_skill_points=battle.reward_skill_points,
+        reward_items=battle.reward_items
+    )
+    db.add(db_battle)
+    await db.commit()
+    await db.refresh(db_battle)
+    logger.info(f"Created boss battle {db_battle.id} for user {user_id}")
+    return db_battle
+
+async def create_group_boss_battle(db: AsyncSession, battle: schemas.GroupBossBattleCreate, group_id: int) -> models.GroupBossBattle:
+    db_battle = models.GroupBossBattle(
+        group_id=group_id,
+        name=battle.name,
+        difficulty=battle.difficulty,
+        current_health=battle.current_health,
+        group_health=battle.group_health,
+        score=battle.score,
+        reward_xp=battle.reward_xp,
+        reward_skill_points=battle.reward_skill_points,
+        reward_items=battle.reward_items,
+        created_at=datetime.utcnow()
+    )
+    db.add(db_battle)
+    await db.commit()
+    await db.refresh(db_battle)
+    logger.info(f"Created group boss battle {db_battle.id} for group {group_id}")
+    return db_battle
+
+async def join_group_boss_battle(db: AsyncSession, battle_id: int, user_id: int) -> models.UserGroupBossBattle:
+    db_user_battle = models.UserGroupBossBattle(
+        group_boss_battle_id=battle_id,
+        user_id=user_id
+    )
+    db.add(db_user_battle)
+    await db.commit()
+    logger.info(f"User {user_id} joined group boss battle {battle_id}")
+    return db_user_battle
+
+async def get_group_boss_battles(db: AsyncSession, group_id: int) -> List[models.GroupBossBattle]:
+    result = await db.execute(
+        select(models.GroupBossBattle)
+        .where(models.GroupBossBattle.group_id == group_id)
+        .options(selectinload(models.GroupBossBattle.users))
+        .order_by(models.GroupBossBattle.created_at.desc())
+    )
+    return result.scalars().all()
+
+async def create_pomodoro_session(db: AsyncSession, session: schemas.PomodoroSessionCreate, user_id: int) -> models.PomodoroSession:
+    db_session = models.PomodoroSession(
+        user_id=user_id,
+        start_time=datetime.utcnow(),
+        duration=session.duration
+    )
+    db.add(db_session)
+    await db.commit()
+    await db.refresh(db_session)
+    logger.info(f"Created pomodoro session {db_session.id} for user {user_id}")
+    return db_session
+
+async def get_pomodoro_sessions(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 50) -> List[models.PomodoroSession]:
+    result = await db.execute(
+        select(models.PomodoroSession)
+        .where(models.PomodoroSession.user_id == user_id)
+        .order_by(models.PomodoroSession.start_time.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+async def get_pomodoro_stats(db: AsyncSession, user_id: int, start_date: datetime, end_date: datetime) -> dict:
+    from sqlalchemy.sql import func
+    result = await db.execute(
+        select(
+            func.count(models.PomodoroSession.id).label("total_sessions"),
+            func.sum(models.PomodoroSession.duration).label("total_minutes"),
+            func.avg(models.PomodoroSession.duration).label("average_duration"),
+            func.sum(models.PomodoroSession.xp_earned).label("total_xp")
+        )
+        .where(
+            models.PomodoroSession.user_id == user_id,
+            models.PomodoroSession.start_time >= start_date,
+            models.PomodoroSession.start_time <= end_date,
+            models.PomodoroSession.is_completed == True
+        )
+    )
+    stats = result.first()
+    return {
+        "total_sessions": stats.total_sessions or 0,
+        "total_duration": stats.total_minutes or 0,
+        "average_duration": float(stats.average_duration or 0),
+        "total_xp_earned": stats.total_xp or 0
+    }
+
+async def create_flashcard(db: AsyncSession, flashcard: schemas.FlashcardCreate, user_id: int) -> models.Flashcard:
+    db_flashcard = models.Flashcard(
+        user_id=user_id,
+        question=flashcard.question,
+        answer=flashcard.answer,
+        created_at=datetime.utcnow()
+    )
+    db.add(db_flashcard)
+    await db.commit()
+    await db.refresh(db_flashcard)
+    logger.info(f"Created flashcard {db_flashcard.id} for user {user_id}")
+    return db_flashcard
+
+async def create_user_flashcard(db: AsyncSession, user_flashcard: schemas.UserFlashcardCreate, user_id: int) -> models.UserFlashcard:
+    db_user_flashcard = models.UserFlashcard(
+        user_id=user_id,
+        flashcard_id=user_flashcard.flashcard_id,
+        proficiency=user_flashcard.proficiency
+    )
+    db.add(db_user_flashcard)
+    await db.commit()
+    await db.refresh(db_user_flashcard)
+    logger.info(f"Created user flashcard {db_user_flashcard.id} for user {user_id}")
+    return db_user_flashcard
+
+async def get_flashcard_progress(db: AsyncSession, user_id: int) -> List[models.UserFlashcard]:
+    result = await db.execute(
+        select(models.UserFlashcard)
+        .where(models.UserFlashcard.user_id == user_id)
+        .options(selectinload(models.UserFlashcard.flashcard))
+    )
+    return result.scalars().all()
+
+async def create_memory_session(db: AsyncSession, session: schemas.MemorySessionCreate, user_id: int, sequence: List[int]) -> models.MemorySession:
+    db_session = models.MemorySession(
+        user_id=user_id,
+        sequence_length=session.sequence_length,
+        sequence=json.dumps(sequence),
+        start_time=datetime.utcnow(),
+        duration=0,
+        score=0
+    )
+    db.add(db_session)
+    await db.commit()
+    await db.refresh(db_session)
+    logger.info(f"Created memory session {db_session.id} for user {user_id}")
+    return db_session
+
+async def create_skill(db: AsyncSession, skill: schemas.SkillCreate) -> models.Skill:
+    db_skill = models.Skill(
+        name=skill.name,
+        description=skill.description,
+        cost=skill.cost
+    )
+    db.add(db_skill)
+    await db.commit()
+    await db.refresh(db_skill)
+    logger.info(f"Created skill {db_skill.id}")
+    return db_skill
+
+async def create_item(db: AsyncSession, item: schemas.ItemCreate) -> models.Item:
+    db_item = models.Item(
+        name=item.name,
+        price=item.price,
+        description=item.description
+    )
+    db.add(db_item)
+    await db.commit()
+    await db.refresh(db_item)
+    logger.info(f"Created item {db_item.id}")
+    return db_item
+
+async def purchase_item(db: AsyncSession, item_id: int, user_id: int) -> models.UserItem:
+    db_user_item = models.UserItem(
+        user_id=user_id,
+        item_id=item_id,
+        is_used=False
+    )
+    db.add(db_user_item)
+    await db.commit()
+    await db.refresh(db_user_item)
+    logger.info(f"User {user_id} purchased item {item_id}")
+    return db_user_item
+
+async def create_password_reset(db: AsyncSession, user_id: int, token: str, expires_at: datetime) -> models.PasswordReset:
+    db_reset = models.PasswordReset(
+        user_id=user_id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.add(db_reset)
+    await db.commit()
+    await db.refresh(db_reset)
+    logger.info(f"Created password reset for user {user_id}")
+    return db_reset
+
+async def get_password_reset(db: AsyncSession, token: str) -> Optional[models.PasswordReset]:
+    result = await db.execute(
+        select(models.PasswordReset).where(models.PasswordReset.token == token)
+    )
+    return result.scalars().first()
+
+async def get_material(db: AsyncSession, material_id: int) -> Optional[models.Material]:
+    result = await db.execute(select(models.Material).where(models.Material.id == material_id))
+    return result.scalars().first()
+
+async def get_boss_battles(db: AsyncSession, user_id: int) -> List[models.BossBattle]:
+    result = await db.execute(
+        select(models.BossBattle)
+        .where(models.BossBattle.user_id == user_id)
+        .order_by(models.BossBattle.created_at.desc())
+    )
+    return result.scalars().all()

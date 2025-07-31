@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up | StudyRPG</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+           background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .signup-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius:  16px;
+            box-shadow: 0 4px 16px rgba(30, 60, 114, 0.18);
+            padding: 2.5rem 2rem 2rem;
+            text-align: center;
+        }
+        .signup-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 1.2rem;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 #e52d27;
+        }
+        .signup-container input {
+            width: 90%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .signup-container input:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+        .signup-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: #1e3c72;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(30, 60, 114, 0.3);
+        }
+        .signup-btn:hover {
+            background: #2a5298;
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 14px rgba(42, 82, 152, 0.5);
+        }
+        .error-msg {
+            color: #e52d27;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        .success-msg {
+            color: #1e3c72;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        .verify-msg {
+            color: #1e3c72;
+            margin-top: 1.2rem;
+            font-weight: bold;
+            display: none;
+        }
+        .login-link {
+            margin-top: 1.5rem;
+            display: block;
+            color: #e52d27;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .login-link:hover {
+            color: #ffb347;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-title">Create Your StudyRPG Account</div>
+        <form id="signup-form" onsubmit="return signupUser();">
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <input type="password" id="confirm" placeholder="Confirm Password" required><br>
+    <input type="url" id="avatar_url" placeholder="Avatar Image URL (optional)"><br>
+    <input type="number" id="xp" placeholder="Starting XP (default: 0)" min="0" value="0"><br>
+    <input type="number" id="skill_points" placeholder="Skill Points (default: 0)" min="0" value="0"><br>
+    <input type="number" id="streak" placeholder="Current Streak (default: 0)" min="0" value="0"><br>
+    <input type="number" id="level" placeholder="Starting Level (default: 1)" min="1" value="1"><br>
+    <input type="number" id="currency" placeholder="Starting Currency (default: 100)" min="0" value="100"><br>
+    <button class="signup-btn" type="submit">Sign Up</button>
+</form>
+        <div id="error" class="error-msg"></div>
+        <div id="success" class="success-msg"></div>
+        <div id="verify-msg" class="verify-msg">
+            Signup successful! Please check your email to verify your account before logging in.
+        </div>
+        <a class="login-link" href="/login">Already have an account? Login</a>
+        <div class="intro-author" style="
+            font-size: medium;
+            font-weight: bold;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #e52d27 60%, #000 100%);
+            color: #fff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+            text-shadow: 1px 1px 0 #000, 2px 2px 0 #e52d27;
+            display: inline-block;
+            margin-top: 2rem;
+        ">GAME BY LYZUS</div>
+        <audio id="bgm" src="/static/sounds/willliam_hector_-_shadow.wav" loop></audio>
+<button 
+    onclick="document.getElementById('bgm').play()" 
+    onmouseover="this.style.setProperty('--pulse-opacity', '0.4')"
+    onmouseout="this.style.setProperty('--pulse-opacity', '0')"
+    style="
+        --pulse-opacity: 0;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 0.5rem 1.3rem;
+        font-size: 1rem;
+        font-family: 'Courier New', monospace;
+        background: linear-gradient(90deg, #1a1a2e 0%, #1e3c72 60%, #e52d27 100%);
+        color: #fff;
+        border: 1px solid rgba(109, 240, 255, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 100;
+        opacity: 0.92;
+        font-weight: bold;
+        text-shadow: 0 0 5px rgba(109, 240, 255, 0.5);
+        box-shadow: 
+            0 0 12px rgba(229, 45, 39, 0.3),
+            0 2px 8px rgba(30, 60, 114, 0.3),
+            inset 0 0 8px rgba(109, 240, 255, 0.1);
+        transition: 
+            background 0.3s ease,
+            border-color 0.3s ease,
+            box-shadow 0.3s ease,
+            transform 0.2s ease;
+    "
+>
+    ▶ PLAY MUSIC
+    <span style="
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(circle at center, #6df0ff 0%, transparent 70%);
+        opacity: var(--pulse-opacity);
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    "></span>
+</button>    </div>
+
+    <script>
+        async function signupUser() {
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm').value;
+    const avatar_url = document.getElementById('avatar_url').value;
+    const xp = parseInt(document.getElementById('xp').value) || 0;
+    const skill_points = parseInt(document.getElementById('skill_points').value) || 0;
+    const streak = parseInt(document.getElementById('streak').value) || 0;
+    const level = parseInt(document.getElementById('level').value) || 1;
+    const currency = parseInt(document.getElementById('currency').value) || 100;
+    const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
+    const verifyDiv = document.getElementById('verify-msg');
+    errorDiv.textContent = "";
+    successDiv.textContent = "";
+    verifyDiv.style.display = "none";
+
+    if (password !== confirm) {
+        errorDiv.textContent = "Passwords do not match.";
+        return false;
+    }
+
+    try {
+        const res = await fetch('/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username, 
+                email, 
+                password, 
+                avatar_url,
+                xp,
+                skill_points,
+                streak,
+                level,
+                currency
+            }),
+            redirect: 'follow'
+        });
+
+        if (res.ok) {
+            window.location.href = "/auth/validAccount.html";
+        } else {
+            const data = await res.json().catch(() => ({}));
+            errorDiv.textContent = data.detail || "Signup failed.";
+        }
+    } catch (error) {
+        errorDiv.textContent = "An error occurred: " + error.message;
+    }
+    return false;
+}
+    </script>
+</body>
+</html>

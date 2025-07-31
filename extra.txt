@@ -1,9 +1,135 @@
-uvicorn main:app --reload
-
-Input the number of hours studied for, both in the  Analytics page and as a display on the dashboard.
 
 
-report writing.
 
-https://opengameart.org/art-search-advanced?field_art_tags_tid=Action
 
+# Check specific port (e.g., 8000)
+netstat -an | findstr :8000
+
+# Or use PowerShell
+Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
+taskkill /PID XXXX /F
+
+$env:Path += ";C:\Tools\Sysinternals\Handle"
+handle.exe
+handle.exe studyrpg.db
+
+ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+
+
+
+ 
+PS C:\Users\User\Desktop\STUDYRPG2\tests> python test_db.py
+Adding parent directory to sys.path: C:\Users\User\Desktop\STUDYRPG2
+Successfully imported from app.database
+Initializing database...
+Creating database tables...
+2025-07-18 11:37:52,654 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-07-18 11:37:52,655 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("groupmember")
+2025-07-18 11:37:52,656 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,665 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("usergroupbossbattle")
+2025-07-18 11:37:52,666 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,669 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("userskill")
+2025-07-18 11:37:52,669 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,671 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("skill")
+2025-07-18 11:37:52,671 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,673 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("flashcard")
+2025-07-18 11:37:52,674 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,675 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("flashcarddeck")
+2025-07-18 11:37:52,679 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,683 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("useranalytics")
+2025-07-18 11:37:52,684 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,686 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("memorytrainingsession")
+2025-07-18 11:37:52,686 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,688 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("pomodorosession")
+2025-07-18 11:37:52,689 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,691 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("item")
+2025-07-18 11:37:52,691 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,694 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("passwordreset")
+2025-07-18 11:37:52,695 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,697 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("quest")
+2025-07-18 11:37:52,697 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,700 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("bossbattle")
+2025-07-18 11:37:52,700 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,702 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("groupmessage")
+2025-07-18 11:37:52,702 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,705 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("groupquest")
+2025-07-18 11:37:52,705 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,707 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("groupbossbattle")
+2025-07-18 11:37:52,708 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,710 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("studygroup")
+2025-07-18 11:37:52,711 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,713 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("coursematerial")
+2025-07-18 11:37:52,713 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,715 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("materialtestattempt")
+2025-07-18 11:37:52,715 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,717 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user")
+2025-07-18 11:37:52,717 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,719 INFO sqlalchemy.engine.Engine COMMIT
+Database initialization successful
+Database initialized.
+
+Checking database health...
+2025-07-18 11:37:52,724 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-07-18 11:37:52,725 INFO sqlalchemy.engine.Engine SELECT 1
+2025-07-18 11:37:52,725 INFO sqlalchemy.engine.Engine [generated in 0.00053s] ()
+2025-07-18 11:37:52,727 INFO sqlalchemy.engine.Engine ROLLBACK
+Database health: True
+
+Checking for missing tables...
+2025-07-18 11:37:52,730 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-07-18 11:37:52,730 INFO sqlalchemy.engine.Engine SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite~_%' ESCAPE '~' ORDER BY name
+2025-07-18 11:37:52,731 INFO sqlalchemy.engine.Engine [raw sql] ()
+2025-07-18 11:37:52,733 INFO sqlalchemy.engine.Engine ROLLBACK
+Expected tables: {'flashcard', 'usergroupbossbattle', 'flashcarddeck', 'memorytrainingsession', 'bossbattle', 'coursematerial', 'pomodorosession', 'userskill', 'item', 'studygroup', 'user', 'quest', 'skill', 'groupmessage', 'groupmember', 'groupbossbattle', 'materialtestattempt', 'passwordreset', 'groupquest', 'useranalytics'}
+Existing tables: {'flashcard', 'usergroupbossbattle', 'flashcarddeck', 'memorytrainingsession', 'bossbattle', 'coursematerial', 'pomodorosession', 'userskill', 'item', 'studygroup', 'user', 'quest', 'skill', 'groupmessage', 'groupbossbattle', 'groupmember', 'materialtestattempt', 'passwordreset', 'groupquest', 'useranalytics'}
+All expected tables are present.
+
+Debugging table names...
+SQLModel metadata tables:
+  groupmember: groupmember
+  usergroupbossbattle: usergroupbossbattle
+  userskill: userskill
+  skill: skill
+  flashcard: flashcard
+  flashcarddeck: flashcarddeck
+  useranalytics: useranalytics
+  memorytrainingsession: memorytrainingsession
+  pomodorosession: pomodorosession
+  item: item
+  passwordreset: passwordreset
+  quest: quest
+  bossbattle: bossbattle
+  groupmessage: groupmessage
+  groupquest: groupquest
+  groupbossbattle: groupbossbattle
+  studygroup: studygroup
+  coursematerial: coursematerial
+  materialtestattempt: materialtestattempt
+  user: user
+
+Actual database tables:
+2025-07-18 11:37:52,742 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2025-07-18 11:37:52,744 INFO sqlalchemy.engine.Engine SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite~_%' ESCAPE '~' ORDER BY name
+2025-07-18 11:37:52,746 INFO sqlalchemy.engine.Engine [raw sql] ()
+  bossbattle
+  coursematerial
+  flashcard
+  flashcarddeck
+  groupbossbattle
+  groupmember
+  groupmessage
+  groupquest
+  item
+  materialtestattempt
+  memorytrainingsession
+  passwordreset
+  pomodorosession
+  quest
+  skill
+  studygroup
+  user
+  useranalytics
+  usergroupbossbattle
+  userskill
+2025-07-18 11:37:52,752 INFO sqlalchemy.engine.Engine ROLLBACK

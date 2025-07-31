@@ -1,10 +1,12 @@
 import hashlib
 from datetime import datetime
-
+from jose import jwt
+from app.config import conf
+from datetime import timedelta
 def hash_password(password: str) -> str:
     """
     Simple password hashing using SHA256.
-    In production, use a stronger hashing algorithm (e.g., bcrypt).
+    WARNING: SHA256 is NOT secure for production use. Use bcrypt or a similar strong hashing algorithm.
     """
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
@@ -19,6 +21,16 @@ def format_datetime(dt: datetime) -> str:
 
 def get_current_time() -> datetime:
     return datetime.utcnow()
+
+def create_access_token(data: dict, expires_delta: timedelta) -> str:
+    """
+    Create a JWT access token with the provided data and expiration time.
+    """
+    to_encode = data.copy()
+    expire = get_current_time() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, conf.SECRET_KEY, algorithm=conf.ALGORITHM)
+    return encoded_jwt
 
 def safe_int(value, default=0):
     try:

@@ -1,3 +1,17 @@
+Sword of the Demon Hunter: Kijin Gentosho
+Senjou no Valkyria
+Valvrave the Liberator
+Heroines Run the Show: The Unpopular Girl and the Secret Task
+Hero Mask
+High School Fleet
+
+
+
+uvicorn main:app --reload     #For loading the server.
+login to my actual email account's ChatGPT.
+Look for the github account that has this game and login into it.
+
+
 
 🧠 Suggestions for Next Steps
 
@@ -20,6 +34,7 @@ Admin user adds quests for the group.
 
 Shop functionality. Payment with XP.
 
+Input the number of hours studied for, both in the  Analytics page and as a display on the dashboard.
 
 
 Subscription features.
@@ -41,7 +56,10 @@ Automatic role upgrade (e.g. from “member” to “veteran”) based on XP or 
 
 Skill tree CRUD functions (if implementing ability unlocks)?
 
-Let me know and I can help scaffold those out.
+
+report writing.
+
+https://opengameart.org/art-search-advanced?field_art_tags_tid=Action
 
 
 
