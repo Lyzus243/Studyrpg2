@@ -31,7 +31,7 @@ class XPAwardResponse(BaseModel):
     level_up: bool
     debug_info: dict = {}
 
-# Simple XP system - linear progression
+# Improved XP system with better progression
 def calculate_xp_for_level(level: int) -> int:
     """Calculate total XP required to reach a specific level"""
     if level <= 1:
@@ -42,8 +42,11 @@ def get_level_from_xp(total_xp: int) -> int:
     """Calculate level based on total XP"""
     if total_xp < 0:
         return 1
-    level = (total_xp // 100) + 1
-    return max(1, level)
+    # Calculate level based on cumulative XP
+    level = 1
+    while total_xp >= calculate_xp_for_level(level + 1):
+        level += 1
+    return level
 
 async def get_user_xp(db: AsyncSession, user_id: int) -> int:
     """Get user's total XP"""
@@ -61,15 +64,16 @@ async def get_user_xp(db: AsyncSession, user_id: int) -> int:
         logger.error(f"Error getting user XP: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get user XP: {str(e)}")
 
-async def update_user_xp_and_level(db: AsyncSession, user_id: int, new_xp: int, new_level: int) -> bool:
-    """Update user's XP and level"""
+async def update_user_xp_and_level(db: AsyncSession, user_id: int, new_xp: int) -> bool:
+    """Update user's XP and calculate new level"""
     try:
+        new_level = get_level_from_xp(new_xp)
         update_query = update(models.User).where(
             models.User.id == user_id
         ).values(xp=new_xp, level=new_level)
         await db.execute(update_query)
         await db.commit()
-        logger.info(f"Updated database: XP={new_xp}, Level={new_level}")
+        logger.info(f"Updated XP to {new_xp}, level to {new_level}")
         return True
     except Exception as e:
         logger.error(f"Error updating user XP and level: {str(e)}")
@@ -80,7 +84,6 @@ async def calculate_level_and_progress(db: AsyncSession, user_id: int) -> LevelP
     """Calculate current level and progress"""
     try:
         total_xp = await get_user_xp(db, user_id)
-        
         current_level = get_level_from_xp(total_xp)
         xp_for_current_level = calculate_xp_for_level(current_level)
         xp_for_next_level = calculate_xp_for_level(current_level + 1)
@@ -124,7 +127,7 @@ async def award_xp(db: AsyncSession, user_id: int, xp_amount: int) -> XPAwardRes
         new_level = get_level_from_xp(new_total_xp)
         
         # Update XP and level
-        db_updated = await update_user_xp_and_level(db, user_id, new_total_xp, new_level)
+        db_updated = await update_user_xp_and_level(db, user_id, new_total_xp)
         
         level_up = new_level > old_level
         
@@ -172,7 +175,11 @@ async def get_level_progress(
             raise HTTPException(status_code=401, detail="Authentication required")
         
         progress = await calculate_level_and_progress(db, current_user.id)
-        logger.info(f"Level progress for user {current_user.id}: Level {progress.level}, Total XP {progress.total_xp}")
+        logger.info(
+            f"Level progress for user {current_user.id}: "
+            f"Level {progress.level}, XP: {progress.current_xp}/{progress.xp_for_next_level}, "
+            f"Total XP: {progress.total_xp}"
+        )
         return progress
         
     except HTTPException:
@@ -193,7 +200,10 @@ async def award_user_xp(
             raise HTTPException(status_code=401, detail="Authentication required")
         
         result = await award_xp(db, current_user.id, xp_data.xp)
-        logger.info(f"Awarded {xp_data.xp} XP to user {current_user.id}. New total: {result.new_total_xp}")
+        logger.info(
+            f"Awarded {xp_data.xp} XP to user {current_user.id}. "
+            f"New total: {result.new_total_xp}, Level: {result.new_level}"
+        )
         
         return result
         
@@ -222,13 +232,16 @@ async def debug_user_xp(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
+        calculated_level = get_level_from_xp(user.xp)
+        
         # Check XP and level
         debug_data = {
             "user_id": user_id,
             "user_exists": True,
             "xp_value": user.xp,
             "level_value": user.level,
-            "calculated_level": get_level_from_xp(user.xp)
+            "calculated_level": calculated_level,
+            "level_match": user.level == calculated_level
         }
         
         return debug_data
