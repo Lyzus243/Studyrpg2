@@ -39,6 +39,12 @@ animation: gradientPulse 15s ease infinite;
             -moz-osx-font-smoothing: grayscale;
         }
 
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         /* ===== LAYOUT ===== */
         .dashboard-container {
             display: flex;
@@ -69,6 +75,19 @@ animation: gradientPulse 15s ease infinite;
             object-fit: cover;
             border: 3px solid #fff;
             margin-bottom: 1rem;
+            background: linear-gradient(135deg, #8a5a44 0%, #a87c6c 50%, #c4a89c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(138, 90, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(138, 90, 68, 0.6);
         }
 
         .username-label {
@@ -520,14 +539,15 @@ animation: gradientPulse 15s ease infinite;
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <img id="user-avatar" class="avatar-preview" src="{{ user.avatar_url | default('https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3') }}" alt="User Avatar">
-            <audio src="../static/sounds/battleThemeA.mp3"></audio>
+            <div id="user-avatar" class="avatar-preview">
+                <i class="fas fa-user"></i>
+            </div>
             <div id="user-name" class="username-label">
                 <h1>Welcome, {{ user.username }}</h1>
             </div>
 
             <!-- Profile Link -->
-            <a href="/profile/{{ user.id }}" class="sidebar-btn">
+            <a href="/profile/{{ user.username }}" class="sidebar-btn">
                 <i class="fas fa-user-circle"></i>
                 <span>Profile</span>
             </a>
@@ -539,7 +559,7 @@ animation: gradientPulse 15s ease infinite;
             </a>
 
             <!-- Study Group -->
-            <a href="/study-groups" class="sidebar-btn">
+            <a href="/groups" class="sidebar-btn">
                 <i class="fas fa-users"></i>
                 <span>Study Group</span>
             </a>
@@ -548,6 +568,42 @@ animation: gradientPulse 15s ease infinite;
             <a href="/shop" class="sidebar-btn">
                 <i class="fas fa-store"></i>
                 <span>Shop</span>
+            </a>
+            
+            <!-- Leaderboard -->
+            <a href="/leaderboard" class="sidebar-btn">
+                <i class="fas fa-trophy"></i>
+                <span>Leaderboard</span>
+            </a>
+            
+            <!-- Quests -->
+            <a href="/quests" class="sidebar-btn">
+                <i class="fas fa-scroll"></i>
+                <span>Quests</span>
+            </a>
+            
+            <!-- Leveling -->
+            <a href="/leveling" class="sidebar-btn">
+                <i class="fas fa-chart-line"></i>
+                <span>Leveling</span>
+            </a>
+            
+            <!-- Skills -->
+            <a href="/skills" class="sidebar-btn">
+                <i class="fas fa-project-diagram"></i>
+                <span>Skills</span>
+            </a>
+            
+            <!-- Analytics -->
+            <a href="/analytics" class="sidebar-btn">
+                <i class="fas fa-chart-pie"></i>
+                <span>Analytics</span>
+            </a>
+            
+            <!-- Badges -->
+            <a href="/badges" class="sidebar-btn">
+                <i class="fas fa-medal"></i>
+                <span>Badges</span>
             </a>
 
             <!-- Logout -->
@@ -563,19 +619,19 @@ animation: gradientPulse 15s ease infinite;
             <div class="quick-stats">
                 <div class="stat-widget">
                     XP 
-                    <span id="stat-xp">{{ user.xp }}</span>
+                    <span id="stat-xp">{{ stats.xp }}</span>
                 </div>
                 <div class="stat-widget">
                     Level 
-                    <span id="stat-level">{{ user.level | default(0) }}</span>
+                    <span id="stat-level">{{ stats.level }}</span>
                 </div>
                 <div class="stat-widget">
                     Streak 
-                    <span id="stat-streak">{{ user.streak }}</span>
+                    <span id="stat-streak">{{ stats.streak }}</span>
                 </div>
                 <div class="stat-widget">
                     Skill Points 
-                    <span id="stat-skill_points">{{ user.skill_points }}</span>
+                    <span id="stat-skill_points">{{ stats.skill_points }}</span>
                 </div>
             </div>
 
@@ -606,26 +662,56 @@ animation: gradientPulse 15s ease infinite;
             <!-- Activity Feed -->
             <div class="activity-feed">
                 <h4>Recent Activity</h4>
-                <ul id="activity-list"></ul>
+                <ul id="activity-list">
+                    {% for activity in activities %}
+                    <li>
+                        <strong>{{ activity.activity_type }}</strong>
+                        <p>{{ activity.description }}</p>
+                        <small>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <!-- Quests Section -->
             <div class="section">
                 <h3>Your Quests</h3>
-                <ul id="quests"></ul>
+                <ul id="quests">
+                    {% for quest in quests %}
+                    <li>
+                        <strong>{{ quest.title }}</strong>
+                        <p>{{ quest.description }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <!-- Skill Tree -->
             <div class="section" id="skill-tree-section">
                 <h3>Skill Tree</h3>
                 <a href="/skills">View Full Skill Tree</a>
-                <div id="skill-tree"></div>
+                <div id="skill-tree">
+                    {% for skill in skills %}
+                    <div class="skill">
+                        <h4>{{ skill.name }}</h4>
+                        <p>{{ skill.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
 
             <!-- Boss Battle -->
             <div class="section" id="boss-battle-section">
                 <h3>Boss Battles</h3>
-                <div id="boss-battles"></div>
+                <div id="boss-battles">
+                    {% for battle in battles %}
+                    <div class="battle">
+                        <h4>{{ battle.boss_name }}</h4>
+                        <p>Status: {{ "Won" if battle.won else "Lost" }}</p>
+                        <small>{{ battle.end_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
                 <button onclick="openBossBattleModal()" class="profile-btn">Start New Boss Battle</button>
             </div>
         </main>
@@ -661,241 +747,67 @@ animation: gradientPulse 15s ease infinite;
         (async function init() {
             try {
                 await authenticateUser();
-                await loadDashboardData();
+                await loadUserAvatar();
             } catch (error) {
                 console.error('Initialization error:', error);
                 window.location.href = '/login';
             }
         })();
 
+        // Load user avatar
+        async function loadUserAvatar() {
+            try {
+                const avatarElement = document.getElementById('user-avatar');
+                
+                // Check if user has an avatar URL from the server
+                const userAvatarUrl = "{{ user.avatar_url }}";
+                
+                if (userAvatarUrl && userAvatarUrl !== "None") {
+                    // Create an image element for the avatar
+                    avatarElement.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = userAvatarUrl;
+                    img.alt = 'User Avatar';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    avatarElement.appendChild(img);
+                } else {
+                    // Use default avatar with initials
+                    const username = "{{ user.username }}";
+                    const initials = username ? username.charAt(0).toUpperCase() : 'U';
+                    avatarElement.innerHTML = `<span style="font-size: 2.5rem; font-weight: bold;">${initials}</span>`;
+                }
+            } catch (error) {
+                console.error('Error loading avatar:', error);
+            }
+        }
+
         // Authenticate user
         async function authenticateUser() {
-            const token = await getToken();
-            const response = await fetch('/users/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!response.ok) {
-                throw new Error('Authentication failed');
-            }
-
-            currentUser = await response.json();
-
-            window.userContext = {
-                id: currentUser.id,
-                name: currentUser.username || 'User',
-                avatarUrl: currentUser.avatar_url,
-                isAuthenticated: true
-            };
-
-            updateUserInterface();
-        }
-
-        // Update user avatar and name
-        function updateUserInterface() {
-            const userNameElement = document.getElementById('user-name');
-            const userAvatarElement = document.getElementById('user-avatar');
-
-            if (userNameElement) {
-                userNameElement.textContent = currentUser.username || 'User';
-            }
-
-            if (userAvatarElement) {
-                userAvatarElement.src = currentUser.avatar_url || '/static/images/default-avatar.png';
-            }
-        }
-
-        // Load all dashboard data
-        async function loadDashboardData() {
-            await Promise.all([
-                loadUserStats(),
-                loadActivityFeed(),
-                loadQuests(),
-                loadSkillTree(),
-                loadBossBattles()
-            ]);
-        }
-
-        // Load user stats
-        async function loadUserStats() {
             try {
                 const token = await getToken();
-                const response = await fetch('/users/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch('/auth/verify', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
 
-                if (!response.ok) throw new Error('Failed to load user stats');
-                const user = await response.json();
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
 
-                updateStatElement('stat-xp', user.xp);
-                updateStatElement('stat-level', user.level);
-                updateStatElement('stat-streak', user.streak);
-                updateStatElement('stat-skill_points', user.skill_points);
-            } catch (error) {
-                console.error('Error loading user stats:', error);
-            }
-        }
-
-        // Load activity feed
-        async function loadActivityFeed() {
-            try {
-                const token = await getToken();
-                const response = await fetch('/activity-feed', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load activity feed');
-                const activities = await response.json();
-                const container = document.getElementById('activity-list');
-
-                if (container) {
-                    container.innerHTML = activities.slice(0, 5).map(activity => `
-                        <li>
-                            <strong>${escapeHtml(activity.title)}</strong>
-                            <span>${activity.completed ? 'Completed' : 'In Progress'}</span>
-                            <small>${new Date(activity.date).toLocaleString()}</small>
-                        </li>
-                    `).join('');
+                const verification = await response.json();
+                if (!verification.valid) {
+                    throw new Error('Token invalid');
                 }
             } catch (error) {
-                console.error('Error loading activity feed:', error);
+                console.error('Authentication error:', error);
+                window.location.href = '/login';
             }
         }
-
-        // Load quests
-        async function loadQuests() {
-            try {
-                const token = await getToken();
-                const response = await fetch(`/quests/${window.userContext.id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load quests');
-                const quests = await response.json();
-                const container = document.getElementById('quests');
-
-                if (container) {
-                    container.innerHTML = quests.map(quest => `
-                        <li>
-                            <strong>${escapeHtml(quest.title)}</strong> (${escapeHtml(quest.type)})
-                            <button onclick="editQuest('${quest.id}')">Edit</button>
-                            <button onclick="deleteQuest('${quest.id}')">Delete</button>
-                        </li>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading quests:', error);
-            }
-        }
-
-        // Load skill tree
-        async function loadSkillTree() {
-            try {
-                const token = await getToken();
-                const response = await fetch('/api/skills/unlocked', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load skill tree');
-                const skills = await response.json();
-                const container = document.getElementById('skill-tree');
-
-                if (container) {
-                    container.innerHTML = skills.map(skill => `
-                        <div class="skill">
-                            <h4>${escapeHtml(skill.name)}</h4>
-                            <p>${escapeHtml(skill.description)}</p>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading skill tree:', error);
-            }
-        }
-
-        // Load boss battles
-        async function loadBossBattles() {
-            try {
-                const token = await getToken();
-                const response = await fetch('/boss-battles', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load boss battles');
-                const battles = await response.json();
-                const container = document.getElementById('boss-battles');
-
-                if (container) {
-                    container.innerHTML = battles.map(battle => `
-                        <div class="battle">
-                            <h4>${escapeHtml(battle.name)}</h4>
-                            <p>Status: ${battle.won ? 'Won' : 'Lost'}</p>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error loading boss battles:', error);
-            }
-        }
-
-        // Update stat elements
-        function updateStatElement(elementId, value) {
-            const el = document.getElementById(elementId);
-            if (el) {
-                el.textContent = value ?? 0;
-            }
-        }
-
-       async function editQuest(questId) {
-    const modal = document.getElementById('editQuestModal');
-    const form = document.getElementById('editQuestForm');
-    const token = await getToken();
-    const response = await fetch(`/quests/${window.userContext.id}?quest_id=${questId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch quest');
-    const quest = await response.json();
-    form.innerHTML = `
-        <input type="text" name="title" value="${escapeHtml(quest.title)}" required>
-        <input type="text" name="type" value="${escapeHtml(quest.type)}" required>
-        <button type="submit">Save</button>
-    `;
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        const updatedQuest = {
-            title: form.title.value,
-            type: form.type.value
-        };
-        await fetch(`/quests/${questId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedQuest)
-        });
-        modal.classList.remove('active');
-        loadQuests();
-    };
-    modal.classList.add('active');
-}
-        function deleteQuest(questId) {
-            if (confirm('Are you sure you want to delete this quest?')) {
-                console.log('Delete quest:', questId);
-                // Call DELETE /quests/{id} from backend
-            }
-        }
-
-        // Boss battle modal
-        function openBossBattleModal() {
-            const modal = document.getElementById('bossBattleModal');
-            if (modal) modal.classList.add('active');
-            window.location.href = "/boss-battles";
-        }
-
-        // Close modals on click outside
-        document.addEventListener('click', function (event) {
-            if (event.target.classList.contains('modal-rpg')) {
-                event.target.classList.remove('active');
-            }
-        });
 
         // Logout
         function logout() {
@@ -904,13 +816,17 @@ animation: gradientPulse 15s ease infinite;
             window.location.href = '/login';
         }
 
-        // Escape HTML
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // Boss battle modal
+        function openBossBattleModal() {
+            window.location.href = "/battles/group";
         }
+
+        // Close modals on click outside
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('modal-rpg')) {
+                event.target.classList.remove('active');
+            }
+        });
 
         // Global error handling
         window.addEventListener('error', function (event) {

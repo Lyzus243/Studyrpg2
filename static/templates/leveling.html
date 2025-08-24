@@ -17,19 +17,15 @@
 
         body {
             background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,       /* Deep night (mystery/quests) */
-    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-    #e52d27 60%,      /* Blood red (danger/battle) */
-    #ffb347 85%,      /* Ember glow (energy/climax) */
-    #6df0ff 100%      /* Cyber neon (tech/futurism) */
-);
-background-size: 400% 400%;
-animation: gradientPulse 15s ease infinite;
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -75,6 +71,19 @@ animation: gradientPulse 15s ease infinite;
             object-fit: cover;
             border: 3px solid #fff;
             margin-bottom: 1rem;
+            background: linear-gradient(135deg, #8a5a44 0%, #a87c6c 50%, #c4a89c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(138, 90, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(138, 90, 68, 0.6);
         }
 
         .username-label {
@@ -194,9 +203,15 @@ animation: gradientPulse 15s ease infinite;
             margin-bottom: 1.5rem;
         }
 
+        .total-xp {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+        }
+
         /* PROGRESS BAR */
         .progress-container {
-            margin-bottom: 2rem;
+            margin-bottom: 0;
         }
 
         .progress-labels {
@@ -227,110 +242,30 @@ animation: gradientPulse 15s ease infinite;
             color: white;
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            min-width: 0;
         }
 
-        /* XP AWARD SECTION */
-        .award-section {
-            background: linear-gradient(135deg, #f8f8ff, #e3f0fc);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        /* LOADING STATES */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
 
-        .award-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #1e3c72;
-        }
-
-        .form-group input {
-            padding: 0.8rem;
-            border: 2px solid #cbd5e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            border-color: #2a5298;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.2);
-        }
-
-        .award-btn {
-            background: linear-gradient(90deg, #2a5298, #1e3c72);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-        }
-
-        .award-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .award-btn:active {
-            transform: translateY(0);
-        }
-
-        /* LEVEL HISTORY */
-        .history-section {
-            background: linear-gradient(135deg, #f8f8ff, #e3f0fc);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .history-title {
-            color: #1e3c72;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-        }
-
-        .history-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .history-item {
-            background: white;
-            border-left: 4px solid #e52d27;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .level-up {
-            font-weight: bold;
-            color: #e52d27;
-        }
-
-        .history-date {
-            color: #4a5568;
-            font-size: 0.9rem;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* RESPONSIVE DESIGN */
@@ -379,7 +314,9 @@ animation: gradientPulse 15s ease infinite;
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <img id="user-avatar" class="avatar-preview" src="https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3" alt="User Avatar">
+            <div id="user-avatar" class="avatar-preview">
+                <i class="fas fa-user"></i>
+            </div>
             <div id="user-name" class="username-label">
                 <h1>Leveling System</h1>
             </div>
@@ -422,76 +359,31 @@ animation: gradientPulse 15s ease infinite;
                 
                 <!-- Level Display -->
                 <div class="level-display">
-                    <div class="level-number" id="current-level">5</div>
+                    <div class="level-number" id="current-level">1</div>
                     <div class="level-label">Current Level</div>
+                    <div class="total-xp" id="total-xp">Total XP: 0</div>
                     
                     <div class="progress-container">
                         <div class="progress-labels">
-                            <span id="current-xp">750 XP</span>
-                            <span id="next-level-xp">1000 XP for Level 6</span>
+                            <span id="current-xp">0 XP</span>
+                            <span id="next-level-xp">100 XP for Next Level</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 75%">75%</div>
+                            <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- XP Award Section -->
-                <div class="award-section">
-                    <h3>Award XP</h3>
-                    <form class="award-form" id="xp-award-form">
-                        <div class="form-group">
-                            <label for="xp-amount">XP Amount</label>
-                            <input type="number" id="xp-amount" min="10" max="1000" placeholder="Enter XP to award" required>
-                        </div>
-                        <button type="submit" class="award-btn">
-                            <i class="fas fa-plus-circle"></i> Award XP
-                        </button>
-                    </form>
-                </div>
-                
-                <!-- Level History -->
-                <div class="history-section">
-                    <h3 class="history-title">Level History</h3>
-                    <ul class="history-list" id="level-history">
-                        <li class="history-item">
-                            <div>
-                                <span class="level-up">Level 5 Achieved!</span>
-                                <div>Reached 750 XP</div>
-                            </div>
-                            <div class="history-date">Jul 29, 2025</div>
-                        </li>
-                        <li class="history-item">
-                            <div>
-                                <span class="level-up">Level 4 Achieved!</span>
-                                <div>Reached 500 XP</div>
-                            </div>
-                            <div class="history-date">Jul 26, 2025</div>
-                        </li>
-                        <li class="history-item">
-                            <div>
-                                <span class="level-up">Level 3 Achieved!</span>
-                                <div>Reached 300 XP</div>
-                            </div>
-                            <div class="history-date">Jul 22, 2025</div>
-                        </li>
-                        <li class="history-item">
-                            <div>
-                                <span class="level-up">Level 2 Achieved!</span>
-                                <div>Reached 150 XP</div>
-                            </div>
-                            <div class="history-date">Jul 18, 2025</div>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // Utility: Get token from localStorage or sessionStorage
+        // Global state
+        let currentLevelData = null;
+
+        // Utility: Get token from localStorage
         async function getToken() {
-            const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+            const token = localStorage.getItem('access_token');
             if (!token) {
                 window.location.href = '/login';
                 throw new Error('No token found. Redirecting to login...');
@@ -499,14 +391,69 @@ animation: gradientPulse 15s ease infinite;
             return token;
         }
 
+        // Load user profile data
+        async function loadUserProfile() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Update user avatar and name
+                    await loadUserAvatar(userData);
+                    if (userData.username) {
+                        document.getElementById('user-name').textContent = userData.username;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
+        }
+
+        // Load user avatar
+        async function loadUserAvatar(userData) {
+            try {
+                const avatarElement = document.getElementById('user-avatar');
+                
+                if (userData && userData.avatar_url && userData.avatar_url !== "None") {
+                    // Create an image element for the avatar
+                    avatarElement.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = userData.avatar_url;
+                    img.alt = 'User Avatar';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    avatarElement.appendChild(img);
+                } else {
+                    // Use default avatar with initials
+                    const username = userData ? userData.username : 'User';
+                    const initials = username ? username.charAt(0).toUpperCase() : 'U';
+                    avatarElement.innerHTML = `<span style="font-size: 2.5rem; font-weight: bold;">${initials}</span>`;
+                }
+            } catch (error) {
+                console.error('Error loading avatar:', error);
+                // Fallback to default icon
+                const avatarElement = document.getElementById('user-avatar');
+                avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        }
+
         // Initialize leveling page
         (async function init() {
             try {
+                await loadUserProfile();
                 await loadLevelingData();
-                setupEventListeners();
+                console.log('Leveling system initialized successfully');
             } catch (error) {
                 console.error('Initialization error:', error);
-                window.location.href = '/login';
+                alert('Failed to initialize leveling system. Please try again.');
             }
         })();
 
@@ -515,87 +462,70 @@ animation: gradientPulse 15s ease infinite;
             try {
                 const token = await getToken();
                 
-                // Get current level progress
-                const progressResponse = await fetch('/api/leveling/progress', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                // Get current level progress using the correct route
+                const progressResponse = await fetch('/leveling/progress', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                if (!progressResponse.ok) throw new Error('Failed to load level progress');
+                // Handle unauthorized response
+                if (progressResponse.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!progressResponse.ok) {
+                    const errorText = await progressResponse.text();
+                    throw new Error(`Failed to load level progress: ${progressResponse.status} - ${errorText}`);
+                }
+                
                 const progressData = await progressResponse.json();
+                currentLevelData = progressData;
                 
                 updateLevelDisplay(progressData);
                 
             } catch (error) {
                 console.error('Error loading leveling data:', error);
-                alert('Failed to load leveling data. Please try again.');
+                alert(`Failed to load leveling data: ${error.message}`);
             }
         }
 
         // Update level display with data from backend
         function updateLevelDisplay(data) {
-            const levelEl = document.getElementById('current-level');
-            const currentXpEl = document.getElementById('current-xp');
-            const nextLevelXpEl = document.getElementById('next-level-xp');
-            const progressFillEl = document.getElementById('progress-fill');
-            
-            if (levelEl) levelEl.textContent = data.level || 1;
-            if (currentXpEl) currentXpEl.textContent = `${data.xp || 0} XP`;
-            
-            // Calculate progress percentage
-            const nextLevelXp = 100 * (data.level || 1); // Simplified formula
-            const progressPercentage = Math.min(100, Math.round((data.xp / nextLevelXp) * 100));
-            
-            if (nextLevelXpEl) nextLevelXpEl.textContent = `${nextLevelXp} XP for Level ${(data.level || 1) + 1}`;
-            if (progressFillEl) {
-                progressFillEl.style.width = `${progressPercentage}%`;
-                progressFillEl.textContent = `${progressPercentage}%`;
-            }
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            const xpForm = document.getElementById('xp-award-form');
-            if (xpForm) {
-                xpForm.addEventListener('submit', handleXpAward);
-            }
-        }
-
-        // Handle XP award form submission
-        async function handleXpAward(event) {
-            event.preventDefault();
-            
-            const xpAmount = document.getElementById('xp-amount').value;
-            if (!xpAmount || isNaN(xpAmount)) {
-                alert('Please enter a valid XP amount');
-                return;
-            }
-            
             try {
-                const token = await getToken();
-                const response = await fetch('/api/leveling/award', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ xp: parseInt(xpAmount) })
-                });
+                // Update level number
+                const levelEl = document.getElementById('current-level');
+                if (levelEl) levelEl.textContent = data.level || 1;
                 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to award XP');
+                // Update total XP
+                const totalXpEl = document.getElementById('total-xp');
+                if (totalXpEl) totalXpEl.textContent = `Total XP: ${data.total_xp || 0}`;
+                
+                // Update current XP in level
+                const currentXpEl = document.getElementById('current-xp');
+                if (currentXpEl) currentXpEl.textContent = `${data.current_xp || 0} XP`;
+                
+                // Update next level XP requirement
+                const nextLevelXpEl = document.getElementById('next-level-xp');
+                const nextLevelXp = data.xp_for_next_level - data.xp_for_current_level;
+                if (nextLevelXpEl) {
+                    nextLevelXpEl.textContent = `${nextLevelXp} XP for Level ${data.level + 1}`;
                 }
                 
-                const result = await response.json();
-                alert(`Success! ${result.message}`);
-                document.getElementById('xp-amount').value = '';
+                // Update progress bar
+                const progressFillEl = document.getElementById('progress-fill');
+                const progressPercentage = Math.round(data.progress_percentage || 0);
+                if (progressFillEl) {
+                    progressFillEl.style.width = `${progressPercentage}%`;
+                    progressFillEl.textContent = progressPercentage > 5 ? `${progressPercentage}%` : '';
+                }
                 
-                // Refresh level data
-                await loadLevelingData();
-                
+                console.log('Level display updated:', data);
             } catch (error) {
-                console.error('Error awarding XP:', error);
-                alert(`Error: ${error.message}`);
+                console.error('Error updating level display:', error);
             }
         }
 
@@ -605,6 +535,17 @@ animation: gradientPulse 15s ease infinite;
             sessionStorage.removeItem('access_token');
             window.location.href = '/login';
         }
+
+        // Error handler for unhandled promise rejections
+        window.addEventListener('unhandledrejection', event => {
+            console.error('Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+
+        // Error handler for general errors
+        window.addEventListener('error', event => {
+            console.error('Global error:', event.error);
+        });
     </script>
 </body>
 </html>

@@ -14,8 +14,8 @@ Look for the github account that has this game and login into it.
 netstat -an | findstr :8000
 
 # Or use PowerShell
-Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue
-taskkill /PID XXXX /F
+Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | 
+ForEach-Object { taskkill /PID $_.OwningProcess /F }
 
 $env:Path += ";C:\Tools\Sysinternals\Handle"
 handle.exe
@@ -33,5 +33,25 @@ report writing.
 https://opengameart.org/art-search-advanced?field_art_tags_tid=Action
 
 
+Admin credentials:
 
+Username: Lyzus
+
+Password: admin123
+http://localhost:8000/admin/login
+http://localhost:8000/admin/signup
+http://localhost:8000/admin/dashboard
+
+The badges was added to the db using alembic script migration, now I need to add a functionality for the badges section(in the UI) in which users collect badges per level up, and it gets updated to the database.
+Your task:achieve these functionality for me.Add the activity feed to the dashboard page. Fetch and Load activity feed from the users db.
+There's also a commented route in the main.py file, that uses imports which are not present in the models files, rewrite the exact same route to use db queries from the updated db. and let the badges.html file retrieve token stored in localstorage, for user validation.
+
+
+
+These are the zip files for the application I'm working on, STUDYRPG(a gamified study application). The basic functionalities are fully functional, just one more thing!
+Your task:
+  1. Unzip these files.
+   2. Make sure the admin functionalities are fully integrated with the alembic script migrations.Also make sure it is properly integrated with the backend, and fetches data from the database, as it says "failed to load items"
+    3. Overall, go through the whole application, and make sure it works at at least 90% optimum level.
+        After checking all these, you are to give a detailed report on what doesn't fully work and give the solution to fix it
 

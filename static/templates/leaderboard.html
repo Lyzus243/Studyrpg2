@@ -32,6 +32,7 @@ animation: gradientPulse 15s ease infinite;
 
     h1 {
       text-align: center;
+      color: white;
     }
     table {
       margin: auto;
@@ -49,6 +50,12 @@ animation: gradientPulse 15s ease infinite;
       background: #007BFF;
       color: white;
     }
+    
+    #error-message {
+      color: red;
+      text-align: center;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -58,6 +65,7 @@ animation: gradientPulse 15s ease infinite;
       <tr>
         <th>Rank</th>
         <th>Username</th>
+        <th>Level</th>
         <th>XP</th>
       </tr>
     </thead>
@@ -65,8 +73,10 @@ animation: gradientPulse 15s ease infinite;
   </table>
 
   <div id="loading-spinner" style="text-align: center;">
-  <img src="/static/images/loading-spinner.gif" alt="Loading..." />
-</div>
+    <img src="/static/images/loading-spinner.gif" alt="Loading..." />
+  </div>
+  
+  <div id="error-message"></div>
 
 <script>
     function escapeHtml(text) {
@@ -85,7 +95,7 @@ animation: gradientPulse 15s ease infinite;
       table.innerHTML = '';
 
       try {
-        const response = await fetch('/api/leaderboard');
+        const response = await fetch('/leaderboard-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -95,13 +105,12 @@ animation: gradientPulse 15s ease infinite;
           throw new Error('Invalid data format');
         }
 
-        users.sort((a, b) => b.xp - a.xp);
-        
-        users.forEach((user, index) => {
+        users.forEach((user) => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${index + 1}</td>
+            <td>${user.rank}</td>
             <td>${escapeHtml(user.username)}</td>
+            <td>${user.level}</td>
             <td>${user.xp}</td>
           `;
           table.appendChild(row);

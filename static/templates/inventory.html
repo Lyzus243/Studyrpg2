@@ -2,130 +2,331 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Inventory</title>
+  <title>Inventory | StudyRPG</title>
   <style>
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,       /* Deep night (mystery/quests) */
-    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-    #e52d27 60%,      /* Blood red (danger/battle) */
-    #ffb347 85%,      /* Ember glow (energy/climax) */
-    #6df0ff 100%      /* Cyber neon (tech/futurism) */
-);
-background-size: 400% 400%;
-animation: gradientPulse 15s ease infinite;
-  margin: 0;
-  padding: 2rem;
-  box-sizing: border-box;
-}
+    /* ===== CSS Variables for Consistency ===== */
+    :root {
+        --primary-color: #1e3c72;
+        --accent-color: #e52d27;
+        --gradient: linear-gradient(135deg, #1a1a2e 0%, #1e3c72 25%, #e52d27 60%, #ffb347 85%, #6df0ff 100%);
+        --spacing-unit: 1rem;
+        --text-light: #ffffff;
+        --text-muted: rgba(255, 255, 255, 0.7);
+        --card-bg: rgba(255, 255, 255, 0.92);
+        --card-border: rgba(30, 60, 114, 0.18);
+        --button-bg: #1e3c72;
+        --button-hover: #2a5298;
+    }
 
-h1 {
-  text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-}
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: var(--gradient);
+        background-size: 400% 400%;
+        animation: gradientPulse 15s ease infinite;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        color: #1e3c72;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        padding: 2rem;
+        box-sizing: border-box;
+    }
 
-/* Inventory Grid */
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  box-sizing: border-box;
-}
+    @keyframes gradientPulse {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
 
-/* Item Card */
-.item-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  padding: 1rem;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    /* Header and title */
+    .header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
 
-.item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
+    h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1e3c72;
+        margin-bottom: 1.2rem;
+        letter-spacing: 2px;
+        text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 #e52d27;
+    }
 
-.item-card img {
-  max-width: 80px;
-  height: auto;
-  margin-bottom: 0.75rem;
-}
+    /* Loading and error messages */
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 50vh;
+    }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  body {
-    padding: 1rem;
-  }
-  h1 {
-    font-size: 1.75rem;
-  }
-  .inventory-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  }
-  .item-card img {
-    max-width: 60px;
-  }
-}
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(30, 60, 114, 0.3);
+        border-top: 3px solid #1e3c72;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
 
-@media (max-width: 480px) {
-  body {
-    padding: 0.5rem;
-  }
-  h1 {
-    font-size: 1.5rem;
-  }
-  .inventory-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.75rem;
-  }
-  .item-card {
-    padding: 0.75rem;
-  }
-  .item-card img {
-    max-width: 50px;
-  }
-}
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
+    .error-msg {
+        text-align: center;
+        color: #e52d27;
+        font-weight: bold;
+        margin: 2rem 0;
+    }
+
+    /* Inventory Grid */
+    .inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    /* Item Card */
+    .item-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px var(--card-border);
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .item-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(30, 60, 114, 0.25);
+    }
+
+    .item-card img {
+        max-width: 100px;
+        height: auto;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+
+    .item-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e3c72;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-card p {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0.5rem 0;
+    }
+
+    .item-card .item-price {
+        font-weight: bold;
+        color: #e52d27;
+    }
+    
+    .item-card .item-status {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .item-status.used {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    .item-status.unused {
+        background-color: #ff9800;
+        color: white;
+    }
+    
+    .no-items {
+        grid-column: 1 / -1;
+        text-align: center;
+        font-size: 1.2rem;
+        color: #666;
+        padding: 2rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        body {
+            padding: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        .inventory-grid {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+        .item-card {
+            padding: 1rem;
+        }
+        .item-card img {
+            max-width: 80px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body {
+            padding: 0.5rem;
+        }
+        h1 {
+            font-size: 1.8rem;
+        }
+        .inventory-grid {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+        .item-card {
+            padding: 0.75rem;
+        }
+        .item-card img {
+            max-width: 70px;
+        }
+    }
   </style>
 </head>
 <body>
-  <h1>Your Inventory</h1>
-  <div class="inventory-grid" id="inventory"></div>
+  <div class="header">
+    <h1>Your Inventory</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error State -->
+  <div id="error-message" class="error-msg" style="display: none;">
+    <span id="error-text"></span>
+  </div>
+
+  <!-- Inventory Content -->
+  <div class="inventory-grid" id="inventory" style="display: none;"></div>
 
   <script>
-const sampleItems = [
-  {
-    name: "XP Potion",
-    image: "https://cdn.vectorstock.com/i/preview-1x/63/55/xp-boost-potion-game-fantasy-magic-bottle-icon-vector-49166355.jpg",
-    description: "Grants 50 XP"
-  },
-  {
-    name: "Study Token",
-    image: "https://cdn-icons-png.flaticon.com/512/138/138281.png",
-    description: "Used in the Shop"
-  }
-];
+    // Check authentication and redirect if not logged in
+    function checkAuth() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            alert('Please log in to view your inventory.');
+            window.location.href = '/login';
+            return false;
+        }
+        return true;
+    }
 
-    const container = document.getElementById('inventory');
-    sampleItems.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <img src="${item.image}" alt="${item.name}">
-        <h3>${item.name}</h3>
-        <p>${item.description}</p>
-      `;
-      container.appendChild(card);
+    // Make authenticated API requests
+    async function makeAuthenticatedRequest(url, options = {}) {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        const response = await fetch(url, {
+            ...options,
+            headers
+        });
+
+        if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('access_token');
+            alert('Your session has expired. Please log in again.');
+            window.location.href = '/login';
+            return;
+        }
+
+        return response;
+    }
+
+    // Show error message
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-text').textContent = message;
+        document.getElementById('error-message').style.display = 'block';
+    }
+
+    // Load inventory items
+    async function loadInventory() {
+        try {
+            const response = await makeAuthenticatedRequest('/inventory-data');
+            
+            if (!response) return; // Handle case where response is undefined due to auth error
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const items = data.inventory;
+            
+            if (items.length === 0) {
+                document.getElementById('inventory').innerHTML = '<div class="no-items">Your inventory is empty.</div>';
+            } else {
+                displayInventory(items);
+            }
+            
+            // Hide loading, show content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('inventory').style.display = 'grid';
+            
+        } catch (error) {
+            console.error('Error loading inventory:', error);
+            showError('Failed to load inventory. Please try again.');
+        }
+    }
+
+    // Display inventory items
+    function displayInventory(items) {
+        const container = document.getElementById('inventory');
+        container.innerHTML = '';
+        
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            
+            // Format dates
+            const purchasedDate = new Date(item.purchased_at).toLocaleDateString();
+            const usedDate = item.used_at ? new Date(item.used_at).toLocaleDateString() : 'Not used';
+            
+            card.innerHTML = `
+                <img src="https://cdn.vectorstock.com/i/preview-1x/63/55/xp-boost-potion-game-fantasy-magic-bottle-icon-vector-49166355.jpg" alt="${item.name}">
+                <h3>${item.name}</h3>
+                <p>${item.description || 'No description available'}</p>
+                <p class="item-price">Price: ${item.price} coins</p>
+                <div class="item-status ${item.is_used ? 'used' : 'unused'}">
+                    ${item.is_used ? 'Used' : 'Available'}
+                </div>
+                <p><small>Purchased: ${purchasedDate}</small></p>
+                ${item.used_at ? `<p><small>Used: ${usedDate}</small></p>` : ''}
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Initialize page
+    window.addEventListener('load', function() {
+        if (checkAuth()) {
+            loadInventory();
+        }
     });
   </script>
 </body>

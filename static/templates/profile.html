@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile | StudyRPG</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* ===== CSS Variables for Consistency ===== */
         :root {
@@ -19,6 +21,9 @@
             --input-border: rgba(255, 255, 255, 0.2);
             --button-bg: #2a5298;
             --button-hover: #3b6ab4;
+            --quest-color: #ffb347;
+            --battle-color: #e52d27;
+            --group-color: #6df0ff;
         }
 
         /* ===== Base Styling ===== */
@@ -53,6 +58,28 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* ===== Loading Spinner ===== */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--text-muted);
+            border-top: 3px solid var(--text-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* ===== Main Container ===== */
         .container {
             display: grid;
@@ -76,20 +103,35 @@
             animation: fadeIn 0.5s ease-out;
         }
 
+        /* ===== Avatar Preview ===== */
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #8a5a44 0%, #a87c6c 50%, #c4a89c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(138, 90, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(138, 90, 68, 0.6);
+        }
+
         /* ===== User Info ===== */
         .user-info {
             display: grid;
             grid-template-columns: auto 1fr;
             gap: calc(var(--spacing-unit) * 1.5);
             align-items: start;
-        }
-
-        .avatar {
-            width: 8rem;
-            height: 8rem;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            object-fit: cover;
         }
 
         .user-details h1 {
@@ -125,6 +167,131 @@
             color: #a78bfa;
         }
 
+        .stat-level {
+            color: #fbbf24;
+        }
+
+        .stat-currency {
+            color: #10b981;
+        }
+
+        /* ===== Edit Profile Button ===== */
+        .edit-profile-btn {
+            margin-top: calc(var(--spacing-unit));
+            padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+            background: var(--button-bg);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .edit-profile-btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        /* ===== Edit Form ===== */
+        .edit-form {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: calc(var(--spacing-unit) * 1.5);
+            margin-top: calc(var(--spacing-unit));
+        }
+
+        .edit-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: calc(var(--spacing-unit));
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: calc(var(--spacing-unit) * 0.5);
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 0.75);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--button-bg);
+            box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: calc(var(--spacing-unit));
+            margin-top: calc(var(--spacing-unit) * 1.5);
+        }
+
+        .btn {
+            padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--button-bg);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            background: var(--button-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--input-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--input-bg);
+            color: var(--text-light);
+        }
+
+        /* ===== Error and Success Messages ===== */
+        .message {
+            padding: calc(var(--spacing-unit));
+            border-radius: 8px;
+            margin-bottom: calc(var(--spacing-unit));
+            font-weight: 600;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fecaca;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #bbf7d0;
+        }
+
         /* ===== Sections ===== */
         .section {
             margin-top: calc(var(--spacing-unit) * 2);
@@ -135,6 +302,9 @@
             font-weight: 600;
             color: var(--text-light);
             margin-bottom: calc(var(--spacing-unit));
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         /* ===== Study Groups ===== */
@@ -150,10 +320,22 @@
             border-radius: 12px;
             overflow: hidden;
             transition: box-shadow 0.3s ease;
+            position: relative;
         }
 
         .group-card:hover, .group-card:focus-within {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .group-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--group-color);
         }
 
         .group-card img {
@@ -170,6 +352,7 @@
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--text-light);
+            margin-bottom: 0.5rem;
         }
 
         .group-card p {
@@ -181,6 +364,18 @@
         .group-card .members {
             font-size: 0.9rem;
             color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .no-data {
+            padding: var(--spacing-unit);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
         }
 
         /* ===== Quests and Battles ===== */
@@ -195,11 +390,33 @@
             border-radius: 12px;
             padding: var(--spacing-unit);
             transition: box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .quest-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--quest-color);
+        }
+
+        .battle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--battle-color);
         }
 
         .quest-card:hover, .quest-card:focus-within,
         .battle-card:hover, .battle-card:focus-within {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
         }
 
         .quest-card h3, .battle-card h3 {
@@ -217,16 +434,34 @@
         .quest-card .xp {
             font-size: 0.9rem;
             color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .battle-card .health {
             font-size: 0.9rem;
             color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .battle-card .status {
             font-size: 0.9rem;
             color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ===== Icons ===== */
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* ===== Links ===== */
@@ -268,9 +503,10 @@
                 padding: var(--spacing-unit);
             }
 
-            .avatar {
-                width: 6rem;
-                height: 6rem;
+            .avatar-preview {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
             }
 
             .user-details h1 {
@@ -298,80 +534,420 @@
             .section h2 {
                 font-size: 1.3rem;
             }
+            
+            .avatar-preview {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card fade-in">
-            <div class="user-info">
-                <img src="{{ profile.avatar_url | default('https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3') }}" alt="{{ profile.username }}'s avatar" class="avatar">
-                <div class="user-details">
-                    <h1>{{ profile.username }}</h1>
-                    <p>{{ profile.email }}</p>
-                    <div class="user-stats">
-                        <p class="stat-xp">🌟 {{ profile.xp }} XP</p>
-                        <p class="stat-streak">🔥 {{ profile.streak }} Day Streak</p>
-                        <p class="stat-skill">💎 {{ profile.skill_points }} Skill Points</p>
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-message" class="message error" style="display: none;">
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Profile Content -->
+            <div id="profile-content" style="display: none;">
+                <div class="user-info">
+                    <div id="user-avatar" class="avatar-preview">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h1 id="user-username">Loading...</h1>
+                        <p id="user-email">Loading...</p>
+                        <div class="user-stats">
+                            <p class="stat-xp">🌟 <span id="user-xp">0</span> XP</p>
+                            <p class="stat-level">⭐ Level <span id="user-level">1</span></p>
+                            <p class="stat-streak">🔥 <span id="user-streak">0</span> Day Streak</p>
+                            <p class="stat-skill">💎 <span id="user-skill-points">0</span> Skill Points</p>
+                            <p class="stat-currency">💰 <span id="user-currency">0</span> Coins</p>
+                        </div>
+                        <button class="edit-profile-btn" onclick="toggleEditForm()">
+                            ✏️ Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Edit Profile Form -->
+                <div id="edit-form" class="edit-form">
+                    <h3>Edit Profile</h3>
+                    <div id="update-message"></div>
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="edit-username">Username</label>
+                            <input type="text" id="edit-username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email</label>
+                            <input type="email" id="edit-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-avatar">Avatar URL</label>
+                            <input type="url" id="edit-avatar" name="avatar_url" placeholder="https://example.com/avatar.jpg">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Study Groups Section -->
+                <div class="section">
+                    <h2>👥 Study Groups</h2>
+                    <div id="study-groups">
+                        <!-- Dynamically filled -->
+                    </div>
+                </div>
+
+                <!-- Completed Quests Section -->
+                <div class="section">
+                    <h2>📜 Completed Quests</h2>
+                    <div id="completed-quests">
+                        <!-- Dynamically filled -->
+                    </div>
+                </div>
+
+                <!-- Boss Battles Section -->
+                <div class="section">
+                    <h2>🐉 Boss Battles</h2>
+                    <div id="boss-battles">
+                        <!-- Dynamically filled -->
                     </div>
                 </div>
             </div>
-
-            <div class="section">
-                <h2>👥 Study Groups</h2>
-                {% if profile.groups %}
-                    <div class="group-grid">
-                        {% for group in profile.groups %}
-                            <div class="group-card" role="article">
-                                <img src="{{ group.image_url | default('https://via.placeholder.com/300x150?text=' + group.name | urlencode) }}" alt="{{ group.name }}" class="group-image">
-                                <div class="content">
-                                    <h3>{{ group.name }}</h3>
-                                    <p>{{ group.description | default('No description') }}</p>
-                                    <p class="members">👥 {{ group.members | length }} members</p>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">You haven't joined any groups yet. <a href="/study-groups" aria-label="Join a study group">Join one now!</a></p>
-                {% endif %}
-            </div>
-
-            <div class="section">
-                <h2>📜 Completed Quests</h2>
-                {% if profile.completed_quests %}
-                    <div class="quest-list">
-                        {% for quest in profile.completed_quests %}
-                            <div class="quest-card" role="article">
-                                <h3>{{ quest.title }}</h3>
-                                <p>{{ quest.description }}</p>
-                                <p class="xp">🌟 {{ quest.xp_reward }} XP</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No completed quests yet. <a href="/quests/templates" aria-label="Start a quest">Start a quest!</a></p>
-                {% endif %}
-            </div>
-
-            <div class="section">
-                <h2>🐉 Boss Battles</h2>
-                {% if profile.boss_battles %}
-                    <div class="battle-list">
-                        {% for battle in profile.boss_battles %}
-                            <div class="battle-card" role="article">
-                                <h3>{{ battle.title }}</h3>
-                                <p>{{ 'Group' if battle.is_group else 'Solo' }} Battle</p>
-                                <p class="health">❤️ {{ 'Boss Health: ' + battle.current_health|string if not battle.is_group else 'Group Health: ' + battle.group_health|string }}</p>
-                                <p class="status">🏆 {{ 'Won' if battle.passed else 'Lost' if battle.is_completed else 'Ongoing' }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No boss battles yet. <a href="/boss-battles" aria-label="Challenge a boss battle">Challenge a boss!</a></p>
-                {% endif %}
-            </div>
         </div>
     </div>
+
+    <script>
+        let currentUser = null;
+
+        // Check authentication and redirect if not logged in
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert('Please log in to view your profile.');
+                window.location.href = '/login';
+                return false;
+            }
+            return true;
+        }
+
+        // Make authenticated API requests
+        async function makeAuthenticatedRequest(url, options = {}) {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            if (response.status === 401) {
+                // Token expired or invalid
+                localStorage.removeItem('access_token');
+                alert('Your session has expired. Please log in again.');
+                window.location.href = '/login';
+                return;
+            }
+
+            return response;
+        }
+
+        // Load user profile data
+        async function loadUserProfile() {
+            try {
+                const response = await makeAuthenticatedRequest('/users/me');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const userData = await response.json();
+                currentUser = userData;
+                displayUserProfile(userData);
+                
+                // Load additional data
+                await loadStudyGroups();
+                await loadCompletedQuests();
+                await loadBossBattles();
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showError('Failed to load profile data. Please try again.');
+            }
+        }
+
+        // Display user profile data
+        function displayUserProfile(user) {
+            // Set avatar using the same logic as dashboard
+            const avatarElement = document.getElementById('user-avatar');
+            const avatarUrl = user.avatar_url;
+            
+            if (avatarUrl && avatarUrl !== "None") {
+                avatarElement.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = avatarUrl;
+                img.alt = 'User Avatar';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                avatarElement.appendChild(img);
+            } else {
+                const initials = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+                avatarElement.innerHTML = `<span style="font-size: 2.5rem; font-weight: bold;">${initials}</span>`;
+            }
+
+            document.getElementById('user-username').textContent = user.username;
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-xp').textContent = user.xp || 0;
+            document.getElementById('user-level').textContent = user.level || 1;
+            document.getElementById('user-skill-points').textContent = user.skill_points || 0;
+            document.getElementById('user-currency').textContent = user.currency || 0;
+
+            // Load streak separately if needed
+            loadUserStreak();
+
+            // Hide loading, show content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+        }
+
+        // Load user streak
+        async function loadUserStreak() {
+            try {
+                const response = await makeAuthenticatedRequest('/users/me/streak');
+                
+                if (response.ok) {
+                    const streak = await response.json();
+                    document.getElementById('user-streak').textContent = streak;
+                }
+            } catch (error) {
+                console.error('Error loading streak:', error);
+                document.getElementById('user-streak').textContent = '0';
+            }
+        }
+
+        // Load study groups
+        async function loadStudyGroups() {
+            try {
+                const response = await makeAuthenticatedRequest('/groups/me');
+                const container = document.getElementById('study-groups');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load study groups');
+                }
+                
+                const groups = await response.json();
+                
+                if (groups.length === 0) {
+                    container.innerHTML = '<div class="no-data">You haven\'t joined any study groups yet.</div>';
+                    return;
+                }
+                
+                let html = '<div class="group-grid">';
+                groups.forEach(group => {
+                    html += `
+                        <div class="group-card">
+                            <img src="${group.image_url || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1000'}" alt="${group.name}">
+                            <div class="content">
+                                <h3>${group.name}</h3>
+                                <p>${group.description || 'Study group focused on learning'}</p>
+                                <div class="members">
+                                    <span class="icon">👥</span> ${group.member_count || 0} members
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading study groups:', error);
+                document.getElementById('study-groups').innerHTML = '<div class="no-data">You haven\'t joined any study groups yet.</div>';
+            }
+        }
+
+        // Load completed quests - updated endpoint
+        async function loadCompletedQuests() {
+            try {
+                const response = await makeAuthenticatedRequest('/users/me/quests/completed');
+                const container = document.getElementById('completed-quests');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load completed quests');
+                }
+                
+                const quests = await response.json();
+                
+                if (quests.length === 0) {
+                    container.innerHTML = '<div class="no-data">You haven\'t completed any quests yet.</div>';
+                    return;
+                }
+                
+                let html = '<div class="quest-list">';
+                quests.forEach(quest => {
+                    html += `
+                        <div class="quest-card">
+                            <h3>${quest.title}</h3>
+                            <p>${quest.description || 'Completed quest'}</p>
+                            <div class="xp">
+                                <span class="icon">🌟</span> Earned ${quest.xp_reward || 0} XP
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading completed quests:', error);
+                document.getElementById('completed-quests').innerHTML = '<div class="no-data">You haven\'t completed any quests yet.</div>';
+            }
+        }
+
+        // Load boss battles - updated endpoint
+        async function loadBossBattles() {
+            try {
+                const response = await makeAuthenticatedRequest('/users/me/battles/completed');
+                const container = document.getElementById('boss-battles');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load boss battles');
+                }
+                
+                const battles = await response.json();
+                
+                if (battles.length === 0) {
+                    container.innerHTML = '<div class="no-data">You haven\'t completed any boss battles yet.</div>';
+                    return;
+                }
+                
+                let html = '<div class="battle-list">';
+                battles.forEach(battle => {
+                    html += `
+                        <div class="battle-card">
+                            <h3>${battle.name}</h3>
+                            <p>${battle.description || 'Boss battle completed'}</p>
+                            <div class="health">
+                                <span class="icon">❤️</span> Health: ${battle.health || '100%'}
+                            </div>
+                            <div class="status">
+                                <span class="icon">${battle.won ? '🏆' : '⚠️'}</span> 
+                                ${battle.won ? 'Victory' : 'Defeat'}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading boss battles:', error);
+                document.getElementById('boss-battles').innerHTML = '<div class="no-data">You haven\'t completed any boss battles yet.</div>';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        // Toggle edit form
+        function toggleEditForm() {
+            const form = document.getElementById('edit-form');
+            const isVisible = form.classList.contains('active');
+            
+            if (isVisible) {
+                form.classList.remove('active');
+            } else {
+                // Pre-fill form with current user data
+                document.getElementById('edit-username').value = currentUser.username;
+                document.getElementById('edit-email').value = currentUser.email;
+                document.getElementById('edit-avatar').value = currentUser.avatar_url || '';
+                form.classList.add('active');
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            document.getElementById('edit-form').classList.remove('active');
+            document.getElementById('update-message').innerHTML = '';
+        }
+
+        // Handle profile update
+        document.getElementById('profile-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const updateMessage = document.getElementById('update-message');
+            updateMessage.innerHTML = '';
+
+            const formData = {
+                username: document.getElementById('edit-username').value.trim(),
+                email: document.getElementById('edit-email').value.trim(),
+                avatar_url: document.getElementById('edit-avatar').value.trim() || null
+            };
+
+            // Basic validation
+            if (!formData.username || !formData.email) {
+                updateMessage.innerHTML = '<div class="message error">Username and email are required.</div>';
+                return;
+            }
+
+            try {
+                const response = await makeAuthenticatedRequest('/users/me', {
+                    method: 'PUT',
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentUser = result;
+                    displayUserProfile(result);
+                    updateMessage.innerHTML = '<div class="message success">Profile updated successfully!</div>';
+                    
+                    // Auto-hide form after success
+                    setTimeout(() => {
+                        cancelEdit();
+                    }, 2000);
+                } else {
+                    updateMessage.innerHTML = `<div class="message error">${result.detail || 'Failed to update profile.'}</div>`;
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                updateMessage.innerHTML = '<div class="message error">Network error. Please try again.</div>';
+            }
+        });
+
+        // Initialize page
+        window.addEventListener('load', function() {
+            if (checkAuth()) {
+                loadUserProfile();
+            }
+        });
+    </script>
 </body>
 </html>

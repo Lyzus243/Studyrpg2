@@ -103,19 +103,13 @@ animation: gradientPulse 15s ease infinite;
 <body>
     <div class="signup-container">
         <div class="signup-title">Create Your StudyRPG Account</div>
-        <form id="signup-form" onsubmit="return signupUser();">
-    <input type="text" id="username" placeholder="Username" required><br>
-    <input type="email" id="email" placeholder="Email" required><br>
-    <input type="password" id="password" placeholder="Password" required><br>
-    <input type="password" id="confirm" placeholder="Confirm Password" required><br>
-    <input type="url" id="avatar_url" placeholder="Avatar Image URL (optional)"><br>
-    <input type="number" id="xp" placeholder="Starting XP (default: 0)" min="0" value="0"><br>
-    <input type="number" id="skill_points" placeholder="Skill Points (default: 0)" min="0" value="0"><br>
-    <input type="number" id="streak" placeholder="Current Streak (default: 0)" min="0" value="0"><br>
-    <input type="number" id="level" placeholder="Starting Level (default: 1)" min="1" value="1"><br>
-    <input type="number" id="currency" placeholder="Starting Currency (default: 100)" min="0" value="100"><br>
-    <button class="signup-btn" type="submit">Sign Up</button>
-</form>
+        <form id="signup-form">
+            <input type="text" id="username" placeholder="Username" required><br>
+            <input type="email" id="email" placeholder="Email" required><br>
+            <input type="password" id="password" placeholder="Password" required><br>
+            <input type="password" id="confirm_password" placeholder="Confirm Password" required><br>
+            <button class="signup-btn" type="submit">Sign Up</button>
+        </form>
         <div id="error" class="error-msg"></div>
         <div id="success" class="success-msg"></div>
         <div id="verify-msg" class="verify-msg">
@@ -136,103 +130,124 @@ animation: gradientPulse 15s ease infinite;
             margin-top: 2rem;
         ">GAME BY LYZUS</div>
         <audio id="bgm" src="/static/sounds/willliam_hector_-_shadow.wav" loop></audio>
-<button 
-    onclick="document.getElementById('bgm').play()" 
-    onmouseover="this.style.setProperty('--pulse-opacity', '0.4')"
-    onmouseout="this.style.setProperty('--pulse-opacity', '0')"
-    style="
-        --pulse-opacity: 0;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 0.5rem 1.3rem;
-        font-size: 1rem;
-        font-family: 'Courier New', monospace;
-        background: linear-gradient(90deg, #1a1a2e 0%, #1e3c72 60%, #e52d27 100%);
-        color: #fff;
-        border: 1px solid rgba(109, 240, 255, 0.3);
-        border-radius: 8px;
-        cursor: pointer;
-        z-index: 100;
-        opacity: 0.92;
-        font-weight: bold;
-        text-shadow: 0 0 5px rgba(109, 240, 255, 0.5);
-        box-shadow: 
-            0 0 12px rgba(229, 45, 39, 0.3),
-            0 2px 8px rgba(30, 60, 114, 0.3),
-            inset 0 0 8px rgba(109, 240, 255, 0.1);
-        transition: 
-            background 0.3s ease,
-            border-color 0.3s ease,
-            box-shadow 0.3s ease,
-            transform 0.2s ease;
-    "
->
-    ▶ PLAY MUSIC
-    <span style="
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        background: radial-gradient(circle at center, #6df0ff 0%, transparent 70%);
-        opacity: var(--pulse-opacity);
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-    "></span>
-</button>    </div>
+        <button 
+            onclick="document.getElementById('bgm').play()" 
+            onmouseover="this.style.setProperty('--pulse-opacity', '0.4')"
+            onmouseout="this.style.setProperty('--pulse-opacity', '0')"
+            style="
+                --pulse-opacity: 0;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                padding: 0.5rem 1.3rem;
+                font-size: 1rem;
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(90deg, #1a1a2e 0%, #1e3c72 60%, #e52d27 100%);
+                color: #fff;
+                border: 1px solid rgba(109, 240, 255, 0.3);
+                border-radius: 8px;
+                cursor: pointer;
+                z-index: 100;
+                opacity: 0.92;
+                font-weight: bold;
+                text-shadow: 0 0 5px rgba(109, 240, 255, 0.5);
+                box-shadow: 
+                    0 0 12px rgba(229, 45, 39, 0.3),
+                    0 2px 8px rgba(30, 60, 114, 0.3),
+                    inset 0 0 8px rgba(109, 240, 255, 0.1);
+                transition: 
+                    background 0.3s ease,
+                    border-color 0.3s ease,
+                    box-shadow 0.3s ease,
+                    transform 0.2s ease;
+            "
+        >
+            ▶ PLAY MUSIC
+            <span style="
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                background: radial-gradient(circle at center, #6df0ff 0%, transparent 70%);
+                opacity: var(--pulse-opacity);
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            "></span>
+        </button>    
+    </div>
 
     <script>
-        async function signupUser() {
-    const username = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const confirm = document.getElementById('confirm').value;
-    const avatar_url = document.getElementById('avatar_url').value;
-    const xp = parseInt(document.getElementById('xp').value) || 0;
-    const skill_points = parseInt(document.getElementById('skill_points').value) || 0;
-    const streak = parseInt(document.getElementById('streak').value) || 0;
-    const level = parseInt(document.getElementById('level').value) || 1;
-    const currency = parseInt(document.getElementById('currency').value) || 100;
-    const errorDiv = document.getElementById('error');
-    const successDiv = document.getElementById('success');
-    const verifyDiv = document.getElementById('verify-msg');
-    errorDiv.textContent = "";
-    successDiv.textContent = "";
-    verifyDiv.style.display = "none";
+        // Signup Form Handler
+        document.getElementById('signup-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            const errorDiv = document.getElementById('error');
+            const successDiv = document.getElementById('success');
+            const verifyDiv = document.getElementById('verify-msg');
+            
+            // Clear previous messages
+            errorDiv.textContent = "";
+            successDiv.textContent = "";
+            verifyDiv.style.display = "none";
 
-    if (password !== confirm) {
-        errorDiv.textContent = "Passwords do not match.";
-        return false;
-    }
+            // Client-side validation
+            if (password !== confirm_password) {
+                errorDiv.textContent = "Passwords do not match.";
+                return;
+            }
 
-    try {
-        const res = await fetch('/auth/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                username, 
-                email, 
-                password, 
-                avatar_url,
-                xp,
-                skill_points,
-                streak,
-                level,
-                currency
-            }),
-            redirect: 'follow'
+            if (password.length < 8) {
+                errorDiv.textContent = "Password must be at least 8 characters long.";
+                return;
+            }
+
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = "Please enter a valid email address.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        confirm_password: confirm_password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Registration successful
+                    window.location.href = "/validAccount";
+                    verifyDiv.style.display = "block";
+                    
+                    // Clear the form
+                    document.getElementById('signup-form').reset();
+                    
+                    // Optionally redirect after a delay
+                    // setTimeout(() => {
+                    //     window.location.href = "/login";
+                    // }, 3000);
+                } else {
+                    // Handle errors returned by the backend
+                    errorDiv.textContent = data.detail || "Registration failed. Please try again.";
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                errorDiv.textContent = "Network error. Please check your connection and try again.";
+            }
         });
-
-        if (res.ok) {
-            window.location.href = "/auth/validAccount.html";
-        } else {
-            const data = await res.json().catch(() => ({}));
-            errorDiv.textContent = data.detail || "Signup failed.";
-        }
-    } catch (error) {
-        errorDiv.textContent = "An error occurred: " + error.message;
-    }
-    return false;
-}
     </script>
 </body>
 </html>

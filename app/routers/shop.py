@@ -9,11 +9,16 @@ from app.database import get_async_session
 from app.auth_deps import get_current_user
 import logging
 from datetime import datetime
+from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 shop_router = APIRouter(prefix="", tags=["shop"])
+
+class PurchaseResponse(BaseModel):
+    user_item: schemas.UserItemRead
+    updated_currency: int
 
 @shop_router.get("/items", response_model=List[schemas.ItemRead])
 async def get_shop_items(
@@ -34,7 +39,7 @@ async def get_shop_items(
         logger.error(f"Unexpected error fetching shop items for user {current_user.id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch shop items: {str(e)}")
 
-@shop_router.post("/purchase", response_model=schemas.UserItemRead)
+@shop_router.post("/purchase", response_model=PurchaseResponse)
 async def purchase_item(
     purchase: schemas.PurchaseCreate,
     db: AsyncSession = Depends(get_async_session),
@@ -45,7 +50,7 @@ async def purchase_item(
             logger.warning("Unauthorized attempt to purchase item")
             raise HTTPException(status_code=401, detail="Authentication required")
         
-        # FIX: Get fresh user object from session
+        # Get fresh user object from session
         result = await db.execute(
             select(models.User)
             .where(models.User.id == current_user.id)
@@ -53,7 +58,7 @@ async def purchase_item(
         )
         user = result.scalars().first()
         
-        # FIX: Get item with locking to prevent race conditions
+        # Get item with locking to prevent race conditions
         result = await db.execute(
             select(models.Item)
             .where(models.Item.id == purchase.item_id)
@@ -76,13 +81,16 @@ async def purchase_item(
             purchased_at= datetime.utcnow()
         )
         
-        # FIX: Add to session and commit
+        # Add to session and commit
         db.add(user_item)
         await db.commit()
         await db.refresh(user_item)
         
         logger.info(f"User {user.id} purchased item {item.id}")
-        return schemas.UserItemRead.model_validate(user_item)
+        return {
+            "user_item": schemas.UserItemRead.model_validate(user_item),
+            "updated_currency": user.currency
+        }
         
     except HTTPException:
         raise
@@ -105,7 +113,7 @@ async def get_user_inventory(
             logger.warning("Unauthorized attempt to view inventory")
             raise HTTPException(status_code=401, detail="Authentication required")
             
-        # FIX: Query UserItem directly instead of through User
+        # Query UserItem directly instead of through User
         result = await db.execute(
             select(models.UserItem)
             .where(models.UserItem.user_id == current_user.id)

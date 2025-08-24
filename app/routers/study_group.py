@@ -8,13 +8,57 @@ from app.auth_deps import get_current_user
 from app.connection_manager import ConnectionManager
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 study_groups_router = APIRouter(prefix="", tags=["study_groups"])
 manager = ConnectionManager()
+
+async def check_group_eligibility(user: models.User, db: AsyncSession) -> dict:
+    """Check if user meets the requirements to join a study group"""
+    min_streak = 5
+    min_xp = 300
+    
+    # Check current streak
+    current_streak = getattr(user, 'current_streak', 0)
+    
+    # Check total XP
+    total_xp = getattr(user, 'total_xp', 0)
+    
+    eligible = current_streak >= min_streak and total_xp >= min_xp
+    
+    return {
+        'eligible': eligible,
+        'current_streak': current_streak,
+        'min_streak': min_streak,
+        'total_xp': total_xp,
+        'min_xp': min_xp,
+        'streak_met': current_streak >= min_streak,
+        'xp_met': total_xp >= min_xp
+    }
+
+@study_groups_router.get("/eligibility", response_model=dict)
+async def get_group_eligibility(
+    db: AsyncSession = Depends(get_async_session),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get user's eligibility status for joining study groups"""
+    try:
+        if not current_user:
+            logger.warning("Unauthorized attempt to check group eligibility")
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        eligibility = await check_group_eligibility(current_user, db)
+        logger.info(f"Checked eligibility for user {current_user.id}: {eligibility['eligible']}")
+        return eligibility
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking group eligibility for user {current_user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to check eligibility: {str(e)}")
 
 @study_groups_router.post("/", response_model=schemas.StudyGroupRead)
 async def create_study_group(
@@ -26,6 +70,18 @@ async def create_study_group(
         if not current_user:
             logger.warning("Unauthorized attempt to create study group")
             raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Check eligibility
+        eligibility = await check_group_eligibility(current_user, db)
+        if not eligibility['eligible']:
+            error_msg = "You don't meet the requirements to create a study group. "
+            if not eligibility['streak_met']:
+                error_msg += f"You need a streak of at least {eligibility['min_streak']} days (current: {eligibility['current_streak']}). "
+            if not eligibility['xp_met']:
+                error_msg += f"You need at least {eligibility['min_xp']} XP (current: {eligibility['total_xp']})."
+            logger.warning(f"User {current_user.id} failed eligibility check for group creation")
+            raise HTTPException(status_code=403, detail=error_msg)
+        
         if not group.name:
             logger.warning(f"Invalid group name by user {current_user.id}")
             raise HTTPException(status_code=400, detail="Group name is required")
@@ -86,6 +142,18 @@ async def join_study_group(
         if not current_user:
             logger.warning("Unauthorized attempt to join study group")
             raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Check eligibility
+        eligibility = await check_group_eligibility(current_user, db)
+        if not eligibility['eligible']:
+            error_msg = "You don't meet the requirements to join a study group. "
+            if not eligibility['streak_met']:
+                error_msg += f"You need a streak of at least {eligibility['min_streak']} days (current: {eligibility['current_streak']}). "
+            if not eligibility['xp_met']:
+                error_msg += f"You need at least {eligibility['min_xp']} XP (current: {eligibility['total_xp']})."
+            logger.warning(f"User {current_user.id} failed eligibility check for joining group {group_id}")
+            raise HTTPException(status_code=403, detail=error_msg)
+        
         async with db.begin():
             group = await crud.get_study_group(db, group_id)
             if not group:

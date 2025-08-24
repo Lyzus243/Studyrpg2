@@ -536,7 +536,7 @@
                         <h3>{{ deck.name }}</h3>
                         <p>Topic: {{ deck.topic }}</p>
                         <p>Created: {{ deck.created_at.strftime('%Y-%m-%d') }}</p>
-                        <button onclick="viewDeck( deck.id , '{{ deck.name | escapejs }}')" aria-label="View cards for {{ deck.name }}">View Cards</button>
+                        <button onclick="viewDeck('{{ deck.id }}', '{{ deck.name | escapejs }}')" aria-label="View cards for {{ deck.name }}">View Cards</button>
                     </div>
                 {% endfor %}
             </div>
@@ -646,8 +646,27 @@
         let currentCardIndex = 0;
         let cards = [];
 
-        // Pomodoro Timer
+        // Helper function to get auth headers
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token');
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        // Helper function to handle API errors
+        async function handleApiResponse(response) {
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                throw new Error(errorData.detail || `HTTP ${response.status}`);
+            }
+            return response.json();
+        }
+
+        // Pomodoro Timer Functions
         let timerInterval;
+
         function togglePomodoro() {
             const timer = document.getElementById('pomodoro-timer');
             timer.classList.toggle('collapsed');
@@ -658,25 +677,29 @@
 
         async function startTimer() {
             const minutes = parseInt(document.getElementById('customMinutes').value) || 25;
+            
+            // Log pomodoro session (assuming this endpoint exists)
             try {
                 await fetch('/pomodoro', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ duration: minutes })
                 });
             } catch (error) {
                 console.error('Error logging pomodoro session:', error);
             }
+
+            // Start the timer
             let time = minutes * 60;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const mins = Math.floor(time / 60);
                 const secs = time % 60;
                 document.getElementById('timerDisplay').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                if (time <= 0) clearInterval(timerInterval);
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Pomodoro session completed!');
+                }
                 time--;
             }, 1000);
         }
@@ -687,35 +710,44 @@
             document.getElementById('customMinutes').value = 25;
         }
 
-        // Deck and Card Management
+        // Flashcard Functions
         async function viewDeck(deckId, deckName) {
-            currentDeckId = deckId;
+            currentDeckId = parseInt(deckId); // Convert string to integer
             currentCardIndex = 0;
+            
             try {
-                document.getElementById('flashcard-modal').focus();
-                const response = await fetch(`/flashcards/${deckId}/cards`, {
-                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                // Note: Assuming there's an endpoint to get cards for a deck
+                // Since it's not in the backend file, using a placeholder
+                const response = await fetch(`/flashcards/sets/${deckId}/cards`, {
+                    headers: getAuthHeaders()
                 });
-                if (!response.ok) throw new Error('Failed to fetch cards');
-                cards = await response.json();
+                
+                cards = await handleApiResponse(response);
+                
                 if (cards.length === 0) {
                     alert('No flashcards in this deck.');
                     return;
                 }
+
                 document.getElementById('deck-title').textContent = `Deck: ${deckName}`;
                 updateCard();
                 document.getElementById('flashcard-modal').classList.remove('hidden');
+                document.getElementById('flashcard-modal').focus();
+                
             } catch (error) {
-                alert('Error: ' + error.message);
+                alert('Error loading deck: ' + error.message);
             }
         }
 
         function updateCard() {
             if (cards.length === 0) return;
+            
             const card = cards[currentCardIndex];
             document.getElementById('flashcard-question').textContent = card.question;
             document.getElementById('flashcard-answer').textContent = card.answer;
-            document.querySelector('.flip-card-inner').classList.remove('flipped');
+            
+            // Reset flip state
+            document.querySelector('.flip-card').classList.remove('flipped');
         }
 
         function flipCard() {
@@ -742,70 +774,81 @@
             currentCardIndex = 0;
         }
 
-        // Form Submissions
+        // Form Submission Handlers
         document.getElementById('create-deck-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const spinner = document.getElementById('deck-spinner');
             const status = document.getElementById('deck-status');
+            
             spinner.style.display = 'block';
             status.classList.add('hidden');
+            
             const formData = new FormData(e.target);
             const data = {
                 name: formData.get('name'),
                 topic: formData.get('topic')
             };
+            
             try {
+                // Note: Assuming there's an endpoint for creating deck sets
                 const response = await fetch('/flashcards/sets', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(data)
                 });
-                if (!response.ok) throw new Error('Failed to create deck');
+                
+                await handleApiResponse(response);
+                
                 status.textContent = 'Deck created successfully!';
                 status.classList.remove('hidden', 'error');
-                status.classList.add('status');
                 e.target.reset();
-                window.location.reload();
+                
+                // Reload page to show new deck
+                setTimeout(() => window.location.reload(), 1000);
+                
             } catch (error) {
                 status.textContent = 'Error: ' + error.message;
-                status.classList.remove('hidden', 'status');
+                status.classList.remove('hidden');
                 status.classList.add('error');
+            } finally {
                 spinner.style.display = 'none';
             }
         });
 
         document.getElementById('create-flashcard-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const spinner = document.getElementById('flashcard-spinner');
             const status = document.getElementById('flashcard-status');
+            
             spinner.style.display = 'block';
             status.classList.add('hidden');
+            
             const formData = new FormData(e.target);
             const data = {
-                deck_id: parseInt(formData.get('deck_id')),
                 question: formData.get('question'),
-                answer: formData.get('answer')
+                answer: formData.get('answer'),
+                deck_id: parseInt(formData.get('deck_id')) // Add deck_id if needed
             };
+            
             try {
+                // Using the correct endpoint from backend: POST /flashcards/
                 const response = await fetch('/flashcards/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(data)
                 });
-                if (!response.ok) throw new Error('Failed to create flashcard');
+                
+                await handleApiResponse(response);
+                
                 status.textContent = 'Flashcard added successfully!';
                 status.classList.remove('hidden', 'error');
-                status.classList.add('status');
                 e.target.reset();
+                
             } catch (error) {
                 status.textContent = 'Error: ' + error.message;
-                status.classList.remove('hidden', 'status');
+                status.classList.remove('hidden');
                 status.classList.add('error');
             } finally {
                 spinner.style.display = 'none';
@@ -814,59 +857,193 @@
 
         document.getElementById('generate-flashcards-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const spinner = document.getElementById('generate-spinner');
             const status = document.getElementById('generate-status');
+            
             spinner.style.display = 'block';
             status.classList.add('hidden');
+            
             const formData = new FormData(e.target);
+            
+            // Parse and validate JSON
             let cards;
             try {
                 cards = JSON.parse(formData.get('cards'));
-                if (!Array.isArray(cards)) throw new Error('Cards must be a JSON array');
+                if (!Array.isArray(cards)) {
+                    throw new Error('Cards must be a JSON array');
+                }
             } catch (error) {
                 status.textContent = 'Invalid JSON format for cards';
-                status.classList.remove('hidden', 'status');
+                status.classList.remove('hidden');
                 status.classList.add('error');
                 spinner.style.display = 'none';
                 return;
             }
+            
             const data = {
                 name: formData.get('name'),
                 topic: formData.get('topic'),
                 cards: cards
             };
+            
             try {
+                // Note: Assuming there's an endpoint for generating flashcards
                 const response = await fetch('/flashcards/generate', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify(data)
                 });
-                if (!response.ok) throw new Error('Failed to generate flashcards');
+                
+                await handleApiResponse(response);
+                
                 status.textContent = 'Flashcards generated successfully!';
                 status.classList.remove('hidden', 'error');
-                status.classList.add('status');
                 e.target.reset();
-                window.location.reload();
+                
+                // Reload page to show new deck
+                setTimeout(() => window.location.reload(), 1000);
+                
             } catch (error) {
                 status.textContent = 'Error: ' + error.message;
-                status.classList.remove('hidden', 'status');
+                status.classList.remove('hidden');
                 status.classList.add('error');
+            } finally {
                 spinner.style.display = 'none';
             }
         });
 
+        // Assign flashcard to user (based on backend endpoint)
+        async function assignFlashcardToUser(flashcardId, proficiency = 1) {
+            try {
+                const response = await fetch('/flashcards/user', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        flashcard_id: flashcardId,
+                        proficiency: proficiency
+                    })
+                });
+                
+                return await handleApiResponse(response);
+            } catch (error) {
+                console.error('Error assigning flashcard:', error);
+                throw error;
+            }
+        }
+
+        // Update user flashcard proficiency (based on backend endpoint)
+        async function updateFlashcardProficiency(userFlashcardId, proficiency) {
+            try {
+                const response = await fetch(`/flashcards/user/${userFlashcardId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        proficiency: proficiency
+                    })
+                });
+                
+                return await handleApiResponse(response);
+            } catch (error) {
+                console.error('Error updating proficiency:', error);
+                throw error;
+            }
+        }
+
+        // Enhanced flashcard modal with proficiency tracking
+        function addProficiencyButtons() {
+            const modalButtons = document.querySelector('.modal-buttons');
+            
+            // Add proficiency buttons if they don't exist
+            if (!document.querySelector('.proficiency-buttons')) {
+                const proficiencyDiv = document.createElement('div');
+                proficiencyDiv.className = 'proficiency-buttons';
+                proficiencyDiv.innerHTML = `
+                    <p style="color: var(--text-muted); margin: 0.5rem 0; text-align: center;">Rate your understanding:</p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button onclick="updateProficiency(1)" style="background: #e74c3c;">Hard</button>
+                        <button onclick="updateProficiency(2)" style="background: #f39c12;">Medium</button>
+                        <button onclick="updateProficiency(3)" style="background: #27ae60;">Easy</button>
+                    </div>
+                `;
+                modalButtons.parentNode.insertBefore(proficiencyDiv, modalButtons.nextSibling);
+            }
+        }
+
+        // Update proficiency for current card
+        async function updateProficiency(level) {
+            if (!cards[currentCardIndex] || !cards[currentCardIndex].user_flashcard_id) {
+                console.log('No user flashcard ID available for proficiency update');
+                return;
+            }
+            
+            try {
+                await updateFlashcardProficiency(cards[currentCardIndex].user_flashcard_id, level);
+                
+                // Visual feedback
+                const buttons = document.querySelectorAll('.proficiency-buttons button');
+                buttons.forEach(btn => btn.style.opacity = '0.5');
+                buttons[level - 1].style.opacity = '1';
+                
+                // Auto-advance to next card after a short delay
+                setTimeout(() => {
+                    if (currentCardIndex < cards.length - 1) {
+                        nextCard();
+                        // Reset button opacity
+                        buttons.forEach(btn => btn.style.opacity = '1');
+                    }
+                }, 500);
+                
+            } catch (error) {
+                alert('Error updating proficiency: ' + error.message);
+            }
+        }
+
+        // Enhanced viewDeck function to include proficiency buttons
+        const originalViewDeck = viewDeck;
+        viewDeck = async function(deckId, deckName) {
+            await originalViewDeck(deckId, deckName);
+            addProficiencyButtons();
+        };
+
         // Keyboard Navigation for Modal
         document.getElementById('flashcard-modal').addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') previousCard();
-            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousCard();
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextCard();
+            }
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 flipCard();
             }
-            if (e.key === 'Escape') closeFlashcardModal();
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeFlashcardModal();
+            }
+            // Number keys for proficiency
+            if (e.key >= '1' && e.key <= '3') {
+                e.preventDefault();
+                updateProficiency(parseInt(e.key));
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('No authentication token found. Some features may not work.');
+            }
+            
+            // Set focus to first form input
+            const firstInput = document.querySelector('input[type="text"]');
+            if (firstInput) {
+                firstInput.focus();
+            }
         });
     </script>
 </body>

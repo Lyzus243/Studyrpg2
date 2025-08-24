@@ -58,12 +58,11 @@ animation: gradientPulse 15s ease infinite;
 </head>
 <body>
     <div class="container">
+        <img src="../images/default-avatar.png" alt="User Avatar">
         <h1>Registration Successful</h1>
-        <p>{{ message }}</p>
-        <p>Welcome, {{ user.username }}! Please check your email ({{ user.email }}) to verify your account.</p>
-        {% if user.avatar_url %}
-        <img src="{{ user.avatar_url }}" alt="User Avatar">
-        {% endif %}
+        <p>One more Step</p>
+        <p>Complete Your Registeration!</p>
+        <p>Please check your email to verify your account.✨✨</p>
         <a class="login-link" href="/login">Go to Login</a>
     </div>
 </body>

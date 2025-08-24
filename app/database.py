@@ -1,42 +1,29 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from typing import AsyncGenerator
-from pathlib import Path
-import logging
 import os
+from collections.abc import AsyncGenerator
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+# Use the same DATABASE_URL everywhere (app and alembic)
+# SQLite (dev): sqlite+aiosqlite:///./app.db
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./app.db")
 
-# Updated database path
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATABASE_URL = f"sqlite+aiosqlite:///{BASE_DIR}/studyrpg.db?check_same_thread=False"
+# Create async engine
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    future=True,
+)
 
-engine = create_async_engine(DATABASE_URL, echo=True)
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+# Async session factory
+async_session_maker = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
+)
 
-async def init_db():
-    logger.debug("Starting database initialization")
-    try:
-        from app import models
-        async with engine.begin() as conn:
-            await conn.run_sync(models.Base.metadata.create_all)
-        
-        logger.info(f"Database initialized at {DATABASE_URL}")
-        if not os.path.exists(f"{BASE_DIR}/studyrpg.db"):
-            logger.warning("Database file not created!")
-        
-    except Exception as e:
-        logger.error(f"Database initialization failed: {str(e)}", exc_info=True)
-        raise
-
+# Dependency to get DB session
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session() as session:
-        try:
-            yield session
-        except Exception as e:
-            logger.error(f"Session error: {str(e)}")
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+    async with async_session_maker() as session:
+        yield session

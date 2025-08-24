@@ -19,16 +19,16 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-           background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,       /* Deep night (mystery/quests) */
-    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-    #e52d27 60%,      /* Blood red (danger/battle) */
-    #ffb347 85%,      /* Ember glow (energy/climax) */
-    #6df0ff 100%      /* Cyber neon (tech/futurism) */
-);
-background-size: 400% 400%;
-animation: gradientPulse 15s ease infinite;
+            background: linear-gradient(
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
             color: #333;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
@@ -36,9 +36,16 @@ animation: gradientPulse 15s ease infinite;
             min-height: 100vh;
         }
 
+        @keyframes gradientPulse {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 25% 25%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 75% 75%; }
+        }
+
         /* ===== CONTAINER ===== */
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -88,9 +95,59 @@ animation: gradientPulse 15s ease infinite;
             font-size: 1.1rem;
         }
 
-        /* ===== SKILLS SECTION ===== */
-        .skills-section {
+        /* ===== STATS SECTION ===== */
+        .stats-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffb347;
+            display: block;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: white;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* ===== SKILLS SECTIONS ===== */
+        .skills-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
             margin-bottom: 40px;
+        }
+
+        .skills-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .section-title {
@@ -101,8 +158,8 @@ animation: gradientPulse 15s ease infinite;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        /* ===== SKILL TREE ===== */
-        .skill-tree {
+        /* ===== SKILL GRID ===== */
+        .skill-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
@@ -145,32 +202,37 @@ animation: gradientPulse 15s ease infinite;
             opacity: 1;
         }
 
-        .skill.unlocked {
+        .skill.acquired {
             background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
             border-color: #28a745;
+            cursor: default;
         }
 
-        .skill.unlocked::before {
+        .skill.acquired::before {
             background: linear-gradient(90deg, #28a745, #20c997);
             opacity: 1;
         }
 
-        .skill.locked {
+        .skill.affordable {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff9e6 0%, #fef7e0 100%);
+        }
+
+        .skill.affordable:hover {
+            border-color: #f0ad4e;
+        }
+
+        .skill.expensive {
             opacity: 0.6;
             cursor: not-allowed;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-color: #6c757d;
         }
 
-        .skill.locked:hover {
+        .skill.expensive:hover {
             transform: none;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border-color: #6c757d;
-        }
-
-        .skill.locked::before {
-            background: #6c757d;
-            opacity: 0.5;
         }
 
         /* ===== SKILL CONTENT ===== */
@@ -181,11 +243,15 @@ animation: gradientPulse 15s ease infinite;
             display: block;
         }
 
-        .skill.unlocked .skill-icon {
+        .skill.acquired .skill-icon {
             color: #28a745;
         }
 
-        .skill.locked .skill-icon {
+        .skill.affordable .skill-icon {
+            color: #ffc107;
+        }
+
+        .skill.expensive .skill-icon {
             color: #6c757d;
         }
 
@@ -196,7 +262,7 @@ animation: gradientPulse 15s ease infinite;
             color: #1e3c72;
         }
 
-        .skill.locked .skill-name {
+        .skill.expensive .skill-name {
             color: #6c757d;
         }
 
@@ -205,10 +271,34 @@ animation: gradientPulse 15s ease infinite;
             color: #666;
             margin-bottom: 15px;
             line-height: 1.4;
+            min-height: 40px;
         }
 
-        .skill.locked .skill-description {
+        .skill.expensive .skill-description {
             color: #999;
+        }
+
+        .skill-cost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .skill-cost.affordable {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .skill-cost.expensive {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .skill-status {
@@ -223,53 +313,14 @@ animation: gradientPulse 15s ease infinite;
             letter-spacing: 0.5px;
         }
 
-        .skill-status.unlocked {
+        .skill-status.acquired {
             background: #d4edda;
             color: #155724;
         }
 
-        .skill-status.locked {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        /* ===== STATS SECTION ===== */
-        .stats-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            text-align: center;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffb347;
-            display: block;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-label {
-            color: white;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            opacity: 0.9;
+        .skill-status.available {
+            background: #cce5ff;
+            color: #004085;
         }
 
         /* ===== LOADING STATE ===== */
@@ -296,11 +347,12 @@ animation: gradientPulse 15s ease infinite;
         .error {
             background: rgba(220, 53, 69, 0.1);
             border: 1px solid rgba(220, 53, 69, 0.3);
-            color: #721c24;
+            color: white;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             margin: 20px 0;
+            backdrop-filter: blur(10px);
         }
 
         .error i {
@@ -311,6 +363,13 @@ animation: gradientPulse 15s ease infinite;
         }
 
         /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 968px) {
+            .skills-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 0 10px;
@@ -320,7 +379,7 @@ animation: gradientPulse 15s ease infinite;
                 font-size: 2rem;
             }
 
-            .skill-tree {
+            .skill-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
@@ -387,12 +446,12 @@ animation: gradientPulse 15s ease infinite;
         <div class="stats-section">
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-value" id="total-skills">0</span>
-                    <div class="stat-label">Total Skills</div>
+                    <span class="stat-value" id="total-available">0</span>
+                    <div class="stat-label">Available Skills</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value" id="unlocked-skills">0</span>
-                    <div class="stat-label">Unlocked</div>
+                    <span class="stat-value" id="acquired-count">0</span>
+                    <div class="stat-label">Acquired Skills</div>
                 </div>
                 <div class="stat-item">
                     <span class="stat-value" id="skill-points">0</span>
@@ -405,14 +464,27 @@ animation: gradientPulse 15s ease infinite;
             </div>
         </div>
 
-        <!-- Skills Section -->
-        <div class="skills-section">
-            <h2 class="section-title">Available Skills</h2>
-            <div class="skill-tree" id="skillTree">
-                <!-- Loading state -->
-                <div class="loading">
-                    <i class="fas fa-spinner"></i>
-                    <div>Loading your skills...</div>
+        <!-- Skills Container -->
+        <div class="skills-container">
+            <!-- Available Skills -->
+            <div class="skills-section">
+                <h2 class="section-title">Available Skills</h2>
+                <div class="skill-grid" id="availableSkills">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <div>Loading available skills...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acquired Skills -->
+            <div class="skills-section">
+                <h2 class="section-title">Your Acquired Skills</h2>
+                <div class="skill-grid" id="acquiredSkills">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <div>Loading your skills...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -420,13 +492,9 @@ animation: gradientPulse 15s ease infinite;
 
     <script>
         // Global variables
-        let skills = [];
-        let userStats = {
-            skillPoints: 0,
-            totalSkills: 0,
-            unlockedSkills: 0,
-            masteryLevel: 0
-        };
+        let availableSkills = [];
+        let acquiredSkills = [];
+        let userSkillPoints = 0;
 
         // Skill icons mapping
         const skillIcons = {
@@ -439,42 +507,42 @@ animation: gradientPulse 15s ease infinite;
             'Memory Palace': 'fas fa-brain',
             'Speed Reading': 'fas fa-tachometer-alt',
             'Note Taking': 'fas fa-pencil-alt',
-            'Time Management': 'fas fa-clock'
+            'Time Management': 'fas fa-clock',
+            'Critical Thinking': 'fas fa-lightbulb',
+            'Research Skills': 'fas fa-search',
+            'Presentation': 'fas fa-presentation',
+            'Problem Solving': 'fas fa-puzzle-piece',
+            'Active Learning': 'fas fa-graduation-cap'
         };
 
-        // Skill descriptions
-        const skillDescriptions = {
-            'Fireball': 'Intense focus ability that burns through distractions',
-            'Ice Shield': 'Protects against procrastination and maintains calm',
-            'Lightning Strike': 'Quick comprehension and rapid learning',
-            'Healing Light': 'Restores motivation and energy for studying',
-            'Stealth': 'Ability to study efficiently without distractions',
-            'Focus Boost': 'Enhanced concentration for extended study sessions',
-            'Memory Palace': 'Advanced memory techniques for better retention',
-            'Speed Reading': 'Rapid text processing with full comprehension',
-            'Note Taking': 'Efficient information capture and organization',
-            'Time Management': 'Optimal scheduling and productivity techniques'
-        };
-
-        // Authentication
-        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
+        // Utility: Get token from localStorage
+        async function getToken() {
+            const token = localStorage.getItem('access_token');
             if (!token) {
                 window.location.href = '/login';
-                return;
+                throw new Error('No token found. Redirecting to login...');
             }
+            return token;
+        }
 
-            initializeSkillTree();
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await getToken(); // Check if token exists
+                await initializeSkillTree();
+            } catch (error) {
+                console.error('Authentication error:', error);
+                showError('Please log in to access skills');
+            }
         });
 
         // Initialize skill tree
         async function initializeSkillTree() {
             try {
                 await Promise.all([
-                    fetchSkills(),
-                    fetchUserStats()
+                    fetchAvailableSkills(),
+                    fetchAcquiredSkills(),
+                    fetchUserProfile()
                 ]);
                 renderSkills();
                 updateStats();
@@ -484,40 +552,70 @@ animation: gradientPulse 15s ease infinite;
             }
         }
 
-        // Fetch skills from backend
-        async function fetchSkills() {
+        // Fetch available skills from backend
+        async function fetchAvailableSkills() {
             try {
-                const response = await fetch('/api/skills/unlocked', {
+                const token = await getToken();
+                const response = await fetch('/skills/available', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
+                }
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.json();
-                skills = data.skills || getDefaultSkills();
+                availableSkills = await response.json();
+                console.log('Available skills loaded:', availableSkills);
                 
-                // Add missing properties to skills
-                skills = skills.map(skill => ({
-                    ...skill,
-                    description: skillDescriptions[skill.name] || 'A powerful study skill',
-                    icon: skillIcons[skill.name] || 'fas fa-star'
-                }));
-
             } catch (error) {
-                console.error('Error fetching skills:', error);
-                // Fallback to default skills
-                skills = getDefaultSkills();
+                console.error('Error fetching available skills:', error);
+                showError('Failed to load available skills');
             }
         }
 
-        // Fetch user stats
-        async function fetchUserStats() {
+        // Fetch acquired skills from backend
+        async function fetchAcquiredSkills() {
             try {
+                const token = await getToken();
+                const response = await fetch('/skills/acquired', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                acquiredSkills = await response.json();
+                console.log('Acquired skills loaded:', acquiredSkills);
+                
+            } catch (error) {
+                console.error('Error fetching acquired skills:', error);
+                showError('Failed to load acquired skills');
+            }
+        }
+
+        // Fetch user profile for skill points
+        async function fetchUserProfile() {
+            try {
+                const token = await getToken();
                 const response = await fetch('/users/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -525,173 +623,192 @@ animation: gradientPulse 15s ease infinite;
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
                 }
 
-                const userData = await response.json();
-                userStats.skillPoints = userData.skill_points || 0;
+                if (response.ok) {
+                    const userData = await response.json();
+                    userSkillPoints = userData.skill_points || 0;
+                } else {
+                    console.warn('Failed to fetch user profile, using default skill points');
+                    userSkillPoints = 0;
+                }
                 
             } catch (error) {
-                console.error('Error fetching user stats:', error);
-                userStats.skillPoints = 0;
+                console.error('Error fetching user profile:', error);
+                userSkillPoints = 0;
             }
         }
 
-        // Get default skills if backend fails
-        function getDefaultSkills() {
-            return [
-                { id: 1, name: "Fireball", unlocked: true },
-                { id: 2, name: "Ice Shield", unlocked: false },
-                { id: 3, name: "Lightning Strike", unlocked: false },
-                { id: 4, name: "Healing Light", unlocked: true },
-                { id: 5, name: "Stealth", unlocked: false },
-                { id: 6, name: "Focus Boost", unlocked: false },
-                { id: 7, name: "Memory Palace", unlocked: false },
-                { id: 8, name: "Speed Reading", unlocked: false },
-                { id: 9, name: "Note Taking", unlocked: true },
-                { id: 10, name: "Time Management", unlocked: false }
-            ].map(skill => ({
-                ...skill,
-                description: skillDescriptions[skill.name] || 'A powerful study skill',
-                icon: skillIcons[skill.name] || 'fas fa-star'
-            }));
-        }
-
-        // Render skills
+        // Render all skills
         function renderSkills() {
-            const skillTreeElement = document.getElementById('skillTree');
-            
-            if (!skillTreeElement) {
-                console.error('Skill tree element not found');
+            renderAvailableSkills();
+            renderAcquiredSkills();
+        }
+
+        // Render available skills
+        function renderAvailableSkills() {
+            const container = document.getElementById('availableSkills');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (availableSkills.length === 0) {
+                container.innerHTML = '<div class="error"><i class="fas fa-info-circle"></i><div>No skills available</div></div>';
                 return;
             }
 
-            // Clear loading state
-            skillTreeElement.innerHTML = '';
+            // Filter out skills that are already acquired
+            const acquiredSkillIds = new Set(acquiredSkills.map(us => us.skill_id || us.skill?.id));
+            const unacquiredSkills = availableSkills.filter(skill => !acquiredSkillIds.has(skill.id));
 
-            if (skills.length === 0) {
-                skillTreeElement.innerHTML = '<div class="error">No skills available</div>';
+            if (unacquiredSkills.length === 0) {
+                container.innerHTML = '<div class="error"><i class="fas fa-trophy"></i><div>All skills acquired! Great job!</div></div>';
                 return;
             }
 
-            skills.forEach(skill => {
-                const skillElement = createSkillElement(skill);
-                skillTreeElement.appendChild(skillElement);
+            unacquiredSkills.forEach(skill => {
+                const skillElement = createAvailableSkillElement(skill);
+                container.appendChild(skillElement);
             });
         }
 
-        // Create skill element
-        function createSkillElement(skill) {
+        // Render acquired skills
+        function renderAcquiredSkills() {
+            const container = document.getElementById('acquiredSkills');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (acquiredSkills.length === 0) {
+                container.innerHTML = '<div class="error"><i class="fas fa-info-circle"></i><div>No skills acquired yet</div></div>';
+                return;
+            }
+
+            acquiredSkills.forEach(userSkill => {
+                const skill = userSkill.skill || userSkill; // Handle both formats
+                const skillElement = createAcquiredSkillElement(skill, userSkill.acquired_at);
+                container.appendChild(skillElement);
+            });
+        }
+
+        // Create available skill element
+        function createAvailableSkillElement(skill) {
             const skillDiv = document.createElement('div');
-            skillDiv.className = `skill ${skill.unlocked ? 'unlocked' : 'locked'}`;
+            const canAfford = userSkillPoints >= skill.cost;
+            
+            skillDiv.className = `skill ${canAfford ? 'affordable' : 'expensive'}`;
             skillDiv.setAttribute('data-skill-id', skill.id);
-            skillDiv.title = skill.unlocked ? 'Click to use this skill' : 'Unlock this skill to use it';
+            skillDiv.title = canAfford ? `Click to acquire for ${skill.cost} skill points` : `Need ${skill.cost} skill points to acquire`;
+
+            const icon = skillIcons[skill.name] || 'fas fa-star';
 
             skillDiv.innerHTML = `
-                <i class="skill-icon ${skill.icon}"></i>
+                <i class="skill-icon ${icon}"></i>
                 <div class="skill-name">${escapeHtml(skill.name)}</div>
-                <div class="skill-description">${escapeHtml(skill.description)}</div>
-                <div class="skill-status ${skill.unlocked ? 'unlocked' : 'locked'}">
-                    <i class="fas ${skill.unlocked ? 'fa-check' : 'fa-lock'}"></i>
-                    <span>${skill.unlocked ? 'Unlocked' : 'Locked'}</span>
+                <div class="skill-description">${escapeHtml(skill.description || 'A powerful study skill')}</div>
+                <div class="skill-cost ${canAfford ? 'affordable' : 'expensive'}">
+                    <i class="fas fa-coins"></i>
+                    <span>${skill.cost} SP</span>
+                </div>
+                <div class="skill-status available">
+                    <i class="fas fa-download"></i>
+                    <span>Available</span>
                 </div>
             `;
 
-            // Add click event listener
-            skillDiv.addEventListener('click', () => handleSkillClick(skill));
+            // Add click event listener only if affordable
+            if (canAfford) {
+                skillDiv.addEventListener('click', () => acquireSkill(skill));
+            }
 
             return skillDiv;
         }
 
-        // Handle skill click
-        function handleSkillClick(skill) {
-            if (skill.unlocked) {
-                activateSkill(skill);
-            } else {
-                attemptUnlockSkill(skill);
-            }
+        // Create acquired skill element
+        function createAcquiredSkillElement(skill, acquiredAt) {
+            const skillDiv = document.createElement('div');
+            skillDiv.className = 'skill acquired';
+            skillDiv.setAttribute('data-skill-id', skill.id);
+            skillDiv.title = `Acquired on ${new Date(acquiredAt).toLocaleDateString()}`;
+
+            const icon = skillIcons[skill.name] || 'fas fa-star';
+
+            skillDiv.innerHTML = `
+                <i class="skill-icon ${icon}"></i>
+                <div class="skill-name">${escapeHtml(skill.name)}</div>
+                <div class="skill-description">${escapeHtml(skill.description || 'A powerful study skill')}</div>
+                <div class="skill-status acquired">
+                    <i class="fas fa-check"></i>
+                    <span>Acquired</span>
+                </div>
+            `;
+
+            return skillDiv;
         }
 
-        // Activate skill
-        function activateSkill(skill) {
-            // Add visual feedback
-            const skillElement = document.querySelector(`[data-skill-id="${skill.id}"]`);
-            if (skillElement) {
-                skillElement.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    skillElement.style.transform = '';
-                }, 150);
+        // Acquire skill
+        async function acquireSkill(skill) {
+            if (userSkillPoints < skill.cost) {
+                showNotification('Not enough skill points!', 'error');
+                return;
             }
 
-            // Show activation message
-            showNotification(`You have activated: ${skill.name}!`, 'success');
-            
-            // Here you could add actual skill effects
-            console.log(`Activated skill: ${skill.name}`);
-        }
-
-        // Attempt to unlock skill
-        function attemptUnlockSkill(skill) {
-            if (userStats.skillPoints > 0) {
-                if (confirm(`Unlock "${skill.name}" for 1 skill point?`)) {
-                    unlockSkill(skill.id);
-                }
-            } else {
-                showNotification('Not enough skill points to unlock this skill!', 'error');
+            if (!confirm(`Acquire "${skill.name}" for ${skill.cost} skill points?`)) {
+                return;
             }
-        }
 
-        // Unlock skill
-        async function unlockSkill(skillId) {
             try {
-                // Optimistically update UI
-                const skill = skills.find(s => s.id === skillId);
-                if (skill) {
-                    skill.unlocked = true;
-                    userStats.skillPoints = Math.max(0, userStats.skillPoints - 1);
-                    renderSkills();
-                    updateStats();
-                    showNotification(`${skill.name} unlocked!`, 'success');
-                }
-
-                // Send to backend
-                const response = await fetch('/api/skills/unlock', {
+                const token = await getToken();
+                const response = await fetch(`/skills/acquire/${skill.id}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ skillId })
+                    }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to unlock skill on server');
+                if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
                 }
 
-            } catch (error) {
-                console.error('Error unlocking skill:', error);
-                // Revert optimistic update
-                const skill = skills.find(s => s.id === skillId);
-                if (skill) {
-                    skill.unlocked = false;
-                    userStats.skillPoints += 1;
-                    renderSkills();
-                    updateStats();
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to acquire skill');
                 }
-                showNotification('Failed to unlock skill. Please try again.', 'error');
+
+                const userSkill = await response.json();
+                
+                // Update local data
+                acquiredSkills.push(userSkill);
+                userSkillPoints -= skill.cost;
+                
+                // Re-render
+                renderSkills();
+                updateStats();
+                
+                showNotification(`Successfully acquired: ${skill.name}!`, 'success');
+                
+            } catch (error) {
+                console.error('Error acquiring skill:', error);
+                showNotification(error.message || 'Failed to acquire skill. Please try again.', 'error');
             }
         }
 
         // Update stats display
         function updateStats() {
-            const totalSkills = skills.length;
-            const unlockedSkills = skills.filter(s => s.unlocked).length;
-            const masteryLevel = totalSkills > 0 ? Math.round((unlockedSkills / totalSkills) * 100) : 0;
+            const totalAvailable = availableSkills.length;
+            const acquiredCount = acquiredSkills.length;
+            const masteryLevel = totalAvailable > 0 ? Math.round((acquiredCount / totalAvailable) * 100) : 0;
 
-            updateStatElement('total-skills', totalSkills);
-            updateStatElement('unlocked-skills', unlockedSkills);
-            updateStatElement('skill-points', userStats.skillPoints);
+            updateStatElement('total-available', totalAvailable);
+            updateStatElement('acquired-count', acquiredCount);
+            updateStatElement('skill-points', userSkillPoints);
             updateStatElement('mastery-level', `${masteryLevel}%`);
         }
 
@@ -699,25 +816,58 @@ animation: gradientPulse 15s ease infinite;
         function updateStatElement(elementId, value) {
             const element = document.getElementById(elementId);
             if (element) {
-                element.textContent = value;
+                // Animate number changes
+                const currentValue = parseInt(element.textContent) || 0;
+                if (currentValue !== value && typeof value === 'number') {
+                    animateNumber(element, currentValue, value, 500);
+                } else {
+                    element.textContent = value;
+                }
             }
+        }
+
+        // Animate number changes
+        function animateNumber(element, start, end, duration) {
+            const range = end - start;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (range * progress));
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
         }
 
         // Show error message
         function showError(message) {
-            const skillTreeElement = document.getElementById('skillTree');
-            if (skillTreeElement) {
-                skillTreeElement.innerHTML = `
-                    <div class="error">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div>${escapeHtml(message)}</div>
-                    </div>
-                `;
-            }
+            const containers = ['availableSkills', 'acquiredSkills'];
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>${escapeHtml(message)}</div>
+                        </div>
+                    `;
+                }
+            });
         }
 
         // Show notification
         function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+
             // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
@@ -726,28 +876,29 @@ animation: gradientPulse 15s ease infinite;
                 top: 20px;
                 right: 20px;
                 padding: 15px 20px;
-                border-radius: 5px;
+                border-radius: 8px;
                 color: white;
                 font-weight: bold;
                 z-index: 1000;
                 animation: slideIn 0.3s ease;
-                max-width: 300px;
+                max-width: 350px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                backdrop-filter: blur(10px);
             `;
 
             // Set background color based on type
             const colors = {
-                success: '#28a745',
-                error: '#dc3545',
-                info: '#17a2b8',
-                warning: '#ffc107'
+                success: 'linear-gradient(135deg, #28a745, #20c997)',
+                error: 'linear-gradient(135deg, #dc3545, #c82333)',
+                info: 'linear-gradient(135deg, #17a2b8, #138496)',
+                warning: 'linear-gradient(135deg, #ffc107, #e0a800)'
             };
-            notification.style.backgroundColor = colors[type] || colors.info;
+            notification.style.background = colors[type] || colors.info;
 
             notification.textContent = message;
             document.body.appendChild(notification);
 
-            // Remove notification after 3 seconds
+            // Remove notification after 4 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => {
@@ -755,7 +906,7 @@ animation: gradientPulse 15s ease infinite;
                         notification.parentNode.removeChild(notification);
                     }
                 }, 300);
-            }, 3000);
+            }, 4000);
         }
 
         // Utility function to escape HTML
@@ -790,16 +941,27 @@ animation: gradientPulse 15s ease infinite;
                     opacity: 0;
                 }
             }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .skill {
+                animation: fadeIn 0.5s ease forwards;
+            }
         `;
         document.head.appendChild(style);
 
         // Error handling
         window.addEventListener('error', function(event) {
             console.error('Application error:', event.error);
+            showNotification('An unexpected error occurred', 'error');
         });
 
         window.addEventListener('unhandledrejection', function(event) {
             console.error('Unhandled promise rejection:', event.reason);
+            showNotification('An unexpected error occurred', 'error');
         });
     </script>
 </body>

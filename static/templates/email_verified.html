@@ -1,80 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Email Verified</title>
-  <style>
-    body {
-      background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,       /* Deep night (mystery/quests) */
-    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-    #e52d27 60%,      /* Blood red (danger/battle) */
-    #ffb347 85%,      /* Ember glow (energy/climax) */
-    #6df0ff 100%      /* Cyber neon (tech/futurism) */
-);
-background-size: 400% 400%;
-animation: gradientPulse 15s ease infinite;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: #fff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified - StudyRPG</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .confirmation-box {
-      background: #fff;
-      color: #1e3c72;
-      text-align: center;
-      padding: 2.5rem 2rem;
-      border-radius: 20px;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-      max-width: 400px;
-      width: 90%;
-    }
+        body {
+            background: linear-gradient(
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
 
-    .confirmation-box img {
-      max-width: 140px;
-      margin-bottom: 1.2rem;
-    }
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .confirmation-box h3 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      color: #2a5298;
-    }
+        .verification-container {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
 
-    .confirmation-box p {
-      font-size: 1rem;
-      color: #444;
-      margin-bottom: 1.5rem;
-    }
+        .success-icon {
+            font-size: 5rem;
+            color: #28a745;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
 
-    .confirmation-box a {
-      display: inline-block;
-      background: #1e3c72;
-      color: #fff;
-      padding: 0.7rem 1.5rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background 0.3s ease;
-    }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
-    .confirmation-box a:hover {
-      background: #2a5298;
-    }
-  </style>
+        .verification-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .message {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #e3f0fc;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+        }
+
+        .username {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffb347;
+        }
+
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 35px;
+            background: linear-gradient(120deg, #2a5298, #1e3c72);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(120deg, #3a6db1, #2a5298);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffb347;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #e3f0fc;
+        }
+
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 30px 20px;
+            }
+            
+            .verification-title {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .verification-title {
+                font-size: 1.8rem;
+            }
+            
+            .message {
+                font-size: 1rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="confirmation-box">
-    <img src="../static/images/studyRpg.png" alt="LeadCraft Logo">
-    <h3>Email Verified Successfully!</h3>
-    <p>You're all set to start your Study RPG journey. Let's go conquer some quests!</p>
-    <a href="/login">Back To Login</a>
-  </div>
+    <div class="verification-container">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h1 class="verification-title">Email Verification Successful!</h1>
+        
+        <p class="message">{{ message }}</p>
+        
+        {% if user %}
+        <div class="user-info">
+            <!-- <img class="user-avatar" src="{{ user.avatar_url | default('https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3') }}" alt="User Avatar"> -->
+            <div class="username">Welcome, {{ user.username }}</div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ user.level | default(1) }}</div>
+                <div class="stat-label">LEVEL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ user.xp }}</div>
+                <div class="stat-label">XP</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ user.streak }}</div>
+                <div class="stat-label">STREAK</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ user.skill_points }}</div>
+                <div class="stat-label">SKILL POINTS</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <a href="/auth/login" class="login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            Go to Login
+        </a>
+    </div>
+    
+    <script>
+        // Add confetti effect for celebration
+        document.addEventListener('DOMContentLoaded', function() {
+            const colors = ['#ffb347', '#e52d27', '#6df0ff', '#1e3c72'];
+            
+            function createConfetti() {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = '50%';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.zIndex = '9999';
+                confetti.style.pointerEvents = 'none';
+                document.body.appendChild(confetti);
+                
+                const animation = confetti.animate([
+                    { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                    { transform: `translateY(${window.innerHeight + 20}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: 3000 + Math.random() * 3000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
+                });
+                
+                animation.onfinish = () => confetti.remove();
+            }
+            
+            // Create confetti for 5 seconds
+            const confettiInterval = setInterval(createConfetti, 100);
+            setTimeout(() => clearInterval(confettiInterval), 5000);
+        });
+    </script>
 </body>
 </html>

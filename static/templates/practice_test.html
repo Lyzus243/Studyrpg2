@@ -7,124 +7,20 @@
     <style>
         body {
            background: linear-gradient(
-    135deg,
-    #1a1a2e 0%,       /* Deep night (mystery/quests) */
-    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-    #e52d27 60%,      /* Blood red (danger/battle) */
-    #ffb347 85%,      /* Ember glow (energy/climax) */
-    #6df0ff 100%      /* Cyber neon (tech/futurism) */
-);
-background-size: 400% 400%;
-animation: gradientPulse 15s ease infinite;
+                135deg,
+                #1a1a2e 0%,
+                #1e3c72 25%,
+                #e52d27 60%,
+                #ffb347 85%,
+                #6df0ff 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-        }
-
-        .test-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .timer-display {
-            background: #e52d27;
             color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 1.2em;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .test-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-
-        .input-rpg, .btn-rpg {
-            padding: 10px 15px;
-            border: 2px solid #1e3c72;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .input-rpg {
-            background: white;
-            color: #1e3c72;
-        }
-
-        .btn-rpg {
-            background: #1e3c72;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-rpg:hover {
-            background: #2a5298;
-            transform: translateY(-2px);
-        }
-
-        .question {
-            background: #f8f8ff;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #1e3c72;
-            box-shadow: 0 2px 6px rgba(30, 60, 114, 0.1);
-        }
-
-        .options label {
-            display: block;
-            padding: 8px;
-            margin: 5px 0;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .options label:hover {
-            background: #e3f0fc;
-        }
-
-        .test-selection {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        #testResults, #resultsArea {
-            background: #f0f8ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        #submitTest {
-            background: #e52d27;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        #submitTest:hover {
-            background: #d12320;
-        }
-
-        .hidden {
-            display: none !important;
         }
 
         @keyframes gradientPulse {
@@ -132,35 +28,265 @@ animation: gradientPulse 15s ease infinite;
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .back-link {
+            display: block;
+            margin-bottom: 2rem;
+            color: white;
+            text-decoration: underline;
+        }
+
+        .timer-display {
+            background: rgba(229, 45, 39, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid rgba(229, 45, 39, 1);
+        }
+
+        .test-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-rpg, .btn-rpg {
+            padding: 12px 20px;
+            border: 2px solid rgba(30, 60, 114, 0.8);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-rpg {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-rpg {
+            background: rgba(30, 60, 114, 0.8);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-rpg:hover:not(:disabled) {
+            background: rgba(42, 82, 152, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.4);
+        }
+
+        .btn-rpg:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #1e3c72;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .question h4 {
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .options label:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        #testResults, #resultsArea {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #submitTest {
+            background: rgba(229, 45, 39, 0.8);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(229, 45, 39, 1);
+        }
+
+        #submitTest:hover:not(:disabled) {
+            background: rgba(209, 35, 32, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 45, 39, 0.4);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .answer-review {
+            margin-top: 20px;
+        }
+
+        .answer-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .answer-item.correct {
+            border-left-color: #10b981;
+        }
+
+        .answer-item.incorrect {
+            border-left-color: #ef4444;
+        }
+
+        .score-display {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-display.passing {
+            color: #10b981;
+        }
+
+        .score-display.failing {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .input-rpg, .btn-rpg {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="test-container">
-        <h1>Practice Test - StudyRPG</h1>
-        
-<audio src="../static/sounds/Dark Descent.mp3" autoplay controls></audio>
+        <a href="/ai-tools" class="back-link">← Back to AI Tools</a>
+        <h1>📝 Practice Test - StudyRPG</h1>
         
         <div class="test-controls">
             <select id="materialSelect" class="input-rpg">
-                {% for material in materials %}
-                <option value="{{ material.id }}">{{ material.title }}</option>
-                {% endfor %}
+                <option value="">Select material...</option>
             </select>
-            <select id="testType" class="input-rpg">
-                <option value="ai">AI-Generated Test</option>
-                <option value="custom">Custom Test</option>
-            </select>
-            <button id="startTest" class="btn-rpg">
-                <i class="fas fa-play"></i> Start Test
-            </button>
-            <button onclick="location.reload()" class="btn-rpg">
-                <i class="fas fa-sync-alt"></i> New Test
-            </button>
+            <input type="number" id="testDuration" class="input-rpg" placeholder="Duration (minutes)" min="5" max="120" value="30">
+            <button id="generateTimedTest" class="btn-rpg">Generate Timed Test</button>
+            <button id="generatePracticeTest" class="btn-rpg">Generate Practice Test</button>
+            <button id="newTest" class="btn-rpg" onclick="location.reload()">New Test</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading hidden">
+            <div>🤖 AI is generating your test...</div>
+            <div style="margin-top: 10px; font-size: 0.9em;">This may take a few moments</div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error hidden"></div>
+
+        <!-- Test Info -->
+        <div id="testInfo" class="test-info hidden">
+            <h3 id="testTitle"></h3>
+            <p id="testInstructions"></p>
+            <div id="questionCount"></div>
         </div>
 
         <!-- Timer Display -->
         <div id="timerDisplay" class="timer-display hidden">
-            Time: <span id="testTimer">30:00</span>
+            ⏰ Time Remaining: <span id="testTimer">30:00</span>
         </div>
 
         <!-- Test Area -->
@@ -171,138 +297,196 @@ animation: gradientPulse 15s ease infinite;
 
         <!-- Results -->
         <div id="resultsArea" class="hidden">
-            <h3>Your Score: <span id="testScore"></span></h3>
-            <div id="answerReview"></div>
+            <h2>📊 Test Results</h2>
+            <div id="scoreDisplay" class="score-display"></div>
+            <div id="answerReview" class="answer-review"></div>
+            <button class="btn-rpg" onclick="location.reload()" style="margin-top: 20px;">Take Another Test</button>
         </div>
     </div>
 
     <script>
         let currentTest = null;
-        let currentAttempt = null;
+        let materials = [];
         let timerInterval = null;
+        let startTime = null;
 
-        // Start test handler
-        document.getElementById('startTest').addEventListener('click', async () => {
-            const testType = document.getElementById('testType').value;
-            const materialId = document.getElementById('materialSelect').value;
-            
+        async function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        }
+
+        async function loadMaterials() {
             try {
-                if (testType === 'ai') {
-                    const testId = await generateAITest(materialId);
-                    if (testId) {
-                        await loadAndDisplayTest(testId);
-                    }
+                const token = await getCookie('access_token');
+                const response = await fetch('/materials', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch materials');
+                
+                materials = await response.json();
+                const select = document.getElementById('materialSelect');
+                
+                if (materials.length === 0) {
+                    select.innerHTML = '<option value="">No materials found</option>';
                 } else {
-                    const response = await fetch(`/tests/create?type=${testType}`);
-                    const test = await response.json();
-                    
-                    const attempt = await startTestAttempt(test.id);
-                    displayTest(test, attempt);
+                    select.innerHTML = '<option value="">Select material...</option>' +
+                        materials.map(m => `<option value="${m.id}">${m.title || m.name}</option>`).join('');
                 }
             } catch (error) {
-                console.error('Error starting test:', error);
-                alert('Failed to start test. Please try again.');
+                console.error('Failed to load materials:', error);
+                showError('Failed to load materials. Please refresh the page.');
             }
-        });
+        }
 
-        // Generate AI test
-        async function generateAITest(materialId) {
+        async function generateTimedTest() {
+            const materialId = document.getElementById('materialSelect').value;
+            const duration = parseInt(document.getElementById('testDuration').value);
+            
+            if (!materialId) {
+                showError('Please select a material first.');
+                return;
+            }
+            
+            if (!duration || duration < 5 || duration > 120) {
+                showError('Please enter a valid duration (5-120 minutes).');
+                return;
+            }
+
+            showLoading();
+            disableControls();
+            
             try {
-                const response = await fetch('/ai/generate-timed-test', {
+                const token = await getCookie('access_token');
+                const response = await fetch('/ai/test/timed', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         material_id: parseInt(materialId),
-                        duration: 30
+                        duration: duration
                     })
                 });
-                
-                if (!response.ok) throw new Error('Failed to generate test');
-                
-                const result = await response.json();
-                if (result.test_id) {
-                    window.location.href = `/tests/${result.test_id}`; // Redirect to test page
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate timed test');
                 }
-                return result.test_id;
+
+                const testData = await response.json();
+                displayTest(testData, true);
+                
             } catch (error) {
-                console.error("Test generation error:", error);
-                alert("Failed to generate test. Please try again.");
-                return null;
+                console.error('Error generating timed test:', error);
+                if (error.message.includes('AI service unavailable')) {
+                    showError('AI service is currently unavailable. Please check OpenAI API configuration.');
+                } else {
+                    showError('Failed to generate timed test: ' + error.message);
+                }
+                enableControls();
             }
         }
 
-        // Load and display test
-        async function loadAndDisplayTest(testId) {
+        async function generatePracticeTest() {
+            const materialId = document.getElementById('materialSelect').value;
+            
+            if (!materialId) {
+                showError('Please select a material first.');
+                return;
+            }
+
+            showLoading();
+            disableControls();
+            
             try {
-                const response = await fetch(`/tests/${testId}`);
-                const test = await response.json();
+                const token = await getCookie('access_token');
+                const response = await fetch(`/ai/test/practice?material_id=${materialId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to generate practice test');
+                }
+
+                const questions = await response.json();
+                const testData = {
+                    questions: questions,
+                    time_limit: 0, // No time limit for practice test
+                    instructions: `Complete the ${questions.length} practice questions at your own pace.`
+                };
                 
-                const attempt = await startTestAttempt(testId);
-                displayTest(test, attempt);
+                displayTest(testData, false);
+                
             } catch (error) {
-                console.error('Error loading test:', error);
+                console.error('Error generating practice test:', error);
+                if (error.message.includes('AI service unavailable')) {
+                    showError('AI service is currently unavailable. Please check OpenAI API configuration.');
+                } else {
+                    showError('Failed to generate practice test: ' + error.message);
+                }
+                enableControls();
             }
         }
 
-        // Start test attempt
-        async function startTestAttempt(testId) {
-            const response = await fetch(`/tests/${testId}/attempt`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            return await response.json();
-        }
-
-        // Display test
-        function displayTest(test, attempt) {
-            currentTest = test;
-            currentAttempt = attempt;
+        function displayTest(testData, isTimed) {
+            currentTest = testData;
+            startTime = Date.now();
+            
+            hideLoading();
+            hideError();
+            
+            // Show test info
+            const testInfo = document.getElementById('testInfo');
+            const testTitle = document.getElementById('testTitle');
+            const testInstructions = document.getElementById('testInstructions');
+            const questionCount = document.getElementById('questionCount');
+            
+            testTitle.textContent = isTimed ? 'Timed Test' : 'Practice Test';
+            testInstructions.textContent = testData.instructions || 'Answer all questions to the best of your ability.';
+            questionCount.textContent = `Questions: ${testData.questions.length}`;
+            
+            testInfo.classList.remove('hidden');
             
             // Hide controls and show test area
             document.querySelector('.test-controls').classList.add('hidden');
             document.getElementById('testArea').classList.remove('hidden');
             
-            // Clear previous questions
+            // Generate questions
             const container = document.getElementById('questionsContainer');
             container.innerHTML = '';
             
-            // Display questions
-            test.questions.forEach((q, i) => {
+            testData.questions.forEach((question, index) => {
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'question';
                 questionDiv.innerHTML = `
-                    <h4>${i+1}. ${q.question_text || q.question}</h4>
+                    <h4>Question ${index + 1}</h4>
+                    <p>${question.question}</p>
                     <div class="options">
-                        ${renderQuestionOptions(q, i)}
+                        ${question.options.map((option, optionIndex) => `
+                            <label>
+                                <input type="radio" name="q${index}" value="${optionIndex}">
+                                <span>${String.fromCharCode(65 + optionIndex)}. ${option}</span>
+                            </label>
+                        `).join('')}
                     </div>
                 `;
                 container.appendChild(questionDiv);
             });
             
             // Start timer if timed test
-            if(test.time_limit) {
-                startTimer(test.time_limit);
+            if (isTimed && testData.time_limit > 0) {
+                startTimer(testData.time_limit);
             }
         }
 
-        // Render question options
-        function renderQuestionOptions(question, questionIndex) {
-            const options = question.options || ['Option A', 'Option B', 'Option C', 'Option D'];
-            return options.map((option, i) => `
-                <label>
-                    <input type="radio" name="q${questionIndex}" value="${i}">
-                    ${option}
-                </label>
-            `).join('');
-        }
-
-        // Start timer
         function startTimer(minutes) {
             let timeLeft = minutes * 60;
             const timerDisplay = document.getElementById('timerDisplay');
@@ -315,18 +499,22 @@ animation: gradientPulse 15s ease infinite;
                 const secs = timeLeft % 60;
                 timerSpan.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
                 
+                // Change color when time is running low
+                if (timeLeft <= 300) { // 5 minutes
+                    timerDisplay.style.background = 'rgba(239, 68, 68, 0.8)';
+                    timerDisplay.style.borderColor = '#ef4444';
+                }
+                
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    submitTest();
+                    submitTest(true); // Auto-submit when time runs out
+                    return;
                 }
                 timeLeft--;
             }, 1000);
         }
 
-        // Submit test
-        document.getElementById('submitTest').addEventListener('click', submitTest);
-
-        function submitTest() {
+        function submitTest(autoSubmit = false) {
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
@@ -334,92 +522,144 @@ animation: gradientPulse 15s ease infinite;
             const answers = [];
             const questions = currentTest.questions;
             
-            questions.forEach((_, i) => {
-                const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+            // Collect answers
+            questions.forEach((_, index) => {
+                const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
                 answers.push(selectedOption ? parseInt(selectedOption.value) : null);
             });
             
             // Calculate score
             let score = 0;
-            questions.forEach((q, i) => {
-                const correctAnswer = q.correct_answer || 1; // Default to option 1 if not specified
-                if (answers[i] === correctAnswer) {
-                    score++;
-                }
+            const results = [];
+            
+            questions.forEach((question, index) => {
+                const userAnswer = answers[index];
+                const correctAnswerText = question.correct_option;
+                const correctAnswerIndex = question.options.findIndex(opt => opt === correctAnswerText);
+                const isCorrect = userAnswer === correctAnswerIndex;
+                
+                if (isCorrect) score++;
+                
+                results.push({
+                    question: question.question,
+                    userAnswer: userAnswer !== null ? question.options[userAnswer] : 'Not answered',
+                    correctAnswer: correctAnswerText,
+                    isCorrect: isCorrect
+                });
             });
             
+            // Calculate completion time
+            const completionTime = Math.floor((Date.now() - startTime) / 1000);
+            
             // Display results
-            displayResults(score, questions.length, answers);
+            displayResults(score, questions.length, results, completionTime, autoSubmit);
         }
 
-        // Display results
-        function displayResults(score, total, answers) {
+        function displayResults(score, total, results, completionTime, autoSubmit) {
             document.getElementById('testArea').classList.add('hidden');
+            document.getElementById('timerDisplay').classList.add('hidden');
             document.getElementById('resultsArea').classList.remove('hidden');
             
-            document.getElementById('testScore').textContent = `${score}/${total}`;
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const percentage = Math.round((score / total) * 100);
+            
+            scoreDisplay.textContent = `${score}/${total} (${percentage}%)`;
+            scoreDisplay.className = `score-display ${percentage >= 70 ? 'passing' : 'failing'}`;
+            
+            // Show completion message
+            if (autoSubmit) {
+                const autoSubmitMsg = document.createElement('div');
+                autoSubmitMsg.className = 'error';
+                autoSubmitMsg.textContent = '⏰ Time expired! Test was automatically submitted.';
+                document.getElementById('resultsArea').insertBefore(autoSubmitMsg, scoreDisplay);
+            }
+            
+            // Show completion time
+            const timeDisplay = document.createElement('div');
+            timeDisplay.style.textAlign = 'center';
+            timeDisplay.style.marginBottom = '20px';
+            timeDisplay.style.color = 'rgba(255, 255, 255, 0.8)';
+            timeDisplay.textContent = `Completed in ${Math.floor(completionTime / 60)}:${(completionTime % 60).toString().padStart(2, '0')}`;
+            scoreDisplay.after(timeDisplay);
             
             // Show answer review
             const reviewDiv = document.getElementById('answerReview');
-            reviewDiv.innerHTML = '<h4>Answer Review:</h4>';
+            reviewDiv.innerHTML = '<h3>📋 Answer Review:</h3>';
             
-            currentTest.questions.forEach((q, i) => {
-                const userAnswer = answers[i];
-                const correctAnswer = q.correct_answer || 1;
-                const isCorrect = userAnswer === correctAnswer;
-                
-                reviewDiv.innerHTML += `
-                    <div class="question" style="border-left-color: ${isCorrect ? '#4CAF50' : '#f44336'}">
-                        <p><strong>Q${i+1}:</strong> ${q.question_text || q.question}</p>
-                        <p><strong>Your answer:</strong> ${userAnswer !== null ? q.options[userAnswer] : 'Not answered'}</p>
-                        <p><strong>Correct answer:</strong> ${q.options[correctAnswer]}</p>
-                        <p style="color: ${isCorrect ? '#4CAF50' : '#f44336'}">
-                            ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
-                        </p>
+            results.forEach((result, index) => {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = `answer-item ${result.isCorrect ? 'correct' : 'incorrect'}`;
+                answerDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;">
+                        <strong>Q${index + 1}:</strong> ${result.question}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Your answer:</strong> ${result.userAnswer}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Correct answer:</strong> ${result.correctAnswer}
+                    </div>
+                    <div style="font-weight: bold; color: ${result.isCorrect ? '#10b981' : '#ef4444'};">
+                        ${result.isCorrect ? '✅ Correct' : '❌ Incorrect'}
                     </div>
                 `;
+                reviewDiv.appendChild(answerDiv);
             });
         }
 
-        // Fallback for demo purposes
-        document.addEventListener("DOMContentLoaded", function() {
-            // If no materials are loaded, create a demo test
-            if (!document.getElementById('materialSelect').children.length) {
-                const demoTest = {
-                    id: 'demo',
-                    topic: "Mathematics - Algebra",
-                    time_limit: 5, // 5 minutes for demo
-                    questions: [
-                        {
-                            question: "What is 2 + 2?",
-                            options: ["3", "4", "5", "6"],
-                            correct_answer: 1
-                        },
-                        {
-                            question: "What is the square root of 16?",
-                            options: ["2", "4", "8", "16"],
-                            correct_answer: 1
-                        },
-                        {
-                            question: "Solve for x: 2x + 4 = 10",
-                            options: ["x = 2", "x = 3", "x = 4", "x = 5"],
-                            correct_answer: 1
-                        }
-                    ]
-                };
-                
-                // Add demo option
-                const option = document.createElement('option');
-                option.value = 'demo';
-                option.textContent = 'Demo Test';
-                document.getElementById('materialSelect').appendChild(option);
-                
-                // Override start test for demo
-                document.getElementById('startTest').addEventListener('click', function() {
-                    displayTest(demoTest, { id: 'demo-attempt' });
-                });
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorState');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorState').classList.add('hidden');
+        }
+
+        function disableControls() {
+            document.getElementById('generateTimedTest').disabled = true;
+            document.getElementById('generatePracticeTest').disabled = true;
+            document.getElementById('materialSelect').disabled = true;
+            document.getElementById('testDuration').disabled = true;
+        }
+
+        function enableControls() {
+            document.getElementById('generateTimedTest').disabled = false;
+            document.getElementById('generatePracticeTest').disabled = false;
+            document.getElementById('materialSelect').disabled = false;
+            document.getElementById('testDuration').disabled = false;
+        }
+
+        // Event listeners
+        document.getElementById('generateTimedTest').addEventListener('click', generateTimedTest);
+        document.getElementById('generatePracticeTest').addEventListener('click', generatePracticeTest);
+        document.getElementById('submitTest').addEventListener('click', () => submitTest(false));
+
+        // Check for stored test data from AI tools page
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMaterials();
+            
+            const storedTest = sessionStorage.getItem('currentTest');
+            if (storedTest) {
+                try {
+                    const testData = JSON.parse(storedTest);
+                    sessionStorage.removeItem('currentTest');
+                    displayTest(testData, testData.time_limit > 0);
+                } catch (error) {
+                    console.error('Error loading stored test:', error);
+                }
             }
         });
+
     </script>
 </body>
 </html>

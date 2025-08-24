@@ -35,14 +35,14 @@ async def create_flashcard(
         await db.commit()
         await db.refresh(db_flashcard)
         
-        logger.info(f"User {current_user.id} created flashcard {db_flashcard.id}")
+        logger.info(f"User {current_user.username} created flashcard {db_flashcard.id}")
         return schemas.FlashcardRead.model_validate(db_flashcard)
     except SQLAlchemyError as e:
-        logger.error(f"Database error creating flashcard for user {current_user.id}: {str(e)}")
+        logger.error(f"Database error creating flashcard for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to create flashcard: Database error")
     except Exception as e:
-        logger.error(f"Unexpected error creating flashcard for user {current_user.id}: {str(e)}")
+        logger.error(f"Unexpected error creating flashcard for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create flashcard: {str(e)}")
 
@@ -63,7 +63,7 @@ async def assign_flashcard(
         )
         flashcard = result.scalars().first()
         if not flashcard:
-            logger.warning(f"Flashcard {user_flashcard.flashcard_id} not found for user {current_user.id}")
+            logger.warning(f"Flashcard {user_flashcard.flashcard_id} not found for user {current_user.username}")
             raise HTTPException(status_code=404, detail="Flashcard not found")
         
         db_user_flashcard = models.UserFlashcard(
@@ -75,16 +75,16 @@ async def assign_flashcard(
         await db.commit()
         await db.refresh(db_user_flashcard)
         
-        logger.info(f"User {current_user.id} assigned flashcard {user_flashcard.flashcard_id}")
+        logger.info(f"User {current_user.username} assigned flashcard {user_flashcard.flashcard_id}")
         return schemas.UserFlashcardRead.model_validate(db_user_flashcard)
     except HTTPException:
         raise
     except SQLAlchemyError as e:
-        logger.error(f"Database error assigning flashcard for user {current_user.id}: {str(e)}")
+        logger.error(f"Database error assigning flashcard for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to assign flashcard: Database error")
     except Exception as e:
-        logger.error(f"Unexpected error assigning flashcard for user {current_user.id}: {str(e)}")
+        logger.error(f"Unexpected error assigning flashcard for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to assign flashcard: {str(e)}")
 
@@ -104,12 +104,12 @@ async def update_user_flashcard(
         result = await db.execute(
             select(models.UserFlashcard).where(
                 models.UserFlashcard.id == user_flashcard_id,
-                models.UserFlashcard.user_id == current_user.id
+                models.UserFlashcard.user_id == current_user.username
             )
         )
         user_flashcard = result.scalars().first()
         if not user_flashcard:
-            logger.warning(f"UserFlashcard {user_flashcard_id} not found for user {current_user.id}")
+            logger.warning(f"UserFlashcard {user_flashcard_id} not found for user {current_user.username}")
             raise HTTPException(status_code=404, detail="User flashcard not found")
         
         if proficiency.proficiency is not None:
@@ -119,15 +119,15 @@ async def update_user_flashcard(
         await db.commit()
         await db.refresh(user_flashcard)
         
-        logger.info(f"User {current_user.id} updated proficiency for user_flashcard {user_flashcard_id}")
+        logger.info(f"User {current_user.username} updated proficiency for user_flashcard {user_flashcard_id}")
         return schemas.UserFlashcardRead.model_validate(user_flashcard)
     except HTTPException:
         raise
     except SQLAlchemyError as e:
-        logger.error(f"Database error updating user_flashcard {user_flashcard_id} for user {current_user.id}: {str(e)}")
+        logger.error(f"Database error updating user_flashcard {user_flashcard_id} for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to update flashcard proficiency: Database error")
     except Exception as e:
-        logger.error(f"Unexpected error updating user_flashcard {user_flashcard_id} for user {current_user.id}: {str(e)}")
+        logger.error(f"Unexpected error updating user_flashcard {user_flashcard_id} for user {current_user.username}: {str(e)}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to update flashcard proficiency: {str(e)}")

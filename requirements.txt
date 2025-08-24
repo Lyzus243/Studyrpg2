@@ -1,15 +1,20 @@
+aiofiles
+alembic
+asyncpg
+email-validator
 fastapi
-uvicorn
-sqlalchemy
+httpx
+jinja2
+passlib[bcrypt]
 pydantic
+pytest
+pytest-asyncio
+python-dotenv
+python-multipart
+requests
+sqlalchemy
+stripe
+uvicorn
 pandas
 schedule
 flask
-# sqlite3 is included with Python standard library
-
-
-uvicorn main:app --reload
-
-
-
-

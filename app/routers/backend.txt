@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyRPG Dashboard</title>
+    
+    <!-- Font Awesome -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+    <style>
+        /* ===== BASE STYLES ===== */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1e3c72;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @keyframes gradientPulse {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* ===== LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 2rem 1.5rem;
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffb347;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(255, 179, 71, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .username-label {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .username-label h1 {
+            margin: 0;
+            font-size: inherit;
+            background: linear-gradient(45deg, #ffb347, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-nav {
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 1rem;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-btn:hover {
+            background: rgba(255, 179, 71, 0.2);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(255, 179, 71, 0.2);
+        }
+
+        .sidebar-btn i {
+            font-size: 1.3rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #e52d27, #ff6b6b);
+            border: none;
+            color: white;
+            padding: 1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 45, 39, 0.3);
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #ff4c4c, #ff8080);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 45, 39, 0.4);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        /* ===== QUICK STATS ===== */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-widget {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(227, 240, 252, 0.95) 100%);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1rem;
+            color: #1e3c72;
+            font-weight: 600;
+            border: 2px solid rgba(229, 45, 39, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e52d27, #ffb347);
+        }
+
+        .stat-widget:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-widget span {
+            display: block;
+            font-size: 2.5rem;
+            color: #e52d27;
+            margin-top: 0.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(255, 179, 71, 0.3);
+        }
+
+        /* ===== SECTIONS ===== */
+        .section {
+            margin-bottom: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.8rem;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h3 i {
+            color: #ffb347;
+        }
+
+        /* ===== TOOL GRID ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        /* ===== TOOL CARD ===== */
+        .tool-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 248, 255, 0.9) 100%);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: #1e3c72;
+            text-decoration: none;
+            border: 2px solid rgba(74, 85, 104, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #1e3c72, #e52d27, #ffb347);
+            background-size: 200% 100%;
+            animation: gradientFlow 3s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #e52d27;
+        }
+
+        .tool-card i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #e52d27;
+            text-shadow: 2px 2px 4px rgba(255, 179, 71, 0.3);
+        }
+
+        .tool-card h4 {
+            margin: 0.5rem 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .tool-card p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 1rem;
+            line-height: 1.4;
+            flex-grow: 1;
+            margin-top: 0.5rem;
+        }
+
+        /* ===== ACTIVITY FEED ===== */
+        .activity-feed {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .activity-feed h4 {
+            margin-top: 0;
+            color: #2a5298;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .activity-feed ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .activity-feed li {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(227, 240, 252, 0.5);
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-feed li:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== QUESTS SECTION ===== */
+        #quests {
+            list-style: none;
+            padding: 0;
+        }
+
+        #quests li {
+            background: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(227, 240, 252, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #quests button {
+            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        #quests button:first-of-type {
+            background-color: #2a5298;
+            color: white;
+        }
+
+        #quests button:first-of-type:hover {
+            background-color: #3a6db1;
+        }
+
+        #quests button:last-of-type {
+            background-color: #e52d27;
+            color: white;
+        }
+
+        #quests button:last-of-type:hover {
+            background-color: #ff4c4c;
+        }
+
+        /* ===== MODALS ===== */
+        .modal-rpg {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-rpg.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            min-width: 300px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #1e3c72;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1.5rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .sidebar-nav {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .avatar-preview {
+                width: 80px;
+                height: 80px;
+            }
+
+            .username-label {
+                margin-bottom: 1rem;
+                width: 100%;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                padding: 1rem;
+            }
+
+            .sidebar-nav {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .avatar-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .tool-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-widget {
+                padding: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .stat-widget span {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 0.8rem;
+            }
+
+            .sidebar-nav {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 0.8rem;
+            }
+
+            .section {
+                padding: 1rem;
+            }
+
+            .tool-card {
+                min-height: 160px;
+                padding: 1.5rem 1rem;
+            }
+
+            .tool-card i {
+                font-size: 2.2rem;
+            }
+
+            .tool-card h4 {
+                font-size: 1.2rem;
+            }
+
+            .tool-card p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Enhanced Sidebar with All Routes -->
+        <aside class="sidebar">
+           <img id="user-avatar" class="avatar-preview" src="{{ user.avatar_url | default('https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3') }}" alt="User Avatar">
+            <div id="user-name" class="username-label">
+                <h1>Welcome, {{ user.username }}</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Core Profile & Dashboard -->
+                <a href="/profile" class="sidebar-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+
+                <a href="/leaderboard" class="sidebar-btn">
+                    <i class="fas fa-trophy"></i>
+                    <span>Leaderboard</span>
+                </a>
+
+                <!-- Study & Learning Tools -->
+                <a href="/quests" class="sidebar-btn">
+                    <i class="fas fa-scroll"></i>
+                    <span>Quests</span>
+                </a>
+
+                <a href="/pomodoro" class="sidebar-btn">
+                    <i class="fas fa-clock"></i>
+                    <span>Pomodoro Timer</span>
+                </a>
+
+                <a href="/memory" class="sidebar-btn">
+                    <i class="fas fa-brain"></i>
+                    <span>Memory Training</span>
+                </a>
+
+                <a href="/flashcards" class="sidebar-btn">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Flashcards</span>
+                </a>
+
+                <!-- RPG Elements -->
+                <a href="/leveling" class="sidebar-btn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Leveling System</span>
+                </a>
+
+                <a href="/skills" class="sidebar-btn">
+                    <i class="fas fa-magic"></i>
+                    <span>Skills & Abilities</span>
+                </a>
+
+                <a href="/shop" class="sidebar-btn">
+                    <i class="fas fa-store"></i>
+                    <span>Shop</span>
+                </a>
+
+                <!-- Battle Systems -->
+                <a href="/battles" class="sidebar-btn">
+                    <i class="fas fa-dragon"></i>
+                    <span>Boss Battles</span>
+                </a>
+
+                <a href="/battles/group" class="sidebar-btn">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Group Battles</span>
+                </a>
+
+                <!-- Social Features -->
+                <a href="/groups" class="sidebar-btn">
+                    <i class="fas fa-users"></i>
+                    <span>Study Groups</span>
+                </a>
+
+                <!-- AI & Analytics -->
+                <a href="/ai" class="sidebar-btn">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </a>
+
+                <a href="/analytics" class="sidebar-btn">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </nav>
+
+            <!-- Logout Button -->
+            <button onclick="logout()" class="logout-btn" tabindex="0">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-widget">
+                    XP 
+                    <span id="stat-xp">{{ user.xp }}</span>
+                </div>
+                <div class="stat-widget">
+                    Level 
+                    <span id="stat-level">{{ user.level | default(0) }}</span>
+                </div>
+                <div class="stat-widget">
+                    Streak 
+                    <span id="stat-streak">{{ user.streak }}</span>
+                </div>
+                <div class="stat-widget">
+                    Skill Points 
+                    <span id="stat-skill_points">{{ user.skill_points }}</span>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div class="section" id="overview-section">
+                <h3><i class="fas fa-map"></i> Game Overview</h3>
+                <div class="tool-grid">
+                    <a href="/overview" class="tool-card">
+                        <i class="fas fa-book-open"></i>
+                        <h4>Game Overview</h4>
+                        <p>Learn how StudyRPG works and discover all features</p>
+                    </a>
+
+                    <a href="/tutorial" class="tool-card">
+                        <i class="fas fa-play-circle"></i>
+                        <h4>Getting Started</h4>
+                        <p>Interactive tutorial to get you started on your journey</p>
+                    </a>
+
+                    <a href="/help" class="tool-card">
+                        <i class="fas fa-question-circle"></i>
+                        <h4>Help & Guide</h4>
+                        <p>Tips, tricks, and answers to frequently asked questions</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Study Tools Section -->
+            <div class="section" id="study-tools-section">
+                <h3><i class="fas fa-graduation-cap"></i> Study Tools</h3>
+                <div class="tool-grid">
+                    <a href="/pomodoro" class="tool-card">
+                        <i class="fas fa-clock"></i>
+                        <h4>Pomodoro Timer</h4>
+                        <p>Boost focus using the Pomodoro technique with XP rewards</p>
+                    </a>
+
+                    <a href="/memory" class="tool-card">
+                        <i class="fas fa-brain"></i>
+                        <h4>Memory Training</h4>
+                        <p>Train your memory with engaging exercises and challenges</p>
+                    </a>
+
+                    <a href="/flashcards" class="tool-card">
+                        <i class="fas fa-layer-group"></i>
+                        <h4>Flashcards</h4>
+                        <p>Create and study with intelligent flashcard decks</p>
+                    </a>
+
+                    <a href="/ai" class="tool-card">
+                        <i class="fas fa-robot"></i>
+                        <h4>AI Study Assistant</h4>
+                        <p>Get personalized study recommendations and content generation</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- RPG Elements Section -->
+            <div class="section" id="rpg-elements-section">
+                <h3><i class="fas fa-dice-d20"></i> RPG Elements</h3>
+                <div class="tool-grid">
+                    <a href="/quests" class="tool-card">
+                        <i class="fas fa-scroll"></i>
+                        <h4>Quests & Missions</h4>
+                        <p>Complete study quests to earn XP and unlock rewards</p>
+                    </a>
+
+                    <a href="/leveling" class="tool-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Leveling System</h4>
+                        <p>Track your progress and level up your study character</p>
+                    </a>
+
+                    <a href="/skills" class="tool-card">
+                        <i class="fas fa-magic"></i>
+                        <h4>Skills & Abilities</h4>
+                        <p>Unlock and upgrade your study skills and special abilities</p>
+                    </a>
+
+                    <a href="/shop" class="tool-card">
+                        <i class="fas fa-store"></i>
+                        <h4>Item Shop</h4>
+                        <p>Purchase power-ups, tools, and cosmetics with earned currency</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Battle Systems Section -->
+            <div class="section" id="battle-systems-section">
+                <h3><i class="fas fa-sword"></i> Battle Systems</h3>
+                <div class="tool-grid">
+                    <a href="/battles" class="tool-card">
+                        <i class="fas fa-dragon"></i>
+                        <h4>Boss Battles</h4>
+                        <p>Face challenging academic bosses in epic solo battles</p>
+                    </a>
+
+                    <a href="/battles/group" class="tool-card">
+                        <i class="fas fa-users-cog"></i>
+                        <h4>Group Boss Battles</h4>
+                        <p>Team up with study groups to defeat massive raid bosses</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Social Features Section -->
+            <div class="section" id="social-features-section">
+                <h3><i class="fas fa-heart"></i> Social Features</h3>
+                <div class="tool-grid">
+                    <a href="/groups" class="tool-card">
+                        <i class="fas fa-users"></i>
+                        <h4>Study Groups</h4>
+                        <p>Join or create study groups for collaborative learning</p>
+                    </a>
+
+                    <a href="/leaderboard" class="tool-card">
+                        <i class="fas fa-trophy"></i>
+                        <h4>Global Leaderboard</h4>
+                        <p>Compete with other students and climb the rankings</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="section" id="analytics-section">
+                <h3><i class="fas fa-chart-bar"></i> Progress Tracking</h3>
+                <div class="tool-grid">
+                    <a href="/analytics" class="tool-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Study Analytics</h4>
+                        <p>Detailed insights into your learning patterns and progress</p>
+                    </a>
+
+                    <a href="/profile" class="tool-card">
+                        <i class="fas fa-user-circle"></i>
+                        <h4>Profile & Achievements</h4>
+                        <p>View your complete profile, stats, and earned achievements</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="activity-feed">
+                <h4><i class="fas fa-history"></i> Recent Activity</h4>
+                <ul id="activity-list"></ul>
+            </div>
+
+            <!-- Quick Access Quests -->
+            <div class="section">
+                <h3><i class="fas fa-tasks"></i> Active Quests</h3>
+                <ul id="quests"></ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="editQuestModal" class="modal-rpg">
+        <div class="modal-content">
+            <h3>Edit Quest</h3>
+            <form id="editQuestForm"></form>
+        </div>
+    </div>
+
+    <script>
+        // Debug mode
+        let debugMode = true;
+        
+        function log(message) {
+            if (debugMode) {
+                console.log(`[Dashboard Debug] ${message}`);
+            }
+        }
+
+        // Token management
+        class TokenManager {
+            static getToken() {
+                const token = localStorage.getItem('access_token');
+                log(`Getting token from localStorage: ${token ? token.substring(0, 20) + '...' : 'null'}`);
+                return token;
+            }
+            
+            static removeToken() {
+                localStorage.removeItem('access_token');
+                log('Token removed from localStorage');
+            }
+            
+            static isTokenExpired(token) {
+                if (!token) return true;
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const exp = payload.exp * 1000;
+                    const now = Date.now();
+                    const isExpired = now >= exp;
+                    log(`Token expiry check: ${isExpired ? 'EXPIRED' : 'VALID'} (exp: ${new Date(exp).toLocaleString()})`);
+                    return isExpired;
+                } catch (error) {
+                    log(`Token expiry check failed: ${error.message}`);
+                    return true;
+                }
+            }
+        }
+
+        // Global variable for current user
+        let currentUser = null;
+
+        // Enhanced fetch with authentication
+        async function authenticatedFetch(url, options = {}) {
+            const token = TokenManager.getToken();
+            
+            if (!token) {
+                log('No token available for request');
+                throw new Error('No authentication token');
+            }
+            
+            if (TokenManager.isTokenExpired(token)) {
+                log('Token expired, redirecting to login');
+                TokenManager.removeToken();
+                window.location.href = '/login';
+                throw new Error('Token expired');
+            }
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            log(`Making authenticated request to: ${url}`);
+            
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+            
+            log(`Response status: ${response.status}`);
+            
+            if (response.status === 401) {
+                log('401 Unauthorized - token invalid, redirecting to login');
+                TokenManager.removeToken();
+                window.location.href = '/login';
+                throw new Error('Authentication failed');
+            }
+            
+            return response;            return response;
+        }
+
+        // Logout function
+        function logout() {
+            TokenManager.removeToken();
+            window.location.href = '/login';
+        }
+
+        // Load user activity (placeholder demo)
+        async function loadActivity() {
+            try {
+                const res = await authenticatedFetch('/users/activity');
+                if (!res.ok) {
+                    log("Failed to fetch activity");
+                    return;
+                }
+                const activities = await res.json();
+                const list = document.getElementById('activity-list');
+                list.innerHTML = '';
+                activities.forEach(act => {
+                    const li = document.createElement('li');
+                    li.textContent = `${act.description} - ${new Date(act.timestamp).toLocaleString()}`;
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                log(`Activity load error: ${err.message}`);
+            }
+        }
+
+        // On page load
+        document.addEventListener("DOMContentLoaded", () => {
+            log("Dashboard loaded");
+            loadActivity();
+        });
+    </script>
+</body>
+</html>

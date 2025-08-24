@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from app import models, schemas
 from app.database import get_async_session
-from app.auth_deps import get_current_user
+from app.auth_deps import get_current_user_optional
 from sqlalchemy import select
 import asyncio
 import logging
 import os
+import uuid
 import openai
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,12 +31,33 @@ except Exception as e:
     logger.error(f"Failed to initialize OpenAI client: {str(e)}")
     openai_client = None
 
+# Configure upload directory
+UPLOAD_DIR = "uploads/materials"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+class MaterialBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+
+class MaterialCreate(MaterialBase):
+    pass
+
+class Material(MaterialBase):
+    id: int
+    user_id: str
+    file_path: Optional[str] = None
+    file_type: Optional[str] = None
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
 class AnalysisResult(BaseModel):
     summary: str
     key_points: List[str]
 
 class AIStudyTools:
-    def __init__(self, user_id: int, db: AsyncSession):
+    def __init__(self, user_id: str, db: AsyncSession):
         self.user_id = user_id
         self.db = db
         self.openai_client = openai_client
@@ -234,11 +257,30 @@ class AIStudyTools:
             logger.error(f"OpenAI text analysis error: {str(e)}")
             raise ValueError(f"Failed to analyze text: {str(e)}")
 
+    async def analyze_material(self, material_id: int) -> AnalysisResult:
+        # Get material from database
+        result = await self.db.execute(
+            select(models.Material)
+            .where(
+                models.Material.id == material_id,
+                models.Material.user_id == self.user_id
+            )
+        )
+        material = result.scalars().first()
+        
+        if not material:
+            raise ValueError("Material not found or not accessible")
+        
+        if not material.content:
+            raise ValueError("Material has no text content for analysis")
+        
+        return await self.analyze_text(material.content)
+
 @ai_router.post("/test/timed", response_model=Dict)
 async def generate_timed_test(
     request: schemas.TestGenerationRequest,
     db: AsyncSession = Depends(get_async_session),
-    current_user: models.User = Depends(get_current_user)
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -256,7 +298,7 @@ async def generate_timed_test(
 async def generate_practice_test(
     material_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: models.User = Depends(get_current_user)
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -272,7 +314,7 @@ async def generate_practice_test(
 @ai_router.post("/recommendations", response_model=List[str])
 async def get_recommendations(
     db: AsyncSession = Depends(get_async_session),
-    current_user: models.User = Depends(get_current_user)
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -281,3 +323,100 @@ async def get_recommendations(
         return await ai_tools.get_study_recommendations()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
+    
+@ai_router.post("/materials/", response_model=Material)
+async def create_material(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    description: Optional[str] = Form(None),
+    db: AsyncSession = Depends(get_async_session),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    # Generate unique filename
+    file_ext = file.filename.split('.')[-1]
+    file_name = f"{uuid.uuid4()}.{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    file_type = file.content_type
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        content = await file.read()
+        buffer.write(content)
+    
+    # For text files, extract content
+    material_content = None
+    if file_type.startswith("text/"):
+        try:
+            material_content = content.decode("utf-8")
+        except:
+            material_content = None
+    
+    # Create material in database
+    db_material = models.Material(
+        user_id=current_user.id,
+        title=title,
+        description=description,
+        file_path=file_path,
+        file_type=file_type,
+        content=material_content,
+        created_at=datetime.utcnow()
+    )
+    
+    db.add(db_material)
+    await db.commit()
+    await db.refresh(db_material)
+    return db_material
+
+@ai_router.get("/materials/", response_model=List[Material])
+async def read_materials(
+    db: AsyncSession = Depends(get_async_session),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    result = await db.execute(
+        select(models.Material)
+        .where(models.Material.user_id == current_user.id)
+        .order_by(models.Material.created_at.desc())
+    )
+    return result.scalars().all()
+
+@ai_router.get("/materials/{material_id}", response_model=Material)
+async def read_material(
+    material_id: int,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    result = await db.execute(
+        select(models.Material)
+        .where(
+            models.Material.id == material_id,
+            models.Material.user_id == current_user.id
+        )
+    )
+    material = result.scalars().first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    return material
+
+# New endpoint for material analysis
+@ai_router.post("/materials/{material_id}/analyze", response_model=AnalysisResult)
+async def analyze_material(
+    material_id: int,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    try:
+        ai_tools = AIStudyTools(current_user.id, db)
+        return await ai_tools.analyze_material(material_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Material analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to analyze material")

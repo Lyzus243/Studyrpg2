@@ -69,6 +69,23 @@ animation: gradientPulse 15s ease infinite;
       background-color: #ff4c4c;
     }
 
+    .faq-link {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.8rem 1.8rem;
+      background-color: rgba(26, 26, 46, 0.5);
+      border: 2px solid #6df0ff;
+      color: #6df0ff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .faq-link:hover {
+      background-color: rgba(109, 240, 255, 0.2);
+    }
+
     strong {
       color: #ffd700;
     }
@@ -91,6 +108,11 @@ animation: gradientPulse 15s ease infinite;
         font-size: 1rem;
         padding: 0.7rem 1.5rem;
       }
+      
+      .faq-link {
+        font-size: 1rem;
+        padding: 0.7rem 1.5rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -108,6 +130,11 @@ animation: gradientPulse 15s ease infinite;
       }
 
       a.button {
+        font-size: 0.95rem;
+        padding: 0.6rem 1.2rem;
+      }
+      
+      .faq-link {
         font-size: 0.95rem;
         padding: 0.6rem 1.2rem;
       }
@@ -133,6 +160,9 @@ animation: gradientPulse 15s ease infinite;
       Team up in <strong>Study Groups</strong>, showcase achievements, and shop rare gear and power-ups using earned coins. As your knowledge grows, so does your power!
     </p>
     <a class="button" href="/dashboard">Start Your Quest</a>
+    <div>
+      <a class="faq-link" href="/faq">View FAQ & User Guide</a>
+    </div>
   </div>
 </body>
 </html>

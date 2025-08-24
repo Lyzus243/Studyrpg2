@@ -291,7 +291,7 @@
             transition: background 0.2s, transform 0.2s;
             display: flex;
             align-items: center;
-            gap: calc(var(--spacing-unit) * 0.3);
+            gap: calc(var(--spacing-unit) * 0.5);
         }
 
         .quest-card .complete-btn {
@@ -359,6 +359,7 @@
             align-items: center;
             gap: calc(var(--spacing-unit) * 0.5);
             margin-bottom: calc(var(--spacing-unit));
+            text-align: center;
         }
 
         .modal .close-btn {
@@ -429,7 +430,7 @@
             transition: background 0.2s, transform 0.2s;
             display: flex;
             align-items: center;
-            gap: calc(var(--spacing-unit) * 0.3);
+            gap: calc(var(--spacing-unit) * 0.5);
         }
 
         .modal .delete-btn {
@@ -554,11 +555,33 @@
                     <label for="quest-type">Category</label>
                     <select id="quest-type" aria-label="Select quest category">
                         <option value="">Select category</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="study">Study</option>
+                        <option value="exercise">Exercise</option>
+                        <option value="reading">Reading</option>
+                        <option value="creative">Creative</option>
+                        <option value="personal">Personal</option>
                     </select>
                 </div>
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="quest-recurring" aria-label="Mark as recurring quest">
-                    <span>Recurring Quest</span>
+                <div class="form-group">
+                    <label for="quest-difficulty">Difficulty</label>
+                    <select id="quest-difficulty" aria-label="Select quest difficulty">
+                        <option value="1">Easy (1)</option>
+                        <option value="2">Medium (2)</option>
+                        <option value="3">Hard (3)</option>
+                        <option value="4">Expert (4)</option>
+                        <option value="5">Master (5)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quest-reward-xp">Reward XP</label>
+                    <input type="number" id="quest-reward-xp" value="100" min="1" aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="quest-reward-skill-points">Reward Skill Points</label>
+                    <input type="number" id="quest-reward-skill-points" value="10" min="1" aria-required="true">
                 </div>
                 <button type="submit" aria-label="Create new quest">➕ Create Quest</button>
             </form>
@@ -570,6 +593,14 @@
             <div class="quest-filter">
                 <select id="filter-type" aria-label="Filter by quest category">
                     <option value="">All Categories</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="study">Study</option>
+                    <option value="exercise">Exercise</option>
+                    <option value="reading">Reading</option>
+                    <option value="creative">Creative</option>
+                    <option value="personal">Personal</option>
                 </select>
                 <label class="checkbox">
                     <input type="checkbox" id="filter-completed" aria-label="Show completed quests">
@@ -588,8 +619,8 @@
         <form id="edit-quest-form">
             <input type="hidden" id="edit-quest-id">
             <div class="form-group">
-                <label for="edit-quest-title">Title</label>
-                <input type="text" id="edit-quest-title" aria-required="true">
+                <label for="edit-quest-title-input">Title</label>
+                <input type="text" id="edit-quest-title-input" aria-required="true">
             </div>
             <div class="form-group">
                 <label for="edit-quest-description">Description</label>
@@ -597,11 +628,35 @@
             </div>
             <div class="form-group">
                 <label for="edit-quest-type">Category</label>
-                <select id="edit-quest-type" aria-label="Select quest category"></select>
+                <select id="edit-quest-type" aria-label="Select quest category">
+                    <option value="">Select category</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="study">Study</option>
+                    <option value="exercise">Exercise</option>
+                    <option value="reading">Reading</option>
+                    <option value="creative">Creative</option>
+                    <option value="personal">Personal</option>
+                </select>
             </div>
-            <div class="form-group checkbox">
-                <input type="checkbox" id="edit-quest-recurring" aria-label="Mark as recurring quest">
-                <span>Recurring Quest</span>
+            <div class="form-group">
+                <label for="edit-quest-difficulty">Difficulty</label>
+                <select id="edit-quest-difficulty" aria-label="Select quest difficulty">
+                    <option value="1">Easy (1)</option>
+                    <option value="2">Medium (2)</option>
+                    <option value="3">Hard (3)</option>
+                    <option value="4">Expert (4)</option>
+                    <option value="5">Master (5)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-quest-reward-xp">Reward XP</label>
+                <input type="number" id="edit-quest-reward-xp" min="1" aria-required="true">
+            </div>
+            <div class="form-group">
+                <label for="edit-quest-reward-skill-points">Reward Skill Points</label>
+                <input type="number" id="edit-quest-reward-skill-points" min="1" aria-required="true">
             </div>
             <div class="form-buttons">
                 <button type="button" id="delete-quest-btn" class="delete-btn" aria-label="Delete quest">🗑️ Delete</button>
@@ -611,15 +666,18 @@
     </div>
 
     <script>
-        async function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            return parts.length === 2 ? parts.pop().split(';').shift() : null;
+        // Utility: Get token from localStorage
+        async function getToken() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login';
+                throw new Error('No token found. Redirecting to login...');
+            }
+            return token;
         }
 
         class QuestManager {
-            constructor(userId) {
-                this.userId = userId;
+            constructor() {
                 this.initEventListeners();
                 this.loadQuestTemplates();
                 this.loadQuests();
@@ -641,17 +699,21 @@
             }
 
             async loadQuestTemplates() {
-                const token = await getCookie('access_token');
                 try {
+                    const token = await getToken();
                     const res = await fetch('/quests/templates', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
                     if (!res.ok) throw new Error('Failed to load templates');
-                    const templates = await res.json();
-                    const typeSelect = document.getElementById('quest-type');
-                    const editTypeSelect = document.getElementById('edit-quest-type');
-                    typeSelect.innerHTML = '<option value="">Select category</option>' + templates.map(t => `<option value="${t.type}">${t.type}</option>`).join('');
-                    editTypeSelect.innerHTML = '<option value="">Select category</option>' + templates.map(t => `<option value="${t.type}">${t.type}</option>`).join('');
+                    // Templates are hardcoded in backend, so we don't need to populate selects
+                    console.log('Templates loaded successfully');
                 } catch (error) {
                     console.error('Error loading templates:', error);
                     this.showError('Failed to load quest categories');
@@ -659,37 +721,61 @@
             }
 
             async loadQuests() {
-                const token = await getCookie('access_token');
-                const typeFilter = document.getElementById('filter-type').value;
-                const showCompleted = document.getElementById('filter-completed').checked;
                 try {
-                    const url = `/quests/${this.userId}${typeFilter ? `?quest_type=${typeFilter}` : ''}`;
-                    const res = await fetch(url, {
+                    const token = await getToken();
+                    const typeFilter = document.getElementById('filter-type').value;
+                    const showCompleted = document.getElementById('filter-completed').checked;
+                    
+                    const res = await fetch('/quests/', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
                     if (!res.ok) throw new Error('Failed to load quests');
-                    const quests = await res.json();
+                    
+                    let quests = await res.json();
+                    
+                    // Apply filters
+                    if (typeFilter) {
+                        quests = quests.filter(q => q.quest_type === typeFilter);
+                    }
+                    if (!showCompleted) {
+                        quests = quests.filter(q => !q.is_completed);
+                    }
+
                     const questList = document.getElementById('quest-list');
-                    questList.innerHTML = quests
-                        .filter(q => showCompleted || !q.completed)
-                        .map(q => `
-                            <div class="quest-card" role="article">
-                                <div>
-                                    <h3>${q.title}</h3>
-                                    <p>${q.description}</p>
-                                    <p class="type">🏷️ ${q.quest_type || 'None'}</p>
-                                    <p class="xp">🌟 ${q.xp_reward} XP</p>
-                                    ${q.recurring ? '<p class="recurring">🔄 Recurring</p>' : ''}
-                                </div>
-                                <div class="buttons">
-                                    ${q.completed ? 
-                                        '<span class="completed">✅ Completed</span>' :
-                                        `<button class="complete-btn" data-id="${q.id}" aria-label="Complete quest">✔️ Complete</button>`
-                                    }
-                                    <button class="edit-btn" data-id="${q.id}" aria-label="Edit quest">✏️ Edit</button>
-                                </div>
+                    
+                    if (quests.length === 0) {
+                        questList.innerHTML = '<p class="error">📝 No quests found. Create your first quest above!</p>';
+                        return;
+                    }
+
+                    questList.innerHTML = quests.map(q => `
+                        <div class="quest-card" role="article">
+                            <div>
+                                <h3>${q.title}</h3>
+                                <p>${q.description}</p>
+                                <p class="type">🏷️ ${q.quest_type || 'None'}</p>
+                                <p class="xp">🌟 ${q.reward_xp || 0} XP | 💎 ${q.reward_skill_points || 0} SP</p>
+                                <p class="type">⚡ Difficulty: ${q.difficulty || 1}</p>
+                                ${q.is_completed ? `<p class="completed">✅ Completed - Earned ${q.xp_earned || 0} XP</p>` : ''}
                             </div>
-                        `).join('');
+                            <div class="buttons">
+                                ${q.is_completed ? 
+                                    '<span class="completed">✅ Done</span>' :
+                                    `<button class="complete-btn" data-id="${q.id}" aria-label="Complete quest">✔️ Complete</button>`
+                                }
+                                <button class="edit-btn" data-id="${q.id}" aria-label="Edit quest">✏️ Edit</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Add event listeners to buttons
                     document.querySelectorAll('.complete-btn').forEach(btn => 
                         btn.addEventListener('click', () => this.completeQuest(btn.dataset.id))
                     );
@@ -704,43 +790,85 @@
 
             async createQuest(e) {
                 e.preventDefault();
-                const token = await getCookie('access_token');
-                const title = document.getElementById('quest-title').value;
-                const description = document.getElementById('quest-description').value;
+                
+                const title = document.getElementById('quest-title').value.trim();
+                const description = document.getElementById('quest-description').value.trim();
                 const questType = document.getElementById('quest-type').value;
-                const recurring = document.getElementById('quest-recurring').checked;
+                const difficulty = parseInt(document.getElementById('quest-difficulty').value);
+                const rewardXp = parseInt(document.getElementById('quest-reward-xp').value);
+                const rewardSkillPoints = parseInt(document.getElementById('quest-reward-skill-points').value);
+                
+                if (!title || !description) {
+                    this.showError('Title and description are required');
+                    return;
+                }
+                
                 try {
-                    const res = await fetch('/quests', {
+                    const token = await getToken();
+                    const res = await fetch('/quests/', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ title, description, quest_type: questType, recurring })
+                        body: JSON.stringify({ 
+                            title, 
+                            description, 
+                            quest_type: questType,
+                            difficulty,
+                            reward_xp: rewardXp,
+                            reward_skill_points: rewardSkillPoints
+                        })
                     });
-                    if (!res.ok) throw new Error('Failed to create quest');
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.detail || 'Failed to create quest');
+                    }
+                    
                     document.getElementById('create-quest-form').reset();
+                    // Reset to default values
+                    document.getElementById('quest-difficulty').value = '1';
+                    document.getElementById('quest-reward-xp').value = '100';
+                    document.getElementById('quest-reward-skill-points').value = '10';
                     this.loadQuests();
                 } catch (error) {
                     console.error('Error creating quest:', error);
-                    this.showError('Failed to create quest');
+                    this.showError('Failed to create quest: ' + error.message);
                 }
             }
 
             async showEditQuest(questId) {
-                const token = await getCookie('access_token');
                 try {
-                    const res = await fetch(`/quests/${this.userId}`, {
+                    const token = await getToken();
+                    const res = await fetch(`/quests/${questId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    const quests = await res.json();
-                    const quest = quests.find(q => q.id === parseInt(questId));
-                    if (!quest) throw new Error('Quest not found');
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    if (!res.ok) throw new Error('Failed to load quest');
+                    
+                    const quest = await res.json();
+                    
                     document.getElementById('edit-quest-id').value = quest.id;
-                    document.getElementById('edit-quest-title').value = quest.title;
+                    document.getElementById('edit-quest-title-input').value = quest.title;
                     document.getElementById('edit-quest-description').value = quest.description;
                     document.getElementById('edit-quest-type').value = quest.quest_type || '';
-                    document.getElementById('edit-quest-recurring').checked = quest.recurring;
+                    document.getElementById('edit-quest-difficulty').value = quest.difficulty || 1;
+                    document.getElementById('edit-quest-reward-xp').value = quest.reward_xp || 100;
+                    document.getElementById('edit-quest-reward-skill-points').value = quest.reward_skill_points || 10;
+                    
                     document.getElementById('edit-quest-modal').classList.add('show');
                     document.getElementById('modal-overlay').classList.add('show');
                 } catch (error) {
@@ -751,79 +879,169 @@
 
             async updateQuest(e) {
                 e.preventDefault();
-                const token = await getCookie('access_token');
                 const questId = document.getElementById('edit-quest-id').value;
-                const title = document.getElementById('edit-quest-title').value;
-                const description = document.getElementById('edit-quest-description').value;
+                
+                const title = document.getElementById('edit-quest-title-input').value.trim();
+                const description = document.getElementById('edit-quest-description').value.trim();
                 const questType = document.getElementById('edit-quest-type').value;
-                const recurring = document.getElementById('edit-quest-recurring').checked;
+                const difficulty = parseInt(document.getElementById('edit-quest-difficulty').value);
+                const rewardXp = parseInt(document.getElementById('edit-quest-reward-xp').value);
+                const rewardSkillPoints = parseInt(document.getElementById('edit-quest-reward-skill-points').value);
+                
+                if (!title || !description) {
+                    this.showError('Title and description are required');
+                    return;
+                }
+                
                 try {
+                    const token = await getToken();
                     const res = await fetch(`/quests/${questId}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ title, description, quest_type: questType, recurring })
+                        body: JSON.stringify({ 
+                            title, 
+                            description, 
+                            quest_type: questType,
+                            difficulty,
+                            reward_xp: rewardXp,
+                            reward_skill_points: rewardSkillPoints
+                        })
                     });
-                    if (!res.ok) throw new Error('Failed to update quest');
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.detail || 'Failed to update quest');
+                    }
+                    
                     this.closeModal();
                     this.loadQuests();
                 } catch (error) {
                     console.error('Error updating quest:', error);
-                    this.showError('Failed to update quest');
+                    this.showError('Failed to update quest: ' + error.message);
                 }
             }
 
             async deleteQuest() {
-                const token = await getCookie('access_token');
                 const questId = document.getElementById('edit-quest-id').value;
+                
+                if (!confirm('Are you sure you want to delete this quest? This action cannot be undone.')) {
+                    return;
+                }
+                
                 try {
+                    const token = await getToken();
                     const res = await fetch(`/quests/${questId}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (!res.ok) throw new Error('Failed to delete quest');
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.detail || 'Failed to delete quest');
+                    }
+                    
                     this.closeModal();
                     this.loadQuests();
                 } catch (error) {
                     console.error('Error deleting quest:', error);
-                    this.showError('Failed to delete quest');
+                    this.showError('Failed to delete quest: ' + error.message);
                 }
             }
 
             async completeQuest(questId) {
-                const token = await getCookie('access_token');
                 try {
+                    const token = await getToken();
                     const res = await fetch(`/quests/${questId}/complete`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (!res.ok) throw new Error('Failed to complete quest');
+                    
+                    if (res.status === 401) {
+                        localStorage.removeItem('access_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.detail || 'Failed to complete quest');
+                    }
+                    
+                    const completedQuest = await res.json();
+                    
+                    // Show success message
+                    const questList = document.getElementById('quest-list');
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'quest-card';
+                    successMsg.style.background = 'var(--success-bg)';
+                    successMsg.innerHTML = `
+                        <div>
+                            <h3>🎉 Quest Completed!</h3>
+                            <p>You earned ${completedQuest.xp_earned || 0} XP and ${completedQuest.reward_skill_points || 0} skill points!</p>
+                        </div>
+                    `;
+                    
+                    questList.insertBefore(successMsg, questList.firstChild);
+                    
+                    // Remove success message after 3 seconds
+                    setTimeout(() => {
+                        if (successMsg.parentNode) {
+                            successMsg.parentNode.removeChild(successMsg);
+                        }
+                    }, 3000);
+                    
                     this.loadQuests();
                 } catch (error) {
                     console.error('Error completing quest:', error);
-                    this.showError('Failed to complete quest');
+                    this.showError('Failed to complete quest: ' + error.message);
                 }
             }
 
             showError(message) {
                 const questList = document.getElementById('quest-list');
-                questList.innerHTML = `<p class="error">⚠️ ${message}</p>`;
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'quest-card';
+                errorMsg.style.background = 'var(--error-bg)';
+                errorMsg.innerHTML = `
+                    <div>
+                        <p class="error">⚠️ ${message}</p>
+                    </div>
+                `;
+                
+                questList.insertBefore(errorMsg, questList.firstChild);
+                
+                // Remove error message after 5 seconds
+                setTimeout(() => {
+                    if (errorMsg.parentNode) {
+                        errorMsg.parentNode.removeChild(errorMsg);
+                    }
+                }, 5000);
             }
         }
 
+        // Initialize the quest manager when page loads
         document.addEventListener('DOMContentLoaded', async () => {
-            const token = await getCookie('access_token');
             try {
-                const res = await fetch('/verify-token', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error('Invalid token');
-                const user = await res.json();
-                new QuestManager(user.id);
+                await getToken(); // Check if token exists
+                // Initialize quest manager
+                new QuestManager();
             } catch (error) {
-                console.error('Error verifying user:', error);
+                console.error('Authentication error:', error);
                 document.getElementById('quest-list').innerHTML = '<p class="error">⚠️ Please log in to view quests</p>';
             }
         });
