@@ -1,0 +1,16 @@
+# Ignore everything
+*
+
+# Keep these folders
+!alembic/
+!models/
+!static/
+!tests/
+
+# Keep specific files
+!alembic.ini
+!app.db
+!your_database.db
+
+# Also keep the .gitignore file itself
+!.gitignore
