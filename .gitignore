@@ -1,6 +1,7 @@
 # Ignore everything
 *
-
+app/__pycache__/
+app/routers/__pycache__/
 # Keep these folders
 !alembic/
 app/
