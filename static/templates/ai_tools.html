@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Tools - StudyRPG</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f1a30 0%, #1a2a6c 50%, #0f1a30 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      background-size: 400% 400%;
+      animation: gradientPulse 15s ease infinite;
+      padding: 20px;
+    }
+
+    @keyframes gradientPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(26, 32, 53, 0.7);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 204, 0, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .header h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      color: #ffcc00;
+      text-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.85);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(26, 32, 53, 0.7);
+      border-radius: 15px;
+      padding: 25px;
+      border: 1px solid rgba(255, 204, 0, 0.15);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 204, 0, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+    }
+
+    .card-icon i {
+      font-size: 1.8rem;
+      color: #ffcc00;
+    }
+
+    .card-title {
+      font-size: 1.6rem;
+      color: #ffcc00;
+      font-weight: 600;
+    }
+
+    .card-body {
+      flex-grow: 1;
+    }
+
+    .card-description {
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 14px 18px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(30, 36, 58, 0.5);
+      color: #ffffff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #ffcc00;
+      box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn {
+      background: linear-gradient(to right, #ffcc00, #ff9900);
+      color: #1a1a2e;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .file-upload {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    .file-upload-btn {
+      background: rgba(30, 36, 58, 0.5);
+      border: 1px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-upload-btn:hover {
+      border-color: #ffcc00;
+      color: #ffcc00;
+    }
+
+    .file-upload input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-info {
+      background: rgba(30, 36, 58, 0.5);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .material-fields {
+      display: none;
+      margin-bottom: 15px;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #ffcc00;
+      text-decoration: none;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      background: rgba(26, 32, 53, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      background: rgba(255, 204, 0, 0.15);
+    }
+
+    .result-container {
+      background: rgba(30, 36, 58, 0.5);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .result-title {
+      color: #ffcc00;
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+
+    .recommendations-list {
+      list-style: none;
+    }
+
+    .recommendations-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .recommendations-list li:before {
+      content: "•";
+      color: #ffcc00;
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .recommendations-list li:last-child {
+      border-bottom: none;
+    }
+
+    .analysis-result {
+      line-height: 1.7;
+    }
+
+    .analysis-result h4 {
+      color: #ffcc00;
+      margin: 15px 0 8px;
+    }
+
+    .key-points {
+      padding-left: 20px;
+    }
+
+    .key-points li {
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .loading i {
+      font-size: 2rem;
+      color: #ffcc00;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(26, 32, 53, 0.95);
+      color: #ffcc00;
+      padding: 15px 25px;
+      border-radius: 10px;
+      border-left: 4px solid #ffcc00;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+      transform: translateX(150%);
+      transition: transform 0.4s ease;
+      z-index: 1000;
+      max-width: 400px;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .material-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .material-actions button {
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .button-group {
+        grid-template-columns: 1fr;
+      }
+      
+      .card-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/dashboard" class="back-link">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="header">
+      <h1><i class="fas fa-robot"></i> AI Study Tools</h1>
+      <p>Transform your study materials with advanced AI-powered tools</p>
+    </div>
+
+    <div class="card-container">
+      <!-- Material Management Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <h2 class="card-title">Study Materials</h2>
+        </div>
+        <div class="card-body">
+          <p class="card-description">Upload or select study materials to generate tests and get AI recommendations.</p>
+          
+          <div class="file-upload">
+            <div class="file-upload-btn">
+              <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+              <h3>Upload Document</h3>
+              <p>Click to browse or drag & drop files (PDF, DOCX, TXT)</p>
+              <p class="small" style="font-size: 0.9rem; margin-top: 5px; opacity: 0.7;">Max file size: 10MB</p>
+            </div>
+            <input type="file" id="fileUpload" accept=".pdf,.docx,.txt,.md">
+          </div>
+          
+          <div class="file-info" id="fileInfo">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-file" style="font-size: 1.8rem;"></i>
+              <div>
+                <h4 id="fileName" style="margin-bottom: 5px;">Document.pdf</h4>
+                <p id="fileSize" style="opacity: 0.7;">5.2 MB</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="material-fields" id="materialFields">
+            <input type="text" id="materialTitle" placeholder="Material Title" required>
+            <textarea id="materialDescription" placeholder="Description (optional)"></textarea>
+          </div>
+          
+          <button class="btn" id="uploadMaterialBtn">
+            <i class="fas fa-upload"></i> Upload Material
+          </button>
+          
+          <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
+          
+          <h3 style="margin-bottom: 15px; color: #ffcc00;">Your Materials</h3>
+          <select id="materialSelect">
+            <option value="">Loading materials...</option>
+          </select>
+          
+          <div id="materialError" class="error hidden">
+            Failed to load materials. Please refresh the page.
+          </div>
+          
+          <div class="material-actions">
+            <button class="btn btn-secondary" id="analyzeMaterialBtn">
+              <i class="fas fa-search"></i> Analyze
+            </button>
+            <button class="btn" id="generateFromMaterialBtn">
+              <i class="fas fa-magic"></i> Generate Test
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Generation Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <h2 class="card-title">Test Generator</h2>
+        </div>
+        <div class="card-body">
+          <p class="card-description">Create customized practice tests based on your study materials.</p>
+          
+          <div class="button-group">
+            <div>
+              <label for="testDuration">Test Duration (minutes):</label>
+              <input type="number" id="testDuration" min="5" max="120" value="30" placeholder="30">
+              <button class="btn" id="generateTimedTestBtn">
+                <i class="fas fa-clock"></i> Timed Test
+              </button>
+            </div>
+            
+            <div>
+              <button class="btn" id="generatePracticeTestBtn">
+                <i class="fas fa-graduation-cap"></i> Practice Test
+              </button>
+            </div>
+          </div>
+          
+          <div id="testGenerationStatus" class="hidden"></div>
+          
+          <div class="result-container" id="testResult">
+            <h3 class="result-title"><i class="fas fa-file-alt"></i> Generated Test</h3>
+            <div id="testContent">
+              Test content will appear here...
+            </div>
+            <button class="btn" id="startTestBtn" style="margin-top: 15px;">
+              <i class="fas fa-play-circle"></i> Start Test
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <h2 class="card-title">Study Recommendations</h2>
+        </div>
+        <div class="card-body">
+          <p class="card-description">Get personalized study recommendations based on your progress and performance.</p>
+          
+          <button class="btn" id="getRecommendationsBtn">
+            <i class="fas fa-star"></i> Get Recommendations
+          </button>
+          
+          <div id="recommendationsLoading" class="loading hidden">
+            <i class="fas fa-spinner fa-spin"></i>
+            Analyzing your study patterns...
+          </div>
+          
+          <div id="recommendationsError" class="error hidden"></div>
+          
+          <div class="result-container" id="recommendationsResult">
+            <h3 class="result-title"><i class="fas fa-clipboard-list"></i> Your Recommendations</h3>
+            <ul class="recommendations-list" id="recommendationsList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Material Analysis Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <h2 class="card-title">Material Analysis</h2>
+        </div>
+        <div class="card-body">
+          <p class="card-description">Analyze and summarize your study materials with AI.</p>
+          
+          <div id="analysisLoading" class="loading hidden">
+            <i class="fas fa-spinner fa-spin"></i>
+            Analyzing material...
+          </div>
+          
+          <div id="analysisError" class="error hidden"></div>
+          
+          <div class="result-container" id="analysisResult">
+            <h3 class="result-title"><i class="fas fa-file-contract"></i> Analysis Results</h3>
+            <div class="analysis-result">
+              <div id="analysisSummary"></div>
+              <h4><i class="fas fa-key"></i> Key Points</h4>
+              <ul class="key-points" id="analysisKeyPoints"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification">
+    <span id="notification-message"></span>
+  </div>
+
+  <script>
+    // Token management utilities
+    class TokenManager {
+      static setToken(token) {
+        localStorage.setItem('access_token', token);
+        console.log('Token stored in localStorage');
+      }
+      
+      static getToken() {
+        return localStorage.getItem('access_token');
+      }
+      
+      static removeToken() {
+        localStorage.removeItem('access_token');
+        console.log('Token removed from localStorage');
+      }
+      
+      static isTokenExpired(token) {
+        try {
+          // Simple JWT expiry check (decode without verification for expiry only)
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const exp = payload.exp * 1000; // Convert to milliseconds
+          const now = Date.now();
+          return now >= exp;
+        } catch (error) {
+          console.error('Token expiry check failed:', error);
+          return true; // Consider invalid tokens as expired
+        }
+      }
+    }
+
+    // DOM Elements
+    const fileUpload = document.getElementById('fileUpload');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const materialSelect = document.getElementById('materialSelect');
+    const materialTitle = document.getElementById('materialTitle');
+    const materialDescription = document.getElementById('materialDescription');
+    const materialFields = document.getElementById('materialFields');
+    const uploadMaterialBtn = document.getElementById('uploadMaterialBtn');
+    const analyzeMaterialBtn = document.getElementById('analyzeMaterialBtn');
+    const generateFromMaterialBtn = document.getElementById('generateFromMaterialBtn');
+    const generateTimedTestBtn = document.getElementById('generateTimedTestBtn');
+    const generatePracticeTestBtn = document.getElementById('generatePracticeTestBtn');
+    const getRecommendationsBtn = document.getElementById('getRecommendationsBtn');
+    const testResult = document.getElementById('testResult');
+    const recommendationsResult = document.getElementById('recommendationsResult');
+    const analysisResult = document.getElementById('analysisResult');
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notification-message');
+    
+    let materials = [];
+    let selectedMaterialId = null;
+    let uploadedFile = null;
+
+    // Initialize the page
+    async function init() {
+        if (!isAuthenticated()) {
+            showNotification('Please log in to access AI tools', 'error');
+            setTimeout(() => { window.location.href = '/login'; }, 2000);
+            return;
+        }
+        
+        await loadMaterials();
+        setupEventListeners();
+    }
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+        const token = TokenManager.getToken();
+        if (!token) return false;
+        
+        // Check if token is expired
+        if (TokenManager.isTokenExpired(token)) {
+            TokenManager.removeToken();
+            return false;
+        }
+        
+        return true;
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        // File upload handling
+        fileUpload.addEventListener('change', handleFileUpload);
+        
+        // Material selection
+        materialSelect.addEventListener('change', (e) => {
+            selectedMaterialId = e.target.value;
+        });
+        
+        // Buttons
+        uploadMaterialBtn.addEventListener('click', uploadMaterial);
+        analyzeMaterialBtn.addEventListener('click', analyzeUploadedMaterial);
+        generateFromMaterialBtn.addEventListener('click', generateTestFromMaterial);
+        generateTimedTestBtn.addEventListener('click', generateTimedTest);
+        generatePracticeTestBtn.addEventListener('click', generatePracticeTest);
+        getRecommendationsBtn.addEventListener('click', getStudyRecommendations);
+    }
+
+    // Handle file upload
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        uploadedFile = file;
+        
+        // Display file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'block';
+        materialFields.style.display = 'block';
+        
+        // Set default title
+        materialTitle.value = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+    }
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' bytes';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        else return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+    
+    // Get authorization header
+    function getAuthHeader() {
+        const token = TokenManager.getToken();
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+    }
+    
+    // Load materials from backend
+    async function loadMaterials() {
+        try {
+            const token = TokenManager.getToken();
+            if (!token) {
+                showNotification('Please log in again', 'error');
+                setTimeout(() => window.location.href = '/login', 1500);
+                return;
+            }
+            
+            const response = await fetch('/ai/materials/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await loadMaterials();
+            }
+            
+            if (!response.ok) throw new Error('Failed to fetch materials');
+            
+            materials = await response.json();
+            
+            if (materials.length === 0) {
+                materialSelect.innerHTML = '<option value="">No materials found. Upload a material first.</option>';
+            } else {
+                materialSelect.innerHTML = '<option value="">Select a material...</option>' +
+                    materials.map(m => `<option value="${m.id}">${m.title}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Failed to load materials:', error);
+            document.getElementById('materialError').classList.remove('hidden');
+        }
+    }
+    
+    // Refresh token
+    async function refreshToken() {
+        try {
+            const response = await fetch('/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${TokenManager.getToken()}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                TokenManager.setToken(data.access_token);
+                return true;
+            }
+        } catch (error) {
+            console.error('Token refresh failed:', error);
+        }
+        return false;
+    }
+    
+    // Upload material to backend
+    async function uploadMaterial() {
+        if (!uploadedFile) {
+            showNotification('Please select a file first', 'error');
+            return;
+        }
+        
+        if (!materialTitle.value.trim()) {
+            showNotification('Please enter a material title', 'error');
+            return;
+        }
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('title', materialTitle.value);
+        formData.append('description', materialDescription.value);
+        
+        try {
+            uploadMaterialBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            uploadMaterialBtn.disabled = true;
+            
+            const token = TokenManager.getToken();
+            const response = await fetch('/ai/materials/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await uploadMaterial();
+            }
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to upload material');
+            }
+            
+            const newMaterial = await response.json();
+            showNotification('Material uploaded successfully!');
+            
+            // Add to materials list
+            materials.push(newMaterial);
+            updateMaterialsList();
+            
+            // Select the new material
+            materialSelect.value = newMaterial.id;
+            selectedMaterialId = newMaterial.id;
+            
+            // Reset form
+            fileInfo.style.display = 'none';
+            materialFields.style.display = 'none';
+            fileUpload.value = '';
+            uploadedFile = null;
+            
+        } catch (error) {
+            console.error('Error uploading material:', error);
+            showNotification('Failed to upload: ' + error.message, 'error');
+        } finally {
+            uploadMaterialBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Material';
+            uploadMaterialBtn.disabled = false;
+        }
+    }
+    
+    // Update materials list in UI
+    function updateMaterialsList() {
+        materialSelect.innerHTML = '<option value="">Select a material...</option>' +
+            materials.map(m => `<option value="${m.id}" ${selectedMaterialId === m.id ? 'selected' : ''}>${m.title}</option>`).join('');
+    }
+    
+    // Analyze uploaded material
+    async function analyzeUploadedMaterial() {
+        if (!selectedMaterialId) {
+            showNotification('Please select a material first', 'error');
+            return;
+        }
+        
+        try {
+            analyzeMaterialBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            analyzeMaterialBtn.disabled = true;
+            
+            const loadingEl = document.getElementById('analysisLoading');
+            const errorEl = document.getElementById('analysisError');
+            const resultEl = document.getElementById('analysisResult');
+            
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            resultEl.style.display = 'none';
+            
+            const token = TokenManager.getToken();
+            const response = await fetch(`/ai/materials/${selectedMaterialId}/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await analyzeUploadedMaterial();
+            }
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to analyze material');
+            }
+            
+            const analysis = await response.json();
+            showNotification('Analysis complete!');
+            
+            // Display analysis results
+            displayAnalysisResult(analysis);
+            
+        } catch (error) {
+            console.error('Error analyzing material:', error);
+            document.getElementById('analysisError').textContent = 'Failed to analyze: ' + error.message;
+            document.getElementById('analysisError').classList.remove('hidden');
+        } finally {
+            analyzeMaterialBtn.innerHTML = '<i class="fas fa-search"></i> Analyze';
+            analyzeMaterialBtn.disabled = false;
+            document.getElementById('analysisLoading').classList.add('hidden');
+        }
+    }
+    
+    // Display analysis result
+    function displayAnalysisResult(analysis) {
+        const summaryEl = document.getElementById('analysisSummary');
+        const keyPointsEl = document.getElementById('analysisKeyPoints');
+        const resultEl = document.getElementById('analysisResult');
+        
+        summaryEl.innerHTML = `<p>${analysis.summary}</p>`;
+        keyPointsEl.innerHTML = analysis.key_points.map(point => `<li>${point}</li>`).join('');
+        resultEl.style.display = 'block';
+    }
+    
+    // Generate test from material
+    async function generateTestFromMaterial() {
+        if (!selectedMaterialId) {
+            showNotification('Please select a material first', 'error');
+            return;
+        }
+        
+        try {
+            generateFromMaterialBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            generateFromMaterialBtn.disabled = true;
+            
+            const token = TokenManager.getToken();
+            const response = await fetch(`/ai/test/practice?material_id=${selectedMaterialId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await generateTestFromMaterial();
+            }
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to generate test');
+            }
+            
+            const questions = await response.json();
+            showNotification('Test generated successfully!');
+            
+            // Display test result
+            testResult.style.display = 'block';
+            document.getElementById('testContent').innerHTML = `
+                <h4>Practice Test</h4>
+                <p>This test contains ${questions.length} questions:</p>
+                <ol>
+                    ${questions.slice(0, 5).map(q => 
+                        `<li>
+                            <strong>${q.question}</strong>
+                            <ul>
+                                ${q.options.map((opt, idx) => `<li>${String.fromCharCode(65 + idx)}. ${opt}</li>`).join('')}
+                            </ul>
+                            <p><em>Correct answer: ${q.correct_option}</em></p>
+                        </li>`
+                    ).join('')}
+                </ol>
+                ${questions.length > 5 ? `<p>...and ${questions.length - 5} more questions</p>` : ''}
+            `;
+            
+        } catch (error) {
+            console.error('Error generating test:', error);
+            showNotification('Failed to generate test: ' + error.message, 'error');
+        } finally {
+            generateFromMaterialBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Test';
+            generateFromMaterialBtn.disabled = false;
+        }
+    }
+
+    // Generate timed test
+    async function generateTimedTest() {
+        const duration = parseInt(document.getElementById('testDuration').value);
+        
+        if (!selectedMaterialId) {
+            showNotification('Please select a material first', 'error');
+            return;
+        }
+        
+        if (!duration || duration < 5 || duration > 120) {
+            showNotification('Please enter a valid duration (5-120 minutes)', 'error');
+            return;
+        }
+
+        try {
+            generateTimedTestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            generateTimedTestBtn.disabled = true;
+            
+            const token = TokenManager.getToken();
+            const response = await fetch('/ai/test/timed', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    material_id: parseInt(selectedMaterialId),
+                    duration: duration
+                })
+            });
+
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await generateTimedTest();
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to generate timed test');
+            }
+
+            const result = await response.json();
+            showNotification('Timed test generated successfully!');
+            
+            // Display test result
+            testResult.style.display = 'block';
+            document.getElementById('testContent').innerHTML = `
+                <h4>${result.instructions}</h4>
+                <p>Time limit: ${result.time_limit} minutes</p>
+                <p>Questions:</p>
+                <ol>
+                    ${result.questions.slice(0, 3).map(q => 
+                        `<li>
+                            <strong>${q.question}</strong>
+                            <ul>
+                                ${q.options.map((opt, idx) => `<li>${String.fromCharCode(65 + idx)}. ${opt}</li>`).join('')}
+                            </ul>
+                        </li>`
+                    ).join('')}
+                </ol>
+                ${result.questions.length > 3 ? `<p>...and ${result.questions.length - 3} more questions</p>` : ''}
+            `;
+            
+        } catch (error) {
+            console.error('Error generating timed test:', error);
+            showNotification('Failed to generate test: ' + error.message, 'error');
+        } finally {
+            generateTimedTestBtn.innerHTML = '<i class="fas fa-clock"></i> Timed Test';
+            generateTimedTestBtn.disabled = false;
+        }
+    }
+
+    // Generate practice test
+    async function generatePracticeTest() {
+        if (!selectedMaterialId) {
+            showNotification('Please select a material first', 'error');
+            return;
+        }
+
+        try {
+            generatePracticeTestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            generatePracticeTestBtn.disabled = true;
+            
+            const token = TokenManager.getToken();
+            const response = await fetch(`/ai/test/practice?material_id=${selectedMaterialId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await generatePracticeTest();
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to generate practice test');
+            }
+
+            const questions = await response.json();
+            showNotification('Practice test generated successfully!');
+            
+            // Display test result
+            testResult.style.display = 'block';
+            document.getElementById('testContent').innerHTML = `
+                <h4>Practice Test</h4>
+                <p>This test contains ${questions.length} questions:</p>
+                <ol>
+                    ${questions.slice(0, 5).map(q => 
+                        `<li>
+                            <strong>${q.question}</strong>
+                            <ul>
+                                ${q.options.map((opt, idx) => `<li>${String.fromCharCode(65 + idx)}. ${opt}</li>`).join('')}
+                            </ul>
+                            <p><em>Correct answer: ${q.correct_option}</em></p>
+                        </li>`
+                    ).join('')}
+                </ol>
+                ${questions.length > 5 ? `<p>...and ${questions.length - 5} more questions</p>` : ''}
+            `;
+            
+        } catch (error) {
+            console.error('Error generating practice test:', error);
+            showNotification('Failed to generate test: ' + error.message, 'error');
+        } finally {
+            generatePracticeTestBtn.innerHTML = '<i class="fas fa-graduation-cap"></i> Practice Test';
+            generatePracticeTestBtn.disabled = false;
+        }
+    }
+
+    // Get study recommendations
+    async function getStudyRecommendations() {
+        const loadingEl = document.getElementById('recommendationsLoading');
+        const errorEl = document.getElementById('recommendationsError');
+        const resultEl = document.getElementById('recommendationsResult');
+        const btn = getRecommendationsBtn;
+        
+        // Reset states
+        loadingEl.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        resultEl.style.display = 'none';
+        btn.disabled = true;
+        
+        try {
+            const token = TokenManager.getToken();
+            const response = await fetch('/ai/recommendations', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 401) {
+                // Token might be expired, try to refresh
+                const refreshed = await refreshToken();
+                if (!refreshed) {
+                    showNotification('Session expired. Please log in again', 'error');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                    return;
+                }
+                // Retry with new token
+                return await getStudyRecommendations();
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to get recommendations');
+            }
+
+            const recommendations = await response.json();
+            displayRecommendations(recommendations);
+            showNotification('Recommendations generated!');
+            
+        } catch (error) {
+            console.error('Error getting recommendations:', error);
+            errorEl.textContent = 'Failed to get recommendations: ' + error.message;
+            errorEl.classList.remove('hidden');
+        } finally {
+            loadingEl.classList.add('hidden');
+            btn.disabled = false;
+        }
+    }
+
+    // Display recommendations
+    function displayRecommendations(recommendations) {
+        const listEl = document.getElementById('recommendationsList');
+        const resultEl = document.getElementById('recommendationsResult');
+        
+        listEl.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+        resultEl.style.display = 'block';
+    }
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+        notificationMessage.textContent = message;
+        notification.className = 'notification show';
+        notification.style.borderLeftColor = type === 'error' ? '#ef4444' : '#ffcc00';
+        
+        setTimeout(() => {
+            notification.className = 'notification';
+        }, 3000);
+    }
+
+    // Initialize the app
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

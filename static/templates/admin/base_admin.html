@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - StudyRPG</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* ===== BASE STYLES ===== */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #fff;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background-color: rgba(30, 60, 114, 0.9);
+            color: #fff;
+            padding: 2rem 1.5rem;
+            width: 250px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .admin-logo i {
+            font-size: 2rem;
+            color: #ffb347;
+        }
+
+        .admin-logo h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 15px rgba(255, 179, 71, 0.5);
+        }
+
+        .username-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #ffb347;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.6rem;
+            padding: 0.9rem 1.5rem;
+            background-color: rgba(42, 82, 152, 0.8);
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            width: 100%;
+            margin: 0.7rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #ffb347;
+        }
+
+        .sidebar-btn:hover {
+            background-color: rgba(58, 109, 177, 0.9);
+            transform: translateX(5px);
+        }
+
+        .sidebar-btn i {
+            font-size: 1.2rem;
+            width: 25px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            background-color: #e52d27;
+            border: none;
+            color: white;
+            padding: 0.8rem 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: auto;
+            width: 100%;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff4c4c;
+            transform: scale(1.05);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 179, 71, 0.5);
+        }
+
+        .admin-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #ffb347;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(229, 45, 39, 0.5);
+        }
+
+        .admin-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-badge {
+            background: rgba(42, 82, 152, 0.6);
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .stat-badge i {
+            color: #ffb347;
+        }
+
+        /* ===== ADMIN CONTENT ===== */
+        .admin-content-container {
+            background: rgba(30, 60, 114, 0.7);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 179, 71, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .admin-content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-content-header h3 {
+            margin: 0;
+            color: #ffb347;
+            font-size: 1.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #e52d27, #ff6b35);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #ff4c4c, #ff8c5a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 45, 39, 0.3);
+        }
+
+        /* ===== TABLES ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: rgba(26, 26, 46, 0.7);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        th {
+            background: linear-gradient(to right, #2a5298, #1e3c72);
+            color: #ffb347;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 179, 71, 0.2);
+            color: #fff;
+        }
+
+        tr:hover {
+            background-color: rgba(42, 82, 152, 0.3);
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ffb347;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 179, 71, 0.4);
+            border-radius: 8px;
+            background: rgba(26, 26, 46, 0.6);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ffb347;
+            box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(to right, #e52d27, #ff6b35);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to right, #ff4c4c, #ff8c5a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 45, 39, 0.3);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #ffb347;
+            color: #ffb347;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 179, 71, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ===== MODALS ===== */
+        .modal-rpg {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-rpg.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(30, 60, 114, 0.95);
+            padding: 2rem;
+            border-radius: 16px;
+            min-width: 400px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid #ffb347;
+            box-shadow: 0 0 25px rgba(229, 45, 39, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #ffb347;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #ffb347;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* ===== AUDIO CONTROL ===== */
+        .audio-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(26, 26, 46, 0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 179, 71, 0.4);
+            margin-bottom: 1rem;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-control:hover {
+            background: rgba(42, 82, 152, 0.7);
+            transform: scale(1.02);
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+
+            .sidebar .avatar-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .admin-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .admin-content-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .admin-stats {
+                flex-wrap: wrap;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .modal-content {
+                min-width: 300px;
+            }
+        }
+        
+        /* ===== LOADING INDICATOR ===== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #ffb347;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== BROADCAST SECTION ===== */
+        .broadcast-form {
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .broadcast-preview {
+            background: rgba(26, 26, 46, 0.4);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px dashed rgba(255, 179, 71, 0.3);
+        }
+
+        .broadcast-preview h4 {
+            color: #ffb347;
+            margin-top: 0;
+        }
+
+        .broadcast-preview-content {
+            padding: 10px;
+            background: rgba(30, 60, 114, 0.3);
+            border-radius: 5px;
+        }
+
+        /* ===== BOSS BATTLE TABLE ===== */
+        .boss-battle-table th {
+            background: linear-gradient(to right, #8b0000, #b22222);
+        }
+        
+        /* ===== FEEDBACK TABLE ===== */
+        .feedback-resolved {
+            color: #6df0ff;
+            font-weight: bold;
+        }
+        
+        .feedback-pending {
+            color: #ffb347;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="admin-logo">
+                <i class="fas fa-dragon"></i>
+                <h1>Admin Portal</h1>
+            </div>
+            
+            <!-- Audio Element and Control -->
+            <audio id="admin-audio" src="/static/sounds/battleThemeA.mp3" loop style="display: none;"></audio>
+            <div class="audio-control" onclick="toggleAudio()">
+                <i class="fas fa-volume-up" id="audio-icon"></i>
+                <span id="audio-label">Sound On</span>
+            </div>
+            
+            <img id="user-avatar" class="avatar-preview" src="https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Admin Avatar">
+            
+            <div id="user-name" class="username-label">
+                Lyzus
+            </div>
+
+            <!-- Admin Navigation -->
+            <a href="#" class="sidebar-btn" id="shop-nav" onclick="showAdminSection('shop-section')">
+                <i class="fas fa-store"></i>
+                <span>Shop</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn" id="quests-nav" onclick="showAdminSection('quests-section')">
+                <i class="fas fa-tasks"></i>
+                <span>Quests</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn" id="users-nav" onclick="showAdminSection('users-section')">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn" id="groups-nav" onclick="showAdminSection('groups-section')">
+                <i class="fas fa-layer-group"></i>
+                <span>Groups</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn" id="boss-nav" onclick="showAdminSection('boss-section')">
+                <i class="fas fa-dragon"></i>
+                <span>Boss Battles</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn" id="broadcast-nav" onclick="showAdminSection('broadcast-section')">
+                <i class="fas fa-bullhorn"></i>
+                <span>Broadcast</span>
+            </a>
+            
+            <!-- New Feedback Navigation -->
+            <a href="#" class="sidebar-btn" id="feedback-nav" onclick="showAdminSection('feedback-section')">
+                <i class="fas fa-comments"></i>
+                <span>Feedback</span>
+            </a>
+            
+            <a href="#" class="sidebar-btn">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+
+            <!-- Logout -->
+            <button onclick="logout()" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </aside>
+
+        <!-- Main Admin Content -->
+        <main class="main-content">
+            <div class="admin-header">
+                <h2 id="page-title">Admin Dashboard</h2>
+                <div class="admin-stats">
+                    <div class="stat-badge">
+                        <i class="fas fa-users"></i>
+                        <span id="user-count">Loading users...</span>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-tasks"></i>
+                        <span id="quest-count">Loading quests...</span>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-store"></i>
+                        <span id="item-count">Loading shop items...</span>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-dragon"></i>
+                        <span id="boss-count">Loading boss battles...</span>
+                    </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-comments"></i>
+                        <span id="feedback-count">Loading feedback...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-content-container">
+                <!-- Shop Management Section -->
+                <div id="shop-section" class="admin-section">
+                    <div class="admin-content-header">
+                        <h3>Shop Items</h3>
+                        <button class="btn-primary" onclick="openShopItemModal()">
+                            <i class="fas fa-plus"></i> Add New Item
+                        </button>
+                    </div>
+                    
+                    <table id="shop-items-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shop-items-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">
+                                    <div class="loading"></div> Loading shop items...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Quest Management Section -->
+                <div id="quests-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>Quests</h3>
+                        <button class="btn-primary" onclick="openQuestModal()">
+                            <i class="fas fa-plus"></i> Create Quest
+                        </button>
+                    </div>
+                    
+                    <table id="quests-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Reward</th>
+                                <th>Difficulty</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quests-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">
+                                    <div class="loading"></div> Loading quests...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- User Management Section -->
+                <div id="users-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>User Management</h3>
+                        <button class="btn-primary" onclick="openUserModal()">
+                            <i class="fas fa-user-plus"></i> Add User
+                        </button>
+                    </div>
+                    
+                    <table id="users-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>XP</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">
+                                    <div class="loading"></div> Loading users...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Group Management Section -->
+                <div id="groups-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>Study Groups</h3>
+                        <button class="btn-primary" onclick="openGroupModal()">
+                            <i class="fas fa-plus"></i> Create Group
+                        </button>
+                    </div>
+                    
+                    <table id="groups-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Members</th>
+                                <th>Quests</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groups-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">
+                                    <div class="loading"></div> Loading groups...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Boss Battles Section -->
+                <div id="boss-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>Boss Battles</h3>
+                        <button class="btn-primary" onclick="openBossBattleModal()">
+                            <i class="fas fa-plus"></i> Create Boss Battle
+                        </button>
+                    </div>
+                    
+                    <table id="boss-table" class="boss-battle-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Health</th>
+                                <th>Difficulty</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="boss-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">
+                                    <div class="loading"></div> Loading boss battles...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Broadcast Section -->
+                <div id="broadcast-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>Broadcast Message</h3>
+                    </div>
+                    
+                    <div class="broadcast-form">
+                        <div class="form-group">
+                            <label for="broadcast-subject">Subject</label>
+                            <input type="text" id="broadcast-subject" placeholder="Enter message subject">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="broadcast-message">Message</label>
+                            <textarea id="broadcast-message" rows="5" placeholder="Enter your message to all users"></textarea>
+                        </div>
+                        
+                        <button class="btn-primary" onclick="previewBroadcast()">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                        
+                        <button class="btn-primary" onclick="sendBroadcast()" style="margin-left: 10px;">
+                            <i class="fas fa-paper-plane"></i> Send to All Users
+                        </button>
+                        
+                        <div id="broadcast-preview" class="broadcast-preview" style="display: none;">
+                            <h4>Preview:</h4>
+                            <div class="broadcast-preview-content">
+                                <strong id="preview-subject"></strong>
+                                <p id="preview-message"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feedback Section -->
+                <div id="feedback-section" class="admin-section" style="display:none;">
+                    <div class="admin-content-header">
+                        <h3>User Feedback</h3>
+                        <button class="btn-primary" onclick="loadFeedback()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                    
+                    <table id="feedback-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Category</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedback-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center;">
+                                    <div class="loading"></div> Loading feedback...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Shop Item Modal -->
+    <div id="shop-item-modal" class="modal-rpg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="shop-modal-title">Add New Shop Item</h3>
+                <button class="close-modal" onclick="closeModal('shop-item-modal')">&times;</button>
+            </div>
+            <form id="shop-item-form">
+                <input type="hidden" id="shop-item-id">
+                <div class="form-group">
+                    <label for="item-name">Item Name</label>
+                    <input type="text" id="item-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-description">Description</label>
+                    <textarea id="item-description" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="item-price">Price</label>
+                    <input type="number" id="item-price" name="price" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-type">Item Type</label>
+                    <select id="item-type" name="item_type" required>
+                        <option value="consumable">Consumable</option>
+                        <option value="equipment">Equipment</option>
+                        <option value="cosmetic">Cosmetic</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="item-effect">Effect</label>
+                    <input type="text" id="item-effect" name="effect">
+                </div>
+                <div class="form-group">
+                    <label for="item-image">Image URL</label>
+                    <input type="text" id="item-image" name="image_url">
+                </div>
+                <button type="submit" class="btn">Save Item</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quest Modal -->
+    <div id="quest-modal" class="modal-rpg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="quest-modal-title">Create New Quest</h3>
+                <button class="close-modal" onclick="closeModal('quest-modal')">&times;</button>
+            </div>
+            <form id="quest-form">
+                <input type="hidden" id="quest-id">
+                <div class="form-group">
+                    <label for="quest-title">Quest Title</label>
+                    <input type="text" id="quest-title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="quest-description">Description</label>
+                    <textarea id="quest-description" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="quest-reward">Reward (XP)</label>
+                    <input type="number" id="quest-reward" name="reward_xp" min="0" value="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="quest-difficulty">Difficulty</label>
+                    <select id="quest-difficulty" name="difficulty" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quest-duration">Duration (minutes)</label>
+                    <input type="number" id="quest-duration" name="duration_minutes" min="1" value="30" required>
+                </div>
+                <button type="submit" class="btn">Save Quest</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Management Modal -->
+    <div id="user-modal" class="modal-rpg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Add New User</h3>
+                <button class="close-modal" onclick="closeModal('user-modal')">&times;</button>
+            </div>
+            <form id="user-form">
+                <input type="hidden" id="user-id">
+                <div class="form-group">
+                    <label for="user-username">Username</label>
+                    <input type="text" id="user-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password</label>
+                    <input type="password" id="user-password" name="password">
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role</label>
+                    <select id="user-role" name="role" required>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="user-xp">XP</label>
+                    <input type="number" id="user-xp" name="xp" min="0" value="0">
+                </div>
+                <button type="submit" class="btn">Save User</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Group Management Modal -->
+    <div id="group-modal" class="modal-rpg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="group-modal-title">Create New Group</h3>
+                <button class="close-modal" onclick="closeModal('group-modal')">&times;</button>
+            </div>
+            <form id="group-form">
+                <input type="hidden" id="group-id">
+                <div class="form-group">
+                    <label for="group-name">Group Name</label>
+                    <input type="text" id="group-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="group-description">Description</label>
+                    <textarea id="group-description" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="group-subject">Subject</label>
+                    <input type="text" id="group-subject" name="subject">
+                </div>
+                <div class="form-group">
+                    <label for="group-difficulty">Difficulty Level</label>
+                    <select id="group-difficulty" name="difficulty_level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Save Group</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Boss Battle Modal -->
+    <div id="boss-modal" class="modal-rpg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="boss-modal-title">Create Boss Battle</h3>
+                <button class="close-modal" onclick="closeModal('boss-modal')">&times;</button>
+            </div>
+            <form id="boss-form">
+                <input type="hidden" id="boss-id">
+                <div class="form-group">
+                    <label for="boss-name">Boss Name</label>
+                    <input type="text" id="boss-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="boss-description">Description</label>
+                    <textarea id="boss-description" name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="boss-health">Health Points</label>
+                    <input type="number" id="boss-health" name="health" min="1" value="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="boss-difficulty">Difficulty</label>
+                    <select id="boss-difficulty" name="difficulty" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="epic">Epic</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="boss-image">Image URL</label>
+                    <input type="text" id="boss-image" name="image_url">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <div>
+                        <input type="radio" id="boss-active" name="status" value="active" checked>
+                        <label for="boss-active">Active</label>
+                        <input type="radio" id="boss-inactive" name="status" value="inactive">
+                        <label for="boss-inactive">Inactive</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Save Boss Battle</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let shopItems = [];
+        let quests = [];
+        let users = [];
+        let groups = [];
+        let bossBattles = [];
+        let feedbackList = [];
+        let currentUser = null;
+        let token = null;
+
+        // Initialize the admin interface
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get token from localStorage
+            token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+            if (!token) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            
+            // Set active navigation
+            setActiveNav();
+            
+            // Load initial data
+            loadShopItems();
+            loadQuests();
+            loadUsers();
+            loadGroups();
+            loadBossBattles();
+            loadFeedback();
+            loadCurrentAdmin();
+            loadStats();
+            
+            // Set up form handlers
+            document.getElementById('shop-item-form').addEventListener('submit', handleShopItemSubmit);
+            document.getElementById('quest-form').addEventListener('submit', handleQuestSubmit);
+            document.getElementById('user-form').addEventListener('submit', handleUserSubmit);
+            document.getElementById('group-form').addEventListener('submit', handleGroupSubmit);
+            document.getElementById('boss-form').addEventListener('submit', handleBossSubmit);
+        });
+
+        // Set active navigation
+        function setActiveNav() {
+            const navLinks = document.querySelectorAll('.sidebar-btn');
+            navLinks.forEach(link => {
+                if (link.getAttribute('id') === 'shop-nav') {
+                    link.style.background = 'linear-gradient(to right, #e52d27, #ff6b35)';
+                    link.style.borderLeft = '4px solid #6df0ff';
+                }
+            });
+        }
+
+        // Show specific admin section
+        function showAdminSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Update page title
+            const titleMap = {
+                'shop-section': 'Shop Management',
+                'quests-section': 'Quest Management',
+                'users-section': 'User Management',
+                'groups-section': 'Group Management',
+                'boss-section': 'Boss Battle Management',
+                'broadcast-section': 'Broadcast Center',
+                'feedback-section': 'User Feedback'
+            };
+            document.getElementById('page-title').textContent = titleMap[sectionId];
+        }
+
+        // Open modals
+        function openShopItemModal(itemId = null) {
+            if (itemId) {
+                const item = shopItems.find(i => i.id === itemId);
+                if (item) {
+                    document.getElementById('shop-modal-title').textContent = 'Edit Shop Item';
+                    document.getElementById('shop-item-id').value = item.id;
+                    document.getElementById('item-name').value = item.name;
+                    document.getElementById('item-description').value = item.description;
+                    document.getElementById('item-price').value = item.price;
+                    document.getElementById('item-type').value = item.item_type;
+                    document.getElementById('item-effect').value = item.effect || '';
+                    document.getElementById('item-image').value = item.image_url || '';
+                }
+            } else {
+                document.getElementById('shop-modal-title').textContent = 'Add New Shop Item';
+                document.getElementById('shop-item-form').reset();
+                document.getElementById('shop-item-id').value = '';
+            }
+            document.getElementById('shop-item-modal').classList.add('active');
+        }
+
+        function openQuestModal(questId = null) {
+            if (questId) {
+                const quest = quests.find(q => q.id === questId);
+                if (quest) {
+                    document.getElementById('quest-modal-title').textContent = 'Edit Quest';
+                    document.getElementById('quest-id').value = quest.id;
+                    document.getElementById('quest-title').value = quest.title;
+                    document.getElementById('quest-description').value = quest.description;
+                    document.getElementById('quest-reward').value = quest.reward_xp;
+                    document.getElementById('quest-difficulty').value = quest.difficulty;
+                    document.getElementById('quest-duration').value = quest.duration_minutes;
+                }
+            } else {
+                document.getElementById('quest-modal-title').textContent = 'Create New Quest';
+                document.getElementById('quest-form').reset();
+                document.getElementById('quest-id').value = '';
+            }
+            document.getElementById('quest-modal').classList.add('active');
+        }
+
+        function openUserModal(userId = null) {
+            if (userId) {
+                const user = users.find(u => u.id === userId);
+                if (user) {
+                    document.getElementById('user-modal-title').textContent = 'Edit User';
+                    document.getElementById('user-id').value = user.id;
+                    document.getElementById('user-username').value = user.username;
+                    document.getElementById('user-email').value = user.email;
+                    document.getElementById('user-role').value = user.role;
+                    document.getElementById('user-xp').value = user.xp;
+                    document.getElementById('user-password').placeholder = 'Leave blank to keep current password';
+                }
+            } else {
+                document.getElementById('user-modal-title').textContent = 'Add New User';
+                document.getElementById('user-form').reset();
+                document.getElementById('user-id').value = '';
+                document.getElementById('user-password').placeholder = 'Enter password';
+            }
+            document.getElementById('user-modal').classList.add('active');
+        }
+
+        function openGroupModal(groupId = null) {
+            if (groupId) {
+                const group = groups.find(g => g.id === groupId);
+                if (group) {
+                    document.getElementById('group-modal-title').textContent = 'Edit Group';
+                    document.getElementById('group-id').value = group.id;
+                    document.getElementById('group-name').value = group.name;
+                    document.getElementById('group-description').value = group.description;
+                    document.getElementById('group-subject').value = group.subject || '';
+                    document.getElementById('group-difficulty').value = group.difficulty_level || 'beginner';
+                }
+            } else {
+                document.getElementById('group-modal-title').textContent = 'Create New Group';
+                document.getElementById('group-form').reset();
+                document.getElementById('group-id').value = '';
+            }
+            document.getElementById('group-modal').classList.add('active');
+        }
+        
+        function openBossBattleModal(bossId = null) {
+            if (bossId) {
+                const boss = bossBattles.find(b => b.id === bossId);
+                if (boss) {
+                    document.getElementById('boss-modal-title').textContent = 'Edit Boss Battle';
+                    document.getElementById('boss-id').value = boss.id;
+                    document.getElementById('boss-name').value = boss.name;
+                    document.getElementById('boss-description').value = boss.description;
+                    document.getElementById('boss-health').value = boss.health;
+                    document.getElementById('boss-difficulty').value = boss.difficulty;
+                    document.getElementById('boss-image').value = boss.image_url || '';
+                    if (boss.is_active) {
+                        document.getElementById('boss-active').checked = true;
+                    } else {
+                        document.getElementById('boss-inactive').checked = true;
+                    }
+                }
+            } else {
+                document.getElementById('boss-modal-title').textContent = 'Create Boss Battle';
+                document.getElementById('boss-form').reset();
+                document.getElementById('boss-id').value = '';
+                document.getElementById('boss-active').checked = true;
+            }
+            document.getElementById('boss-modal').classList.add('active');
+        }
+
+        // Close modals
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Audio control function
+        function toggleAudio() {
+            const audio = document.getElementById('admin-audio');
+            const icon = document.getElementById('audio-icon');
+            const label = document.getElementById('audio-label');
+            
+            if (audio.paused) {
+                audio.play()
+                    .then(() => {
+                        icon.className = 'fas fa-volume-up';
+                        label.textContent = 'Sound On';
+                    })
+                    .catch(e => console.log("Audio play failed:", e));
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-volume-mute';
+                label.textContent = 'Sound Off';
+            }
+        }
+
+        // Load current admin user
+        async function loadCurrentAdmin() {
+            try {
+                const response = await fetch('/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load admin info');
+                
+                const user = await response.json();
+                currentUser = user;
+                
+                // Update UI
+                document.getElementById('user-name').textContent = currentUser.username;
+                if (currentUser.avatar_url) {
+                    document.getElementById('user-avatar').src = currentUser.avatar_url;
+                }
+            } catch (error) {
+                console.error('Error loading admin info:', error);
+            }
+        }
+        
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/admin/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load stats');
+                
+                const stats = await response.json();
+                document.getElementById('user-count').textContent = `${stats.users} Users`;
+                document.getElementById('quest-count').textContent = `${stats.quests} Quests`;
+                document.getElementById('item-count').textContent = `${stats.shop_items} Shop Items`;
+                document.getElementById('boss-count').textContent = `${stats.boss_battles} Bosses`;
+                document.getElementById('feedback-count').textContent = `${stats.feedback_items} Feedback`;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load data from backend
+        async function loadShopItems() {
+            try {
+                const response = await fetch('/admin/shop', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load shop items');
+                
+                shopItems = await response.json();
+                renderShopItems();
+            } catch (error) {
+                console.error('Error loading shop items:', error);
+                document.getElementById('shop-items-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="color: #e52d27; text-align: center;">
+                            Failed to load shop items: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadQuests() {
+            try {
+                const response = await fetch('/admin/quests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load quests');
+                
+                quests = await response.json();
+                renderQuests();
+            } catch (error) {
+                console.error('Error loading quests:', error);
+                document.getElementById('quests-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="color: #e52d27; text-align: center;">
+                            Failed to load quests: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/admin/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load users');
+                
+                users = await response.json();
+                renderUsers();
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" style="color: #e52d27; text-align: center;">
+                            Failed to load users: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await fetch('/admin/groups', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load groups');
+                
+                groups = await response.json();
+                renderGroups();
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                document.getElementById('groups-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="color: #e52d27; text-align: center;">
+                            Failed to load groups: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        async function loadBossBattles() {
+            try {
+                const response = await fetch('/admin/boss-battles', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load boss battles');
+                
+                bossBattles = await response.json();
+                renderBossBattles();
+            } catch (error) {
+                console.error('Error loading boss battles:', error);
+                document.getElementById('boss-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" style="color: #e52d27; text-align: center;">
+                            Failed to load boss battles: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        async function loadFeedback() {
+            try {
+                const response = await fetch('/admin/feedback', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load feedback');
+                
+                feedbackList = await response.json();
+                renderFeedback();
+            } catch (error) {
+                console.error('Error loading feedback:', error);
+                document.getElementById('feedback-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="color: #e52d27; text-align: center;">
+                            Failed to load feedback: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Render data to tables
+        function renderShopItems() {
+            const tableBody = document.getElementById('shop-items-body');
+            tableBody.innerHTML = '';
+            
+            shopItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.description}</td>
+                    <td>${item.price} coins</td>
+                    <td>${item.item_type}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm" onclick="openShopItemModal(${item.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteShopItem(${item.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderQuests() {
+            const tableBody = document.getElementById('quests-body');
+            tableBody.innerHTML = '';
+            
+            quests.forEach(quest => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${quest.title}</td>
+                    <td>${quest.description}</td>
+                    <td>${quest.reward_xp} XP</td>
+                    <td>${quest.difficulty}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm" onclick="openQuestModal(${quest.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteQuest(${quest.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderUsers() {
+            const tableBody = document.getElementById('users-body');
+            tableBody.innerHTML = '';
+            
+            users.forEach(user => {
+                const status = user.is_banned ? 
+                    '<span style="color:#e52d27">Banned</span>' : 
+                    (user.is_active ? '<span style="color:#6df0ff">Active</span>' : '<span style="color:#ffb347">Inactive</span>');
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.xp}</td>
+                    <td>${status}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm" onclick="openUserModal(${user.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        ${!user.is_banned ? `
+                        <button class="btn btn-sm btn-outline" onclick="banUser(${user.id})">
+                            <i class="fas fa-ban"></i> Ban
+                        </button>
+                        ` : `
+                        <button class="btn btn-sm" onclick="unbanUser(${user.id})">
+                            <i class="fas fa-check-circle"></i> Unban
+                        </button>
+                        `}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderGroups() {
+            const tableBody = document.getElementById('groups-body');
+            tableBody.innerHTML = '';
+            
+            groups.forEach(group => {
+                const memberCount = group.members ? group.members.length : 0;
+                const questCount = group.quests ? group.quests.length : 0;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${group.name}</td>
+                    <td>${group.description}</td>
+                    <td>${memberCount} members</td>
+                    <td>${questCount} quests</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm" onclick="openGroupModal(${group.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteGroup(${group.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function renderBossBattles() {
+            const tableBody = document.getElementById('boss-body');
+            tableBody.innerHTML = '';
+            
+            bossBattles.forEach(boss => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${boss.name}</td>
+                    <td>${boss.health} HP</td>
+                    <td>${boss.difficulty}</td>
+                    <td>${boss.is_active ? '<span style="color:#6df0ff">Active</span>' : '<span style="color:#ffb347">Inactive</span>'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm" onclick="openBossBattleModal(${boss.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm" onclick="toggleBossStatus(${boss.id})">
+                            <i class="fas fa-power-off"></i> ${boss.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteBossBattle(${boss.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function renderFeedback() {
+            const tableBody = document.getElementById('feedback-body');
+            tableBody.innerHTML = '';
+            
+            feedbackList.forEach(feedback => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${feedback.name || 'Anonymous'}</td>
+                    <td>${feedback.email || '-'}</td>
+                    <td>${feedback.category}</td>
+                    <td>${feedback.message}</td>
+                    <td>${new Date(feedback.created_at).toLocaleDateString()}</td>
+                    <td class="${feedback.resolved ? 'feedback-resolved' : 'feedback-pending'}">
+                        ${feedback.resolved ? 'Resolved' : 'Pending'}
+                    </td>
+                    <td class="action-buttons">
+                        ${!feedback.resolved ? `
+                        <button class="btn btn-sm" onclick="resolveFeedback(${feedback.id})">
+                            <i class="fas fa-check"></i> Resolve
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline" onclick="deleteFeedback(${feedback.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Form handlers
+        async function handleShopItemSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const itemData = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                price: parseInt(formData.get('price')),
+                item_type: formData.get('item_type'),
+                effect: formData.get('effect'),
+                image_url: formData.get('image_url')
+            };
+
+            const itemId = document.getElementById('shop-item-id').value;
+            const url = itemId ? `/admin/shop/${itemId}` : '/admin/shop';
+            const method = itemId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(itemData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save shop item');
+                }
+
+                closeModal('shop-item-modal');
+                loadShopItems();
+            } catch (error) {
+                console.error('Error saving shop item:', error);
+                alert(`Error saving shop item: ${error.message}`);
+            }
+        }
+
+        async function handleQuestSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const questData = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                reward_xp: parseInt(formData.get('reward_xp')),
+                difficulty: formData.get('difficulty'),
+                duration_minutes: parseInt(formData.get('duration_minutes'))
+            };
+
+            const questId = document.getElementById('quest-id').value;
+            const url = questId ? `/admin/quests/${questId}` : '/admin/quests';
+            const method = questId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(questData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save quest');
+                }
+
+                closeModal('quest-modal');
+                loadQuests();
+            } catch (error) {
+                console.error('Error saving quest:', error);
+                alert(`Error saving quest: ${error.message}`);
+            }
+        }
+
+        async function handleUserSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                xp: parseInt(formData.get('xp')) || 0
+            };
+
+            // Only include password if provided
+            const password = formData.get('password');
+            if (password) {
+                userData.password = password;
+            }
+
+            const userId = document.getElementById('user-id').value;
+            const url = userId ? `/admin/users/${userId}/role` : '/admin/users';
+            const method = userId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save user');
+                }
+
+                closeModal('user-modal');
+                loadUsers();
+            } catch (error) {
+                console.error('Error saving user:', error);
+                alert(`Error saving user: ${error.message}`);
+            }
+        }
+
+        async function handleGroupSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const groupData = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                subject: formData.get('subject'),
+                difficulty_level: formData.get('difficulty_level')
+            };
+
+            const groupId = document.getElementById('group-id').value;
+            const url = groupId ? `/admin/groups/${groupId}` : '/admin/groups';
+            const method = groupId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(groupData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save group');
+                }
+
+                closeModal('group-modal');
+                loadGroups();
+            } catch (error) {
+                console.error('Error saving group:', error);
+                alert(`Error saving group: ${error.message}`);
+            }
+        }
+        
+        async function handleBossSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const bossData = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                health: parseInt(formData.get('health')),
+                difficulty: formData.get('difficulty'),
+                image_url: formData.get('image_url'),
+                is_active: formData.get('status') === 'active'
+            };
+
+            const bossId = document.getElementById('boss-id').value;
+            const url = bossId ? `/admin/boss-battles/${bossId}` : '/admin/boss-battles';
+            const method = bossId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bossData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save boss battle');
+                }
+
+                closeModal('boss-modal');
+                loadBossBattles();
+            } catch (error) {
+                console.error('Error saving boss battle:', error);
+                alert(`Error saving boss battle: ${error.message}`);
+            }
+        }
+
+        // Delete functions
+        async function deleteShopItem(itemId) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                try {
+                    const response = await fetch(`/admin/shop/${itemId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to delete item');
+                    }
+
+                    loadShopItems();
+                } catch (error) {
+                    console.error('Error deleting item:', error);
+                    alert(`Error deleting item: ${error.message}`);
+                }
+            }
+        }
+
+        async function deleteQuest(questId) {
+            if (confirm('Are you sure you want to delete this quest?')) {
+                try {
+                    const response = await fetch(`/admin/quests/${questId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to delete quest');
+                    }
+
+                    loadQuests();
+                } catch (error) {
+                    console.error('Error deleting quest:', error);
+                    alert(`Error deleting quest: ${error.message}`);
+                }
+            }
+        }
+
+        async function banUser(userId) {
+            if (confirm('Are you sure you want to ban this user?')) {
+                try {
+                    const response = await fetch(`/admin/users/${userId}/ban`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to ban user');
+                    }
+
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error banning user:', error);
+                    alert(`Error banning user: ${error.message}`);
+                }
+            }
+        }
+
+        async function unbanUser(userId) {
+            if (confirm('Are you sure you want to unban this user?')) {
+                try {
+                    const response = await fetch(`/admin/users/${userId}/unban`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to unban user');
+                    }
+
+                    loadUsers();
+                } catch (error) {
+                    console.error('Error unbanning user:', error);
+                    alert(`Error unbanning user: ${error.message}`);
+                }
+            }
+        }
+
+        async function deleteGroup(groupId) {
+            if (confirm('Are you sure you want to delete this group?')) {
+                try {
+                    const response = await fetch(`/admin/groups/${groupId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to delete group');
+                    }
+
+                    loadGroups();
+                } catch (error) {
+                    console.error('Error deleting group:', error);
+                    alert(`Error deleting group: ${error.message}`);
+                }
+            }
+        }
+        
+        // Boss battle actions
+        async function toggleBossStatus(bossId) {
+            try {
+                const response = await fetch(`/admin/boss-battles/${bossId}/activate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to toggle boss status');
+                }
+
+                loadBossBattles();
+            } catch (error) {
+                console.error('Error toggling boss status:', error);
+                alert(`Error toggling boss status: ${error.message}`);
+            }
+        }
+
+        async function deleteBossBattle(bossId) {
+            if (confirm('Are you sure you want to delete this boss battle?')) {
+                try {
+                    const response = await fetch(`/admin/boss-battles/${bossId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to delete boss battle');
+                    }
+
+                    loadBossBattles();
+                } catch (error) {
+                    console.error('Error deleting boss battle:', error);
+                    alert(`Error deleting boss battle: ${error.message}`);
+                }
+            }
+        }
+        
+        // Feedback actions
+        async function resolveFeedback(feedbackId) {
+            try {
+                const response = await fetch(`/admin/feedback/${feedbackId}/resolve`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to resolve feedback');
+                }
+                
+                loadFeedback();
+            } catch (error) {
+                console.error('Error resolving feedback:', error);
+                alert(`Error resolving feedback: ${error.message}`);
+            }
+        }
+        
+        async function deleteFeedback(feedbackId) {
+            if (confirm('Are you sure you want to delete this feedback?')) {
+                try {
+                    const response = await fetch(`/admin/feedback/${feedbackId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Failed to delete feedback');
+                    }
+                    
+                    loadFeedback();
+                } catch (error) {
+                    console.error('Error deleting feedback:', error);
+                    alert(`Error deleting feedback: ${error.message}`);
+                }
+            }
+        }
+
+        // Broadcast functions
+        function previewBroadcast() {
+            const subject = document.getElementById('broadcast-subject').value;
+            const message = document.getElementById('broadcast-message').value;
+            
+            if (!subject || !message) {
+                alert('Please fill in both subject and message fields');
+                return;
+            }
+            
+            document.getElementById('preview-subject').textContent = subject;
+            document.getElementById('preview-message').textContent = message;
+            document.getElementById('broadcast-preview').style.display = 'block';
+        }
+
+        async function sendBroadcast() {
+            const subject = document.getElementById('broadcast-subject').value;
+            const message = document.getElementById('broadcast-message').value;
+            
+            if (!subject || !message) {
+                alert('Please fill in both subject and message fields');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to send this message to ALL users?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/broadcast', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ subject, message })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to send broadcast');
+                }
+                
+                const result = await response.json();
+                alert(`Broadcast sent successfully to ${result.success_count} of ${result.total_users} users!`);
+                document.getElementById('broadcast-subject').value = '';
+                document.getElementById('broadcast-message').value = '';
+                document.getElementById('broadcast-preview').style.display = 'none';
+            } catch (error) {
+                console.error('Error sending broadcast:', error);
+                alert(`Error sending broadcast: ${error.message}`);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_token');
+            window.location.href = '/admin/login';
+        }
+
+        // Initialize audio
+        const audio = document.getElementById('admin-audio');
+        if (audio) {
+            audio.volume = 0.3;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept - StudyRPG</title>
+    <!-- <link rel="stylesheet" href="path/to/your/styles.css"> -->
+</head>
+<body>
+    <div class="concept-container">
+        <h1 id="conceptTitle">Concept Name</h1>
+        <div class="concept-description">
+            <p id="conceptSummary">Loading...</p>
+        </div>
+
+        <!-- Concept Explanation -->
+        <div class="concept-explanation">
+            <h3>Explanation</h3>
+            <p id="conceptExplanation">Loading...</p>
+        </div>
+
+        <!-- AI-generated explanations (if available) -->
+        <div class="ai-explanation">
+            <h3>AI-generated Explanation</h3>
+            <p id="aiConceptExplanation">Fetching AI-generated explanation...</p>
+        </div>
+
+        <!-- Concept Flashcards Link -->
+        <div class="flashcards-link">
+            <a href="/flashcards" class="btn">Create Flashcards for This Concept</a>
+        </div>
+    </div>
+
+    <script>
+        // Placeholder data or Fetch logic
+        document.addEventListener("DOMContentLoaded", function() {
+            // Simulate fetching data
+            const conceptData = {
+                title: "Example Concept",
+                summary: "This is a brief summary of the concept.",
+                explanation: "This is the detailed explanation of the concept. Here we discuss the topic in depth and give relevant examples.",
+                aiExplanation: "AI-generated explanation based on the study materials."
+            };
+
+            // Populate the data
+            document.getElementById("conceptTitle").textContent = conceptData.title;
+            document.getElementById("conceptSummary").textContent = conceptData.summary;
+            document.getElementById("conceptExplanation").textContent = conceptData.explanation;
+            document.getElementById("aiConceptExplanation").textContent = conceptData.aiExplanation;
+        });
+    </script>
+</body>
+</html>

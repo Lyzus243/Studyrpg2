@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Groups | StudyRPG</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --accent-color: #e52d27;
+            --text-light: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --button-bg: #2a5298;
+            --button-hover: #3b6ab4;
+            --error-bg: #6b7280;
+            --error-hover: #9ca3af;
+        }
+
+        body {
+            background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            font-family: 'Nunito', sans-serif;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-container {
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .message-sent {
+            background: linear-gradient(135deg, #4e73df 0%, #2e59d9 100%);
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+        }
+        .message-received {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1050;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(26, 32, 44, 0.95);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+        .eligibility-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .eligibility-requirements {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .requirement-met {
+            color: #10b981;
+        }
+        .requirement-not-met {
+            color: #ef4444;
+        }
+        #create-group-modal .modal-content {
+            background: rgba(26, 32, 44, 0.95);
+            border: 1px solid var(--input-border);
+            backdrop-filter: blur(10px);
+        }
+        #create-group-modal h3 {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        #create-group-modal .space-y-4 {
+            display: grid;
+            gap: 1rem;
+        }
+        #create-group-modal label {
+            display: block;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        #create-group-modal input,
+        #create-group-modal textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #create-group-modal textarea {
+            min-height: 6rem;
+            resize: vertical;
+        }
+        #create-group-modal input:focus,
+        #create-group-modal textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+        #create-group-modal input::placeholder,
+        #create-group-modal textarea::placeholder {
+            color: var(--text-muted);
+        }
+        #create-group-modal .flex {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        #create-group-modal button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, outline 0.2s;
+        }
+        #create-group-modal button[type="submit"] {
+            background: var(--button-bg);
+        }
+        #create-group-modal button[type="submit"]:hover,
+        #create-group-modal button[type="submit"]:focus {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--button-hover);
+            outline-offset: 2px;
+        }
+        #create-group-modal button[type="button"] {
+            background: var(--error-bg);
+        }
+        #create-group-modal button[type="button"]:hover,
+        #create-group-modal button[type="button"]:focus {
+            background: var(--error-hover);
+            transform: translateY(-2px);
+            outline: 2px solid var(--error-hover);
+            outline-offset: 2px;
+        }
+
+        /* Profile section styles */
+        .profile-section {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .profile-picture {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ffcc00;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            color: #ffcc00;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Profile Section -->
+    <div class="profile-section">
+        <img id="profile-picture" class="profile-picture" src="/static/images/default_profile.png" alt="Profile">
+        <span id="profile-name" class="profile-name">User</span>
+    </div>
+
+    <div class="container max-w-6xl mx-auto p-6">
+        <div class="card p-6 rounded-lg shadow-lg fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl text-white font-bold flex items-center">
+                    <i class="fas fa-users mr-2"></i> Study Groups
+                </h1>
+                <button id="create-group-btn" class="bg-blue-500 text-white px-6 py-3 rounded-md font-bold hover:bg-blue-600 flex items-center" onclick="openCreateGroupModal()">
+                    <i class="fas fa-plus mr-2"></i> Create Group
+                </button>
+            </div>
+
+            <!-- Eligibility Warning (hidden by default) -->
+            <div id="eligibility-warning" class="eligibility-warning hidden">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-lock text-red-400 text-xl mr-3"></i>
+                    <h3 class="text-red-400 text-lg font-bold">Study Group Requirements</h3>
+                </div>
+                <p class="text-white mb-4">You need to meet certain requirements to join or create study groups:</p>
+                
+                <div class="eligibility-requirements">
+                    <div class="requirement-item">
+                        <i id="streak-icon" class="fas fa-fire mr-2"></i>
+                        <span id="streak-text">Maintain a study streak of at least 5 days</span>
+                        <span id="streak-status" class="ml-auto font-bold"></span>
+                    </div>
+                    <div class="requirement-item">
+                        <i id="xp-icon" class="fas fa-star mr-2"></i>
+                        <span id="xp-text">Earn at least 300 XP</span>
+                        <span id="xp-status" class="ml-auto font-bold"></span>
+                    </div>
+                </div>
+                
+                <p class="text-white/70 text-sm mt-4">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Complete more study sessions and maintain your streak to unlock study groups and boss battles!
+                </p>
+            </div>
+
+            <div class="relative mb-6">
+                <input type="text" id="group-search" class="w-full p-3 rounded-full bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Search for study groups...">
+                <button class="absolute right-2 top-2 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600" onclick="searchGroups()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- User Groups -->
+                <div class="card rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold text-white p-4 flex items-center">
+                        <i class="fas fa-user-friends mr-2"></i> Your Groups
+                    </h2>
+                    <div id="user-groups-list" class="p-4">
+                        <div class="text-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500 mx-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Content -->
+                <div class="lg:col-span-2 card rounded-lg shadow-lg">
+                    <div class="border-b border-white/10">
+                        <ul class="flex nav-tabs">
+                            <li class="mr-1">
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500 active" href="#public-groups" onclick="switchTab('public-groups')">Public Groups</a>
+                            </li>
+                            <li class="mr-1">
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500" href="#group-chat" onclick="switchTab('group-chat')">Chat</a>
+                            </li>
+                            <li>
+                                <a class="inline-block px-4 py-2 text-white font-semibold border-b-2 border-transparent hover:border-blue-500" href="#group-quests" onclick="switchTab('group-quests')">Quests</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-4">
+                        <div id="public-groups" class="tab-content">
+                            <div id="public-groups-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="text-center py-5">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500 mx-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="group-chat" class="tab-content hidden">
+                            <div class="chat-container">
+                                <div id="group-chat-messages" class="chat-messages p-4">
+                                    <p class="text-white/70 text-center">Select a group to start chatting</p>
+                                </div>
+                                <div class="chat-input p-4 bg-white/10">
+                                    <div class="flex">
+                                        <input type="text" id="chat-message-input" class="flex-1 p-3 rounded-l-md bg-white/10 text-white placeholder-white/60 focus:outline-none" placeholder="Type your message..." disabled>
+                                        <button id="send-message-btn" class="bg-blue-500 text-white px-4 py-3 rounded-r-md hover:bg-blue-600" disabled>
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="group-quests" class="tab-content hidden">
+                            <div id="group-quests-content" class="p-4">
+                                <p class="text-white/70 text-center">Select a group to view quests</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Details Modal -->
+    <div class="modal" id="group-details-modal">
+        <div class="modal-content">
+            <h3 id="group-details-modal-title" class="text-white text-xl font-bold mb-4">Group Details</h3>
+            <div id="group-details-modal-body" class="text-white mb-4">Loading group details...</div>
+            <div class="flex justify-end gap-4">
+                <button class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600" onclick="closeGroupDetailsModal()">Close</button>
+                <button id="join-group-btn" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600">Join Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal" id="create-group-modal">
+        <div class="modal-content">
+            <h3>Create Study Group</h3>
+            <form id="create-group-form" class="space-y-4">
+                <div>
+                    <label class="block text-white/80">Group Name:</label>
+                    <input type="text" id="group-name" class="w-full p-3 rounded-md bg-white/10 text-white" required aria-label="Group name">
+                </div>
+                <div>
+                    <label class="block text-white/80">Description:</label>
+                    <textarea id="group-description" class="w-full p-3 rounded-md bg-white/10 text-white" required aria-label="Group description"></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600" aria-label="Create group">Create Group</button>
+                    <button type="button" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600" onclick="closeCreateGroupModal()" aria-label="Cancel group creation">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Authentication and token management
+        function getToken() {
+            return localStorage.getItem('access_token');
+        }
+
+        function redirectToLogin() {
+            window.location.href = '/login';
+        }
+
+        function verifyToken() {
+            const token = getToken();
+            if (!token) {
+                redirectToLogin();
+                return false;
+            }
+            
+            // Simple JWT expiry check
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const exp = payload.exp * 1000;
+                if (Date.now() >= exp) {
+                    localStorage.removeItem('access_token');
+                    redirectToLogin();
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                localStorage.removeItem('access_token');
+                redirectToLogin();
+                return false;
+            }
+        }
+
+        // Fetch user profile data
+        async function fetchUserProfile() {
+            if (!verifyToken()) return;
+            
+            try {
+                const token = getToken();
+                const response = await fetch('/user/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('profile-name').textContent = userData.username;
+                    
+                    // Set profile picture if available
+                    if (userData.profile_picture) {
+                        document.getElementById('profile-picture').src = userData.profile_picture;
+                    }
+                } else if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    redirectToLogin();
+                }
+            } catch (error) {
+                console.error('Failed to fetch user profile:', error);
+            }
+        }
+
+        let currentUser = null;
+        let selectedGroup = null;
+        let groupWebSocket = null;
+        let notificationSocket = null;
+        let userEligibility = null;
+
+        // Check user eligibility for study groups - UPDATED ROUTE
+        async function checkGroupEligibility() {
+            const token = getToken();
+            if (!token) return null;
+
+            try {
+                const res = await fetch('/groups/eligibility', { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (!res.ok) throw new Error('Failed to check eligibility');
+                userEligibility = await res.json();
+                updateEligibilityUI();
+                return userEligibility;
+            } catch (error) {
+                console.error('Error checking eligibility:', error);
+                return null;
+            }
+        }
+
+        // Update UI based on eligibility
+        function updateEligibilityUI() {
+            if (!userEligibility) return;
+
+            const warningDiv = document.getElementById('eligibility-warning');
+            const createBtn = document.getElementById('create-group-btn');
+            
+            if (!userEligibility.eligible) {
+                // Show warning and disable create button
+                warningDiv.classList.remove('hidden');
+                createBtn.disabled = true;
+                createBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                createBtn.onclick = () => showEligibilityToast();
+                
+                // Update requirement status
+                const streakIcon = document.getElementById('streak-icon');
+                const streakStatus = document.getElementById('streak-status');
+                const xpIcon = document.getElementById('xp-icon');
+                const xpStatus = document.getElementById('xp-status');
+                
+                // Streak status
+                if (userEligibility.streak_met) {
+                    streakIcon.className = 'fas fa-check-circle text-green-400 mr-2';
+                    streakStatus.textContent = `✓ ${userEligibility.current_streak} days`;
+                    streakStatus.className = 'ml-auto font-bold requirement-met';
+                } else {
+                    streakIcon.className = 'fas fa-times-circle text-red-400 mr-2';
+                    streakStatus.textContent = `${userEligibility.current_streak}/${userEligibility.min_streak} days`;
+                    streakStatus.className = 'ml-auto font-bold requirement-not-met';
+                }
+                
+                // XP status
+                if (userEligibility.xp_met) {
+                    xpIcon.className = 'fas fa-check-circle text-green-400 mr-2';
+                    xpStatus.textContent = `✓ ${userEligibility.total_xp} XP`;
+                    xpStatus.className = 'ml-auto font-bold requirement-met';
+                } else {
+                    xpIcon.className = 'fas fa-times-circle text-red-400 mr-2';
+                    xpStatus.textContent = `${userEligibility.total_xp}/${userEligibility.min_xp} XP`;
+                    xpStatus.className = 'ml-auto font-bold requirement-not-met';
+                }
+            } else {
+                // Hide warning and enable create button
+                warningDiv.classList.add('hidden');
+                createBtn.disabled = false;
+                createBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                createBtn.onclick = openCreateGroupModal;
+            }
+        }
+
+        // Show eligibility toast when user tries to create/join without meeting requirements
+        function showEligibilityToast() {
+            if (!userEligibility) return;
+            
+            let message = 'You need ';
+            const requirements = [];
+            
+            if (!userEligibility.streak_met) {
+                requirements.push(`${userEligibility.min_streak - userEligibility.current_streak} more streak days`);
+            }
+            if (!userEligibility.xp_met) {
+                requirements.push(`${userEligibility.min_xp - userEligibility.total_xp} more XP`);
+            }
+            
+            message += requirements.join(' and ') + ' to join study groups.';
+            showToast(message, 'warning');
+        }
+
+        // Initialize the page
+        async function initialize() {
+            // Check authentication first
+            if (!verifyToken()) return;
+            
+            // Fetch user profile
+            await fetchUserProfile();
+            
+            const token = getToken();
+            if (!token) {
+                showError(document.getElementById('user-groups-list'), 'Please log in to view groups');
+                showError(document.getElementById('public-groups-list'), 'Please log in to view groups');
+                return;
+            }
+
+            try {
+                // Get current user - UPDATED: Use groups endpoint to verify auth
+                const res = await fetch('/groups/eligibility', { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (!res.ok) throw new Error('Not logged in');
+                
+                // For current user info, we'll extract from token or use a separate endpoint
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    currentUser = { id: payload.sub || payload.user_id };
+                } catch (e) {
+                    console.error('Error parsing token:', e);
+                }
+                
+                // Check eligibility first
+                await checkGroupEligibility();
+                
+                // Load initial data
+                await loadUserGroups();
+                await loadAllGroups(); // Load all available groups for public view
+                setupEventListeners();
+                
+            } catch (error) {
+                console.error('Error initializing:', error);
+                showError(document.getElementById('user-groups-list'), 'Please log in to view groups');
+                showError(document.getElementById('public-groups-list'), 'Please log in to view groups');
+            }
+        }
+
+        // Load user's joined groups - UPDATED ROUTE
+        async function loadUserGroups() {
+            const token = getToken();
+            try {
+                const res = await fetch('/groups/', { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (!res.ok) throw new Error('Failed to load user groups');
+                const groups = await res.json();
+                renderUserGroups(groups);
+            } catch (error) {
+                console.error('Error loading user groups:', error);
+                showError(document.getElementById('user-groups-list'), 'Failed to load your groups');
+            }
+        }
+
+        // Load all groups for public view - UPDATED ROUTE
+        async function loadAllGroups(query = '') {
+            const token = getToken();
+            try {
+                const res = await fetch('/groups/', { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (!res.ok) throw new Error('Failed to load groups');
+                let groups = await res.json();
+                
+                // Filter groups if query provided
+                if (query) {
+                    groups = groups.filter(group => 
+                        group.name.toLowerCase().includes(query.toLowerCase()) ||
+                        (group.description && group.description.toLowerCase().includes(query.toLowerCase()))
+                    );
+                }
+                
+                renderPublicGroups(groups);
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                showError(document.getElementById('public-groups-list'), 'Failed to load groups');
+            }
+        }
+
+        // Render user's groups
+        function renderUserGroups(groups) {
+            const list = document.getElementById('user-groups-list');
+            if (groups.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-white/70">You haven't joined any groups yet</p>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="switchTab('public-groups')">
+                            Browse Public Groups
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = groups.map(group => `
+                <a href="#" class="block p-4 bg-white/10 rounded-md mb-2 hover:bg-white/20 transition-colors ${selectedGroup?.id === group.id ? 'bg-blue-500/20' : ''}" data-group-id="${group.id}" onclick="selectGroup(${JSON.stringify(group).replace(/"/g, '&quot;')})">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h6 class="text-white font-semibold">${escapeHtml(group.name)}</h6>
+                            <p class="text-white/70 text-sm">${group.members ? group.members.length : 0} members</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${group.unread_count ? `<span class="bg-blue-500 text-white px-2 py-1 rounded-full text-sm">${group.unread_count}</span>` : ''}
+                            <button class="text-red-400 hover:text-red-300 p-1" onclick="event.stopPropagation(); leaveGroup(${group.id})" title="Leave group">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // Render public groups
+        function renderPublicGroups(groups) {
+            const list = document.getElementById('public-groups-list');
+            if (groups.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-5 col-span-2">
+                        <p class="text-white/70">No groups found</p>
+                        ${userEligibility?.eligible ? `
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="openCreateGroupModal()">
+                                Create New Group
+                            </button>
+                        ` : `
+                            <p class="text-white/50 text-sm mt-2">Meet the requirements above to create groups</p>
+                        `}
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = groups.map(group => {
+                const isMember = group.members && group.members.some(member => member.id === currentUser?.id);
+                const canJoin = userEligibility?.eligible && !isMember;
+                
+                return `
+                    <div class="card rounded-md shadow-md fade-in">
+                        <img src="${group.image_url || getDefaultGroupImage(group.name)}" class="h-32 w-full object-cover rounded-t-md" alt="${escapeHtml(group.name)}">
+                        <div class="p-4">
+                            <h5 class="text-white font-semibold">${escapeHtml(group.name)}</h5>
+                            <p class="text-white/70 text-sm mb-2">${escapeHtml(group.description || 'No description provided')}</p>
+                            <div class="flex justify-between items-center mt-4">
+                                <p class="text-blue-400 text-sm">
+                                    <i class="fas fa-users mr-1"></i> ${group.members ? group.members.length : 0} members
+                                </p>
+                                ${isMember 
+                                    ? `<button class="bg-green-500 text-white px-4 py-2 rounded-md cursor-default" disabled>
+                                        <i class="fas fa-check mr-1"></i> Joined
+                                    </button>`
+                                    : canJoin
+                                    ? `<button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" onclick="joinGroup(${group.id})">
+                                        <i class="fas fa-door-open mr-1"></i> Join
+                                    </button>`
+                                    : `<button class="bg-gray-500 text-white px-4 py-2 rounded-md opacity-50 cursor-not-allowed" onclick="showEligibilityToast()" title="Requirements not met">
+                                        <i class="fas fa-lock mr-1"></i> Locked
+                                    </button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select a group for chat/interaction
+        async function selectGroup(group) {
+            selectedGroup = group;
+            updateSelectedGroupUI();
+            
+            // Connect to group WebSocket
+            if (groupWebSocket) {
+                groupWebSocket.close();
+            }
+            connectToGroupWebSocket(group.id);
+            
+            // Switch to chat tab
+            switchTab('group-chat');
+            
+            // Load group quests if needed
+            await loadGroupQuests();
+        }
+
+        // Connect to group WebSocket - UPDATED ROUTE
+        function connectToGroupWebSocket(groupId) {
+            const token = getToken();
+            if (!token) return;
+
+            const wsScheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            groupWebSocket = new WebSocket(`${wsScheme}${window.location.host}/groups/${groupId}/ws?token=${token}`);
+            
+            groupWebSocket.onopen = function() {
+                console.log('Connected to group WebSocket');
+                updateChatUI(true);
+            };
+
+            groupWebSocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleGroupWebSocketMessage(data);
+            };
+
+            groupWebSocket.onclose = function() {
+                console.log('Group WebSocket disconnected');
+                updateChatUI(false);
+                // Attempt to reconnect after 3 seconds
+                setTimeout(() => {
+                    if (selectedGroup) {
+                        connectToGroupWebSocket(selectedGroup.id);
+                    }
+                }, 3000);
+            };
+
+            groupWebSocket.onerror = function(error) {
+                console.error('Group WebSocket error:', error);
+            };
+        }
+
+        // Handle WebSocket messages
+        function handleGroupWebSocketMessage(data) {
+            switch(data.type) {
+                case 'group_update':
+                    showToast('Group updated', 'info');
+                    break;
+                case 'user_joined_group':
+                    if (data.group_id === selectedGroup?.id) {
+                        showToast('A user joined the group', 'info');
+                        loadUserGroups(); // Refresh group list
+                    }
+                    break;
+                case 'user_left_group':
+                    if (data.group_id === selectedGroup?.id) {
+                        showToast('A user left the group', 'info');
+                        loadUserGroups(); // Refresh group list
+                    }
+                    break;
+                case 'error':
+                    showToast(data.message, 'error');
+                    break;
+            }
+        }
+
+        // Update chat UI based on connection status
+        function updateChatUI(connected) {
+            const messageInput = document.getElementById('chat-message-input');
+            const sendButton = document.getElementById('send-message-btn');
+            
+            messageInput.disabled = !connected || !selectedGroup;
+            sendButton.disabled = !connected || !selectedGroup;
+            
+            if (!connected && selectedGroup) {
+                document.getElementById('group-chat-messages').innerHTML += `
+                    <div class="text-center py-2">
+                        <span class="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm">
+                            Reconnecting...
+                        </span>
+                    </div>
+                `;
+            }
+        }
+
+        // Join a group - UPDATED ROUTE
+        async function joinGroup(groupId) {
+            // Check eligibility first
+            if (!userEligibility?.eligible) {
+                showEligibilityToast();
+                return;
+            }
+
+            const token = getToken();
+            try {
+                const res = await fetch(`/groups/${groupId}/join`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    if (res.status === 403) {
+                        // Eligibility error from server
+                        showToast(error.detail, 'error');
+                        // Re-check eligibility
+                        await checkGroupEligibility();
+                        return;
+                    }
+                    throw new Error(error.detail || 'Failed to join group');
+                }
+                
+                showToast('Successfully joined group!', 'success');
+                await loadUserGroups();
+                await loadAllGroups();
+                
+            } catch (error) {
+                console.error('Error joining group:', error);
+                showToast(error.message || 'Failed to join group', 'error');
+            }
+        }
+
+        // Leave a group - UPDATED ROUTE
+        async function leaveGroup(groupId) {
+            if (!confirm('Are you sure you want to leave this group?')) return;
+            
+            const token = getToken();
+            try {
+                const res = await fetch(`/groups/${groupId}/leave`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.detail || 'Failed to leave group');
+                }
+                
+                showToast('Successfully left group', 'success');
+                
+                // If this was the selected group, deselect it
+                if (selectedGroup && selectedGroup.id === groupId) {
+                    selectedGroup = null;
+                    if (groupWebSocket) {
+                        groupWebSocket.close();
+                        groupWebSocket = null;
+                    }
+                    switchTab('public-groups');
+                }
+                
+                await loadUserGroups();
+                await loadAllGroups();
+                
+            } catch (error) {
+                console.error('Error leaving group:', error);
+                showToast(error.message || 'Failed to leave group', 'error');
+            }
+        }
+
+        // Load group quests - UPDATED: Remove quest functionality since it's not in the Python file
+        async function loadGroupQuests() {
+            if (!selectedGroup) return;
+            
+            // Since there's no quest endpoint in the Python file, show placeholder
+            document.getElementById('group-quests-content').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="bg-white/10 rounded-lg p-6">
+                        <i class="fas fa-construction text-4xl text-yellow-500 mb-4"></i>
+                        <h3 class="text-white text-lg font-semibold mb-2">Group Quests Coming Soon!</h3>
+                        <p class="text-white/70">This feature is under development. Stay tuned for group challenges and quests!</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create a new group - UPDATED ROUTE
+        async function createGroup(name, description) {
+            // Check eligibility first
+            if (!userEligibility?.eligible) {
+                showEligibilityToast();
+                return;
+            }
+
+            const token = getToken();
+            try {
+                const res = await fetch('/groups/', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, description })
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    if (res.status === 403) {
+                        // Eligibility error from server
+                        showToast(error.detail, 'error');
+                        // Re-check eligibility
+                        await checkGroupEligibility();
+                        return;
+                    }
+                    throw new Error(error.detail || 'Failed to create group');
+                }
+                
+                const newGroup = await res.json();
+                showToast('Group created successfully!', 'success');
+                closeCreateGroupModal();
+                
+                // Refresh groups and select the new one
+                await loadUserGroups();
+                await loadAllGroups();
+                
+                // Auto-select the new group
+                await selectGroup(newGroup);
+                
+            } catch (error) {
+                console.error('Error creating group:', error);
+                showToast(error.message || 'Failed to create group', 'error');
+            }
+        }
+
+        // Search groups
+        async function searchGroups() {
+            const query = document.getElementById('group-search').value.trim();
+            await loadAllGroups(query);
+        }
+
+        // Switch tabs
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update active tab
+            document.querySelectorAll('.nav-tabs a').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-tabs a[href="#${tabId}"]`).classList.add('active');
+        }
+
+        // Update selected group UI
+        function updateSelectedGroupUI() {
+            document.querySelectorAll('#user-groups-list a').forEach(item => {
+                const groupId = parseInt(item.getAttribute('data-group-id'));
+                item.classList.toggle('bg-blue-500/20', selectedGroup?.id === groupId);
+            });
+        }
+
+        // Modal functions
+        function openCreateGroupModal() {
+            if (!userEligibility?.eligible) {
+                showEligibilityToast();
+                return;
+            }
+            document.getElementById('create-group-modal').style.display = 'flex';
+            document.getElementById('group-name').focus();
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('create-group-modal').style.display = 'none';
+            document.getElementById('create-group-form').reset();
+        }
+
+        function closeGroupDetailsModal() {
+            document.getElementById('group-details-modal').style.display = 'none';
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(container, message) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-red-500">
+                    <p>${message}</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600" onclick="location.reload()">Retry</button>
+                </div>
+            `;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = {
+                'success': 'bg-green-500',
+                'error': 'bg-red-500',
+                'info': 'bg-blue-500',
+                'warning': 'bg-yellow-500'
+            }[type] || 'bg-blue-500';
+            
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-md text-white ${bgColor} fade-in z-50`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getDefaultGroupImage(groupName) {
+            // Generate a color based on group name
+            let hash = 0;
+            for (let i = 0; i < groupName.length; i++) {
+                hash = groupName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash % 360);
+            const saturation = 70;
+            const lightness = 50;
+            
+            // Create a gradient placeholder
+            return `data:image/svg+xml;charset=UTF-8,%3Csvg width='300' height='150' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:hsl(${hue},${saturation}%25,${lightness}%25);stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:hsl(${(hue + 60) % 360},${saturation}%25,${lightness + 20}%25);stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='300' height='150' fill='url(%23grad)' /%3E%3Ctext x='150' y='75' font-family='Arial, sans-serif' font-size='16' font-weight='bold' text-anchor='middle' dominant-baseline='middle' fill='white'%3E${encodeURIComponent(groupName.substring(0, 20))}%3C/text%3E%3C/svg%3E`;
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            // Create group form
+            document.getElementById('create-group-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('group-name').value.trim();
+                const description = document.getElementById('group-description').value.trim();
+                
+                if (!name) {
+                    showToast('Group name is required', 'error');
+                    return;
+                }
+                
+                await createGroup(name, description);
+            });
+
+            // Search functionality
+            document.getElementById('group-search').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchGroups();
+                }
+            });
+
+            // Chat functionality
+            document.getElementById('send-message-btn').addEventListener('click', sendChatMessage);
+            document.getElementById('chat-message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+
+            // Close modals when clicking outside
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+
+            // Escape key to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                }
+            });
+        }
+
+        // Chat message sending
+        function sendChatMessage() {
+            const input = document.getElementById('chat-message-input');
+            const message = input.value.trim();
+            
+            if (!message || !selectedGroup || !groupWebSocket || groupWebSocket.readyState !== WebSocket.OPEN) {
+                return;
+            }
+            
+            try {
+                groupWebSocket.send(JSON.stringify({
+                    type: 'chat_message',
+                    content: message
+                }));
+                input.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('Failed to send message', 'error');
+            }
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // Handle page visibility changes to reconnect WebSocket
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && selectedGroup && (!groupWebSocket || groupWebSocket.readyState !== WebSocket.OPEN)) {
+                connectToGroupWebSocket(selectedGroup.id);
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (groupWebSocket) {
+                groupWebSocket.close();
+            }
+            if (notificationSocket) {
+                notificationSocket.close();
+            }
+        });
+    </script>
+</body>
+</html>

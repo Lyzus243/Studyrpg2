@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyRPG - Leveling System</title>
+    
+    <!-- Font Awesome -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+    <style>
+        /* ===== BASE STYLES ===== */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(
+                135deg,
+                #1a1a2e 0%,       /* Deep night (mystery/quests) */
+                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+                #e52d27 60%,      /* Blood red (danger/battle) */
+                #ffb347 85%,      /* Ember glow (energy/climax) */
+                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+            );
+            background-size: 400% 400%;
+            animation: gradientPulse 15s ease infinite;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1e3c72;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== LAYOUT ===== */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background-color: #1e3c72;
+            color: #fff;
+            padding: 2rem 1.5rem;
+            width: 250px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #8a5a44 0%, #a87c6c 50%, #c4a89c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            box-shadow: 0 4px 15px rgba(138, 90, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(138, 90, 68, 0.6);
+        }
+
+        .username-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .username-label h1 {
+            margin: 0;
+            font-size: inherit;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.9rem 1rem;
+            background-color: #2a5298;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            width: 100%;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-btn:hover {
+            background-color: #3a6db1;
+            transform: scale(1.03);
+        }
+
+        .sidebar-btn i {
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background-color: #e52d27;
+            border: none;
+            color: white;
+            padding: 0.6rem 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: auto;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff4c4c;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* ===== LEVELING CONTENT ===== */
+        .leveling-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #e52d27, #ffb347);
+            margin: 0.5rem auto;
+            border-radius: 2px;
+        }
+
+        /* LEVEL DISPLAY */
+        .level-display {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #e3f0fc, #ffffff);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #e52d27;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .level-label {
+            font-size: 1.2rem;
+            color: #1e3c72;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+
+        .total-xp {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            margin-bottom: 0;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .progress-bar {
+            height: 25px;
+            background: #e0e7ff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffb347, #e52d27);
+            border-radius: 20px;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            min-width: 0;
+        }
+
+        /* LOADING STATES */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+
+            .sidebar .avatar-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 0.5rem;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+            }
+            
+            .level-number {
+                font-size: 2.5rem;
+            }
+            
+            .leveling-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div id="user-avatar" class="avatar-preview">
+                <i class="fas fa-user"></i>
+            </div>
+            <div id="user-name" class="username-label">
+                <h1>Leveling System</h1>
+            </div>
+
+            <!-- Dashboard Link -->
+            <a href="/dashboard" class="sidebar-btn">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- Skills Link -->
+            <a href="/skills" class="sidebar-btn">
+                <i class="fas fa-star"></i>
+                <span>Skills</span>
+            </a>
+
+            <!-- Quests Link -->
+            <a href="/quests" class="sidebar-btn">
+                <i class="fas fa-tasks"></i>
+                <span>Quests</span>
+            </a>
+
+            <!-- Leaderboard Link -->
+            <a href="/leaderboard" class="sidebar-btn">
+                <i class="fas fa-trophy"></i>
+                <span>Leaderboard</span>
+            </a>
+
+            <!-- Logout -->
+            <button onclick="logout()" class="logout-btn" tabindex="0">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </aside>
+
+        <!-- Main Leveling Content -->
+        <main class="main-content">
+            <div class="leveling-container">
+                <h2 class="section-title">Level Progression</h2>
+                
+                <!-- Level Display -->
+                <div class="level-display">
+                    <div class="level-number" id="current-level">1</div>
+                    <div class="level-label">Current Level</div>
+                    <div class="total-xp" id="total-xp">Total XP: 0</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-labels">
+                            <span id="current-xp">0 XP</span>
+                            <span id="next-level-xp">100 XP for Next Level</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global state
+        let currentLevelData = null;
+
+        // Utility: Get token from localStorage
+        async function getToken() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/login';
+                throw new Error('No token found. Redirecting to login...');
+            }
+            return token;
+        }
+
+        // Load user profile data
+        async function loadUserProfile() {
+            try {
+                const token = await getToken();
+                const response = await fetch('/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    // Update user avatar and name
+                    await loadUserAvatar(userData);
+                    if (userData.username) {
+                        document.getElementById('user-name').textContent = userData.username;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
+        }
+
+        // Load user avatar
+        async function loadUserAvatar(userData) {
+            try {
+                const avatarElement = document.getElementById('user-avatar');
+                
+                if (userData && userData.avatar_url && userData.avatar_url !== "None") {
+                    // Create an image element for the avatar
+                    avatarElement.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = userData.avatar_url;
+                    img.alt = 'User Avatar';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    avatarElement.appendChild(img);
+                } else {
+                    // Use default avatar with initials
+                    const username = userData ? userData.username : 'User';
+                    const initials = username ? username.charAt(0).toUpperCase() : 'U';
+                    avatarElement.innerHTML = `<span style="font-size: 2.5rem; font-weight: bold;">${initials}</span>`;
+                }
+            } catch (error) {
+                console.error('Error loading avatar:', error);
+                // Fallback to default icon
+                const avatarElement = document.getElementById('user-avatar');
+                avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        }
+
+        // Initialize leveling page
+        (async function init() {
+            try {
+                await loadUserProfile();
+                await loadLevelingData();
+                console.log('Leveling system initialized successfully');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Failed to initialize leveling system. Please try again.');
+            }
+        })();
+
+        // Load leveling data from backend
+        async function loadLevelingData() {
+            try {
+                const token = await getToken();
+                
+                // Get current level progress using the correct route
+                const progressResponse = await fetch('/leveling/progress', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                // Handle unauthorized response
+                if (progressResponse.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!progressResponse.ok) {
+                    const errorText = await progressResponse.text();
+                    throw new Error(`Failed to load level progress: ${progressResponse.status} - ${errorText}`);
+                }
+                
+                const progressData = await progressResponse.json();
+                currentLevelData = progressData;
+                
+                updateLevelDisplay(progressData);
+                
+            } catch (error) {
+                console.error('Error loading leveling data:', error);
+                alert(`Failed to load leveling data: ${error.message}`);
+            }
+        }
+
+        // Update level display with data from backend
+        function updateLevelDisplay(data) {
+            try {
+                // Update level number
+                const levelEl = document.getElementById('current-level');
+                if (levelEl) levelEl.textContent = data.level || 1;
+                
+                // Update total XP
+                const totalXpEl = document.getElementById('total-xp');
+                if (totalXpEl) totalXpEl.textContent = `Total XP: ${data.total_xp || 0}`;
+                
+                // Update current XP in level
+                const currentXpEl = document.getElementById('current-xp');
+                if (currentXpEl) currentXpEl.textContent = `${data.current_xp || 0} XP`;
+                
+                // Update next level XP requirement
+                const nextLevelXpEl = document.getElementById('next-level-xp');
+                const nextLevelXp = data.xp_for_next_level - data.xp_for_current_level;
+                if (nextLevelXpEl) {
+                    nextLevelXpEl.textContent = `${nextLevelXp} XP for Level ${data.level + 1}`;
+                }
+                
+                // Update progress bar
+                const progressFillEl = document.getElementById('progress-fill');
+                const progressPercentage = Math.round(data.progress_percentage || 0);
+                if (progressFillEl) {
+                    progressFillEl.style.width = `${progressPercentage}%`;
+                    progressFillEl.textContent = progressPercentage > 5 ? `${progressPercentage}%` : '';
+                }
+                
+                console.log('Level display updated:', data);
+            } catch (error) {
+                console.error('Error updating level display:', error);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('access_token');
+            sessionStorage.removeItem('access_token');
+            window.location.href = '/login';
+        }
+
+        // Error handler for unhandled promise rejections
+        window.addEventListener('unhandledrejection', event => {
+            console.error('Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+
+        // Error handler for general errors
+        window.addEventListener('error', event => {
+            console.error('Global error:', event.error);
+        });
+    </script>
+</body>
+</html>

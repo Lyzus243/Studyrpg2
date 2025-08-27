@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StudyRPG - FAQ & User Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+      background-size: 400% 400%;
+      animation: gradientPulse 15s ease infinite;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    @keyframes gradientPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .home-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #6df0ff;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      background: rgba(26, 26, 46, 0.5);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .home-link:hover {
+      background: rgba(26, 26, 46, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .content-box {
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 2px solid #ffffff33;
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      width: 100%;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2.8rem;
+      color: #fff;
+      text-shadow: 1px 2px 3px #000;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      color: #ffb347;
+      border-bottom: 2px solid rgba(255, 179, 71, 0.3);
+      padding-bottom: 0.5rem;
+      margin-top: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section {
+      margin-bottom: 2.5rem;
+    }
+
+    .faq-item, .guide-step {
+      margin-bottom: 1.8rem;
+      background: rgba(26, 26, 46, 0.3);
+      padding: 1.2rem;
+      border-radius: 10px;
+      border-left: 3px solid #ffb347;
+    }
+
+    .faq-item h3, .guide-step h3 {
+      color: #ffd700;
+      margin-top: 0;
+      margin-bottom: 0.8rem;
+    }
+
+    p {
+      font-size: 1.15rem;
+      line-height: 1.75;
+      color: #f0f0f0;
+      margin-bottom: 1rem;
+    }
+
+    .feedback-form {
+      background: rgba(26, 26, 46, 0.5);
+      padding: 1.8rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #ffb347;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(26, 26, 46, 0.6);
+      color: white;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    button {
+      background: linear-gradient(to right, #e52d27, #ff6b35);
+      color: white;
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      display: block;
+      margin: 1.5rem auto 0;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #ff4c4c, #ff8c5a);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(229, 45, 39, 0.3);
+    }
+
+    .success-message {
+      background: rgba(109, 240, 255, 0.2);
+      border: 1px solid #6df0ff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .error-message {
+      background: rgba(229, 45, 39, 0.2);
+      border: 1px solid #e52d27;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+      .content-box {
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      .home-link {
+        top: 10px;
+        left: 10px;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .content-box {
+        padding: 1.5rem 1rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      p {
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .feedback-form {
+        padding: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="home-link">← Back to Home</a>
+  
+  <div class="container">
+    <div class="content-box">
+      <h1>StudyRPG FAQ & User Guide</h1>
+      
+      <div class="section">
+        <h2>Frequently Asked Questions</h2>
+        
+        <div class="faq-item">
+          <h3>What is StudyRPG?</h3>
+          <p>StudyRPG is a gamified learning platform where your study progress translates into XP, levels, skills, and rewards.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>How do I earn XP?</h3>
+          <p>You earn XP by completing quests, using study tools (Pomodoro, Flashcards, Memory training), and finishing daily challenges.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What happens when I level up?</h3>
+          <p>Each level gives you access to new abilities, skill points, and sometimes unlocks new features.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>Can I study with friends?</h3>
+          <p>Yes! Join or create Study Groups to collaborate, share quests, and even take part in group battles.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What are Boss Battles?</h3>
+          <p>Boss Battles are challenges that test your consistency and study performance. Winning grants XP, rewards, and achievements.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What if I forget to study one day?</h3>
+          <p>Missing a day will reset your streak. However, you can regain momentum by starting new quests.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>How do I use the Shop?</h3>
+          <p>The Shop allows you to spend earned currency on power-ups, study aids, and cosmetic items.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What is the AI Assistant for?</h3>
+          <p>The AI Assistant gives you personalized study tips, helps generate learning materials, and suggests areas to focus on.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>Where can I track my progress?</h3>
+          <p>Go to the Analytics section for detailed stats on your learning patterns and growth.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>How do I reset my password or log out?</h3>
+          <p>- To log out, click the logout button on the sidebar.<br>- For password reset, go to your Profile settings.</p>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>User Onboarding Guide</h2>
+        
+        <div class="guide-step">
+          <h3>1. Sign Up or Log In</h3>
+          <p>Create your account and upload an avatar if you'd like. Once logged in, you'll be welcomed on your dashboard.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>2. Explore Your Dashboard</h3>
+          <p>View your XP, Level, Streak, and Skill Points at the top. These stats grow as you complete study activities.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>3. Complete the Interactive Tutorial</h3>
+          <p>Go to "Getting Started" under the Overview section. Learn how to use all StudyRPG features step by step.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>4. Start Your First Quest</h3>
+          <p>Navigate to the Quests section. Choose a study mission to earn XP and rewards.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>5. Use Study Tools</h3>
+          <p>Try the Pomodoro Timer to boost focus. Train your memory with exercises. Create and review Flashcards. Ask the AI Study Assistant for personalized help.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>6. Level Up & Unlock Skills</h3>
+          <p>As you complete activities, you'll level up. Unlock and upgrade abilities in the Skills section.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>7. Join Social & Battle Activities</h3>
+          <p>Team up with Study Groups for collaborative learning. Challenge yourself in Boss Battles (solo or group).</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>8. Track Your Progress</h3>
+          <p>Visit the Analytics section to view learning insights. Check your achievements and leaderboard rank.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>9. Shop for Items</h3>
+          <p>Use earned rewards to buy tools, power-ups, or cosmetics in the Shop.</p>
+        </div>
+        
+        <div class="guide-step">
+          <h3>10. Stay Motivated</h3>
+          <p>Keep your streak alive by studying daily. Watch your profile grow as you progress.</p>
+        </div>
+      </div>
+      
+      <div class="feedback-form">
+        <h2>Send Feedback to Admin</h2>
+        <form id="feedbackForm">
+          <div class="form-group">
+            <label for="name">Your Name (optional)</label>
+            <input type="text" id="name" placeholder="Enter your name">
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email (optional)</label>
+            <input type="email" id="email" placeholder="Enter your email">
+          </div>
+          
+          <div class="form-group">
+            <label for="category">Feedback Category</label>
+            <select id="category" required>
+              <option value="">Select a category</option>
+              <option value="bug">Bug Report</option>
+              <option value="suggestion">Feature Suggestion</option>
+              <option value="content">Content Issue</option>
+              <option value="ui">User Interface</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="message">Your Feedback*</label>
+            <textarea id="message" placeholder="Describe your feedback in detail..." required></textarea>
+          </div>
+          
+          <button type="submit" id="submitBtn">
+            <span id="submitText">Send Feedback</span>
+            <span id="loadingSpinner" class="loading" style="display:none;"></span>
+          </button>
+        </form>
+        
+        <div class="success-message" id="successMessage">
+          Thank you for your feedback! Your message has been sent to the admin team.
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+          There was an error sending your feedback. Please try again later.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Show loading spinner
+      const submitBtn = document.getElementById('submitBtn');
+      const submitText = document.getElementById('submitText');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      submitBtn.disabled = true;
+      submitText.textContent = "Sending...";
+      loadingSpinner.style.display = "inline-block";
+      
+      // Hide previous messages
+      document.getElementById('successMessage').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'none';
+      
+      // Get form data
+      const feedbackData = {
+        name: document.getElementById('name').value || 'Anonymous',
+        email: document.getElementById('email').value || '',
+        category: document.getElementById('category').value,
+        message: document.getElementById('message').value
+      };
+      
+      try {
+        // Send feedback to backend
+        const response = await fetch('/admin/feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(feedbackData)
+        });
+        
+        if (response.ok) {
+          // Show success message
+          document.getElementById('successMessage').style.display = 'block';
+          
+          // Reset form
+          document.getElementById('feedbackForm').reset();
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Server returned non-OK status');
+        }
+      } catch (error) {
+        console.error('Error submitting feedback:', error);
+        document.getElementById('errorMessage').textContent = `Error: ${error.message}`;
+        document.getElementById('errorMessage').style.display = 'block';
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitText.textContent = "Send Feedback";
+        loadingSpinner.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>

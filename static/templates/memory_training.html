@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Training - StudyRPG</title>
+  <link href="https://cdn.tailwindcss.com/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(
+        135deg,
+        #1a1a2e 0%,       /* Deep night (mystery/quests) */
+        #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+        #e52d27 60%,      /* Blood red (danger/battle) */
+        #ffb347 85%,      /* Ember glow (energy/climax) */
+        #6df0ff 100%      /* Cyber neon (tech/futurism) */
+      );
+      background-size: 400% 400%;
+      animation: gradientPulse 15s ease infinite;
+      min-height: 100vh;
+      color: white;
+    }
+    
+    @keyframes gradientPulse {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    /* Profile section styles */
+    .profile-section {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+    
+    .profile-picture {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ffcc00;
+      object-fit: cover;
+    }
+    
+    .profile-name {
+      color: #ffcc00;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <!-- Profile Section -->
+  <div class="profile-section">
+    <img id="profile-picture" class="profile-picture" src="/static/images/default_profile.png" alt="Profile">
+    <span id="profile-name" class="profile-name">User</span>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <a href="/dashboard" class="text-white hover:underline mb-4 inline-block">&larr; Back to Dashboard</a>
+    <h1 class="text-3xl font-bold text-center mb-6">🧠 Memory Training</h1>
+
+    <!-- Technique Selection -->
+    <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Select Technique</h2>
+      <select id="memoryTechnique" class="w-full p-2 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white">
+        <option value="spaced_repetition">Spaced Repetition</option>
+        <option value="active_recall">Active Recall</option>
+        <option value="memory_palace">Memory Palace</option>
+        <option value="mnemonics">Mnemonics</option>
+      </select>
+      <button id="startTraining" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Start Training</button>
+    </div>
+
+    <!-- Exercise Area -->
+    <div id="exerciseArea" class="bg-white bg-opacity-10 rounded-lg p-6 hidden">
+      <h2 class="text-2xl font-semibold mb-4">Exercise</h2>
+      <div id="exerciseContent"></div>
+      <input id="exerciseResponse" type="text" class="w-full p-2 mt-4 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white" placeholder="Enter your response">
+      <button id="submitResponse" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Submit Response</button>
+    </div>
+
+    <!-- Results Area -->
+    <div id="resultsArea" class="bg-white bg-opacity-10 rounded-lg p-6 hidden">
+      <h2 class="text-2xl font-semibold mb-4">Results</h2>
+      <p id="resultScore" class="mb-4"></p>
+      <div id="resultDetails"></div>
+      <button id="newExercise" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">New Exercise</button>
+    </div>
+  </div>
+
+  <script>
+    // Authentication and token management
+    function getToken() {
+      return localStorage.getItem('access_token');
+    }
+
+    function redirectToLogin() {
+      window.location.href = '/login';
+    }
+
+    function verifyToken() {
+      const token = getToken();
+      if (!token) {
+        redirectToLogin();
+        return false;
+      }
+      
+      // Simple JWT expiry check
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000;
+        if (Date.now() >= exp) {
+          localStorage.removeItem('access_token');
+          redirectToLogin();
+          return false;
+        }
+        return true;
+      } catch (error) {
+        localStorage.removeItem('access_token');
+        redirectToLogin();
+        return false;
+      }
+    }
+
+    // Fetch user profile data
+    async function fetchUserProfile() {
+      if (!verifyToken()) return;
+      
+      try {
+        const token = getToken();
+        const response = await fetch('/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('profile-name').textContent = userData.username;
+          
+          // Set profile picture if available
+          if (userData.profile_picture) {
+            document.getElementById('profile-picture').src = userData.profile_picture;
+          }
+        } else if (response.status === 401) {
+          localStorage.removeItem('access_token');
+          redirectToLogin();
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+      }
+    }
+
+    // Initialize the app
+    async function init() {
+      // Check authentication
+      if (!verifyToken()) return;
+      
+      // Fetch user profile
+      await fetchUserProfile();
+      
+      // Set up event listeners
+      document.getElementById('startTraining').addEventListener('click', startTraining);
+      document.getElementById('submitResponse').addEventListener('click', submitResponse);
+      document.getElementById('newExercise').addEventListener('click', resetExercise);
+    }
+
+    // Memory training functions
+    function startTraining() {
+      const technique = document.getElementById('memoryTechnique').value;
+      document.getElementById('exerciseArea').classList.remove('hidden');
+      document.getElementById('resultsArea').classList.add('hidden');
+      
+      // Generate exercise based on technique
+      generateExercise(technique);
+    }
+
+    function generateExercise(technique) {
+      const exerciseContent = document.getElementById('exerciseContent');
+      
+      // Different exercise types based on technique
+      switch(technique) {
+        case 'spaced_repetition':
+          exerciseContent.innerHTML = `
+            <p class="mb-4">Remember this sequence of numbers:</p>
+            <div class="text-2xl font-bold text-center mb-4" id="numberSequence">${generateNumberSequence(8)}</div>
+            <p>You have 30 seconds to memorize them.</p>
+          `;
+          setTimeout(() => {
+            exerciseContent.innerHTML = `
+              <p class="mb-4">Enter the number sequence:</p>
+            `;
+          }, 30000);
+          break;
+          
+        case 'active_recall':
+          exerciseContent.innerHTML = `
+            <p class="mb-4">Study this text for 1 minute:</p>
+            <div class="p-4 bg-white bg-opacity-5 rounded-lg mb-4">
+              ${generateRandomText()}
+            </div>
+            <p>You will be asked questions about it.</p>
+          `;
+          setTimeout(() => {
+            exerciseContent.innerHTML = `
+              <p class="mb-4">What was the main subject of the text?</p>
+            `;
+          }, 60000);
+          break;
+          
+        case 'memory_palace':
+          exerciseContent.innerHTML = `
+            <p class="mb-4">Memorize these items and their locations:</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              ${generateMemoryPalaceItems()}
+            </div>
+            <p>You have 45 seconds to memorize them.</p>
+          `;
+          setTimeout(() => {
+            exerciseContent.innerHTML = `
+              <p class="mb-4">Where was the ${getRandomItem()} placed?</p>
+            `;
+          }, 45000);
+          break;
+          
+        case 'mnemonics':
+          exerciseContent.innerHTML = `
+            <p class="mb-4">Create a mnemonic for these words:</p>
+            <div class="text-xl font-bold text-center mb-4">${generateWordList()}</div>
+            <p>You have 1 minute to create and remember your mnemonic.</p>
+          `;
+          setTimeout(() => {
+            exerciseContent.innerHTML = `
+              <p class="mb-4">Recall the words in order:</p>
+            `;
+          }, 60000);
+          break;
+      }
+    }
+
+    function submitResponse() {
+      // Validate response and show results
+      document.getElementById('exerciseArea').classList.add('hidden');
+      document.getElementById('resultsArea').classList.remove('hidden');
+      
+      // Calculate score (this would be more complex in a real implementation)
+      const score = Math.floor(Math.random() * 100);
+      document.getElementById('resultScore').textContent = `Your score: ${score}/100`;
+      
+      // Save results to backend
+      saveTrainingResult(score);
+    }
+
+    function resetExercise() {
+      document.getElementById('exerciseArea').classList.add('hidden');
+      document.getElementById('resultsArea').classList.add('hidden');
+      document.getElementById('exerciseResponse').value = '';
+    }
+
+    // Helper functions for generating exercises
+    function generateNumberSequence(length) {
+      return Array.from({length}, () => Math.floor(Math.random() * 10)).join(' ');
+    }
+
+    function generateRandomText() {
+      const texts = [
+        "The quantum theory revolution in the early 20th century fundamentally changed our understanding of physics, introducing concepts like wave-particle duality and uncertainty principles that challenged classical Newtonian mechanics.",
+        "Ancient Roman architecture was renowned for its innovative use of arches, domes, and concrete, allowing the construction of massive structures like the Colosseum and Pantheon that have endured for millennia.",
+        "Photosynthesis is the biochemical process in plants where light energy converts carbon dioxide and water into glucose and oxygen, forming the foundation of nearly all Earth's food chains and oxygenating our atmosphere."
+      ];
+      return texts[Math.floor(Math.random() * texts.length)];
+    }
+
+    function generateMemoryPalaceItems() {
+      const items = ['Book', 'Key', 'Candle', 'Clock', 'Mirror', 'Sword'];
+      const locations = ['Library', 'Kitchen', 'Bedroom', 'Garden', 'Study', 'Hall'];
+      
+      return items.map((item, i) => `
+        <div class="flex items-center justify-between p-2 bg-white bg-opacity-5 rounded">
+          <span>${item}</span>
+          <span class="text-yellow-400">${locations[i]}</span>
+        </div>
+      `).join('');
+    }
+
+    function getRandomItem() {
+      const items = ['Book', 'Key', 'Candle', 'Clock', 'Mirror', 'Sword'];
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function generateWordList() {
+      const wordLists = [
+        "Apple, Boat, Castle, Dragon, Eagle, Fountain",
+        "River, Mountain, Forest, Ocean, Desert, Valley",
+        "Science, Technology, Engineering, Arts, Mathematics"
+      ];
+      return wordLists[Math.floor(Math.random() * wordLists.length)];
+    }
+
+    // API function to save training results
+    async function saveTrainingResult(score) {
+      try {
+        const token = getToken();
+        const technique = document.getElementById('memoryTechnique').value;
+        
+        const response = await fetch('/memory-training/save-result', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            technique: technique,
+            score: score,
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            localStorage.removeItem('access_token');
+            redirectToLogin();
+            return;
+          }
+          console.error('Failed to save training result');
+        }
+      } catch (error) {
+        console.error('Error saving training result:', error);
+      }
+    }
+
+    // Initialize the app when the DOM is loaded
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

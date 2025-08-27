@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up | StudyRPG</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+           background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,       /* Deep night (mystery/quests) */
+    #1e3c72 25%,      /* Steel blue (survival/cold tech) */
+    #e52d27 60%,      /* Blood red (danger/battle) */
+    #ffb347 85%,      /* Ember glow (energy/climax) */
+    #6df0ff 100%      /* Cyber neon (tech/futurism) */
+);
+background-size: 400% 400%;
+animation: gradientPulse 15s ease infinite;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .signup-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius:  16px;
+            box-shadow: 0 4px 16px rgba(30, 60, 114, 0.18);
+            padding: 2.5rem 2rem 2rem;
+            text-align: center;
+        }
+        .signup-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 1.2rem;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0 #ffb347, 2px 2px 0 #e52d27;
+        }
+        .signup-container input {
+            width: 90%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .signup-container input:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 5px rgba(42, 82, 152, 0.5);
+        }
+        .signup-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: #1e3c72;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(30, 60, 114, 0.3);
+        }
+        .signup-btn:hover {
+            background: #2a5298;
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 14px rgba(42, 82, 152, 0.5);
+        }
+        .error-msg {
+            color: #e52d27;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        .success-msg {
+            color: #1e3c72;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        .verify-msg {
+            color: #1e3c72;
+            margin-top: 1.2rem;
+            font-weight: bold;
+            display: none;
+        }
+        .login-link {
+            margin-top: 1.5rem;
+            display: block;
+            color: #e52d27;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .login-link:hover {
+            color: #ffb347;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-title">Create Your StudyRPG Account</div>
+        <form id="signup-form">
+            <input type="text" id="username" placeholder="Username" required><br>
+            <input type="email" id="email" placeholder="Email" required><br>
+            <input type="password" id="password" placeholder="Password" required><br>
+            <input type="password" id="confirm_password" placeholder="Confirm Password" required><br>
+            <button class="signup-btn" type="submit">Sign Up</button>
+        </form>
+        <div id="error" class="error-msg"></div>
+        <div id="success" class="success-msg"></div>
+        <div id="verify-msg" class="verify-msg">
+            Signup successful! Please check your email to verify your account before logging in.
+        </div>
+        <a class="login-link" href="/login">Already have an account? Login</a>
+        <div class="intro-author" style="
+            font-size: medium;
+            font-weight: bold;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #e52d27 60%, #000 100%);
+            color: #fff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+            text-shadow: 1px 1px 0 #000, 2px 2px 0 #e52d27;
+            display: inline-block;
+            margin-top: 2rem;
+        ">GAME BY LYZUS</div>
+        <audio id="bgm" src="/static/sounds/willliam_hector_-_shadow.wav" loop></audio>
+        <button 
+            onclick="document.getElementById('bgm').play()" 
+            onmouseover="this.style.setProperty('--pulse-opacity', '0.4')"
+            onmouseout="this.style.setProperty('--pulse-opacity', '0')"
+            style="
+                --pulse-opacity: 0;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                padding: 0.5rem 1.3rem;
+                font-size: 1rem;
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(90deg, #1a1a2e 0%, #1e3c72 60%, #e52d27 100%);
+                color: #fff;
+                border: 1px solid rgba(109, 240, 255, 0.3);
+                border-radius: 8px;
+                cursor: pointer;
+                z-index: 100;
+                opacity: 0.92;
+                font-weight: bold;
+                text-shadow: 0 0 5px rgba(109, 240, 255, 0.5);
+                box-shadow: 
+                    0 0 12px rgba(229, 45, 39, 0.3),
+                    0 2px 8px rgba(30, 60, 114, 0.3),
+                    inset 0 0 8px rgba(109, 240, 255, 0.1);
+                transition: 
+                    background 0.3s ease,
+                    border-color 0.3s ease,
+                    box-shadow 0.3s ease,
+                    transform 0.2s ease;
+            "
+        >
+            ▶ PLAY MUSIC
+            <span style="
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                background: radial-gradient(circle at center, #6df0ff 0%, transparent 70%);
+                opacity: var(--pulse-opacity);
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            "></span>
+        </button>    
+    </div>
+
+    <script>
+        // Signup Form Handler
+        document.getElementById('signup-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            const errorDiv = document.getElementById('error');
+            const successDiv = document.getElementById('success');
+            const verifyDiv = document.getElementById('verify-msg');
+            
+            // Clear previous messages
+            errorDiv.textContent = "";
+            successDiv.textContent = "";
+            verifyDiv.style.display = "none";
+
+            // Client-side validation
+            if (password !== confirm_password) {
+                errorDiv.textContent = "Passwords do not match.";
+                return;
+            }
+
+            if (password.length < 8) {
+                errorDiv.textContent = "Password must be at least 8 characters long.";
+                return;
+            }
+
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = "Please enter a valid email address.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        confirm_password: confirm_password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Registration successful
+                    window.location.href = "/validAccount";
+                    verifyDiv.style.display = "block";
+                    
+                    // Clear the form
+                    document.getElementById('signup-form').reset();
+                    
+                    // Optionally redirect after a delay
+                    // setTimeout(() => {
+                    //     window.location.href = "/login";
+                    // }, 3000);
+                } else {
+                    // Handle errors returned by the backend
+                    errorDiv.textContent = data.detail || "Registration failed. Please try again.";
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                errorDiv.textContent = "Network error. Please check your connection and try again.";
+            }
+        });
+    </script>
+</body>
+</html>

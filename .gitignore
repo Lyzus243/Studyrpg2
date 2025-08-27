@@ -3,7 +3,7 @@
 
 # Keep these folders
 !alembic/
-!models/
+app/
 !static/
 !tests/
 
