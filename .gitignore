@@ -18,3 +18,4 @@ app/__pycache__/
 .env
 app/.env
 models/t5-small/model.safetensors
+models/t5-small/model.safetensors
