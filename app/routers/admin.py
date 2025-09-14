@@ -4,19 +4,35 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from app.database import get_async_session
 from app.models import User, ShopItem, Quest, Group, BossBattle
+from app.models_feedback import Feedback
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from sqlalchemy import func
-from app.routers.auth import get_current_user, get_password_hash
+from app.routers.auth import get_current_user, get_password_hash, oauth2_scheme
 from app.email_utils import send_broadcast_email
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer
 import os
 import logging
+from dotenv import load_dotenv
+from jose import JWTError, jwt
 
 logger = logging.getLogger(__name__)
-
+load_dotenv()
+# Use HTTPBearer instead of OAuth2PasswordBearer for API endpoints
+security = HTTPBearer()
 # Use prefix for all admin routes
 router = APIRouter(prefix="", tags=["admin"])
+
+# Admin credentials from .env
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin1234567")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "pumlezerti@necub.com")
+
+# JWT settings (should match your auth settings)
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGO", "HS256")
 
 # Local Schema definitions
 class ShopItemCreate(BaseModel):
@@ -88,21 +104,88 @@ class FeedbackUpdate(BaseModel):
     resolved: Optional[bool] = None
 
 def require_admin(user: User):
-    """Role-based admin check (no hard-coded username)"""
-    if not user or getattr(user, "role", "user") not in {"admin", "superadmin"}:
+    """Check if user is admin based on .env credentials"""
+    if not user:
+        logger.warning("No user provided to admin check")
+        raise HTTPException(status_code=403, detail="Admin access only")
+    
+    # Check if username matches admin username from .env (case-insensitive)
+    if user.username.lower() != ADMIN_USERNAME.lower():
+        logger.warning(f"Admin access denied for user: {user.username} (expected: {ADMIN_USERNAME})")
+        raise HTTPException(status_code=403, detail="Admin access only")
+    
+    logger.info(f"✅ Admin access granted for user: {user.username}")
+    return True
+
+async def verify_admin_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Simple admin token verifier that only checks username against ADMIN_USERNAME
+    """
+    if not credentials:
+        logger.info("No credentials received")
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token = credentials.credentials
+    if not token:
+        logger.info("No token in credentials")
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Decode and verify token
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if os.getenv("DEBUG", "false").lower() == "true":
+            logger.debug("Decoded JWT payload: %s", payload)
+    except JWTError as e:
+        logger.warning("JWT decode failed: %s", e)
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    # Get the subject (username) from the token
+    subject = payload.get("sub")
+    if not subject:
+        logger.warning("No sub found in token payload: %s", payload)
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    # Query DB for user by username (case-insensitive)
+    try:
+        result = await db.execute(select(User).where(func.lower(User.username) == str(subject).lower()))
+        user = result.scalar_one_or_none()
+    except Exception as e:
+        logger.error("DB lookup error in verify_admin_token: %s", e)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    if not user:
+        logger.warning("Token subject %s has no matching DB user", subject)
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    # Only check if username matches ADMIN_USERNAME (case-insensitive)
+    if user.username.lower() != ADMIN_USERNAME.lower():
+        logger.warning("User %s is not admin (expected: %s)", user.username, ADMIN_USERNAME)
         raise HTTPException(status_code=403, detail="Admin access only")
 
+    logger.info("Admin verified by username match: %s", user.username)
+    return user
+
+
+@router.get("/debug/env-check")
+async def debug_env_check():
+    """Debug endpoint to check environment variables (no auth required)"""
+    return {
+        "ADMIN_USERNAME": ADMIN_USERNAME,
+        "ADMIN_PASSWORD_SET": bool(ADMIN_PASSWORD),
+        "SECRET_KEY_SET": bool(SECRET_KEY),
+        "ALGORITHM": ALGORITHM
+    }
 # =========================================================
 # SHOP MANAGEMENT
 # =========================================================
 @router.get("/shop")
 async def get_shop_items(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(ShopItem))
     return result.scalars().all()
 
@@ -110,11 +193,8 @@ async def get_shop_items(
 async def add_shop_item(
     item: ShopItemCreate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     shop_item = ShopItem(**item.dict())
     db.add(shop_item)
     await db.commit()
@@ -126,11 +206,8 @@ async def update_shop_item(
     item_id: int,
     item: ShopItemUpdate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(ShopItem).where(ShopItem.id == item_id))
     shop_item = result.scalar_one_or_none()
     if not shop_item:
@@ -145,11 +222,8 @@ async def update_shop_item(
 async def delete_shop_item(
     item_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(ShopItem).where(ShopItem.id == item_id))
     item = result.scalar_one_or_none()
     if not item:
@@ -164,11 +238,8 @@ async def delete_shop_item(
 @router.get("/quests")
 async def get_quests(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(Quest))
     return result.scalars().all()
 
@@ -176,11 +247,8 @@ async def get_quests(
 async def create_quest(
     quest: QuestCreate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     quest_obj = Quest(**quest.dict())
     db.add(quest_obj)
     await db.commit()
@@ -192,11 +260,8 @@ async def update_quest(
     quest_id: int,
     quest: QuestUpdate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(Quest).where(Quest.id == quest_id))
     quest_obj = result.scalar_one_or_none()
     if not quest_obj:
@@ -211,11 +276,8 @@ async def update_quest(
 async def delete_quest(
     quest_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(Quest).where(Quest.id == quest_id))
     quest = result.scalar_one_or_none()
     if not quest:
@@ -229,11 +291,8 @@ async def assign_quest_to_group(
     quest_id: int,
     group_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     quest_result = await db.execute(select(Quest).where(Quest.id == quest_id).options(selectinload(Quest.groups)))
     quest_obj = quest_result.scalar_one_or_none()
     group_result = await db.execute(select(Group).where(Group.id == group_id))
@@ -253,11 +312,8 @@ async def assign_quest_to_group(
 @router.get("/users")
 async def get_users(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User))
     return result.scalars().all()
 
@@ -266,11 +322,8 @@ async def update_user_role(
     user_id: int,
     role_update: UserRoleUpdate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -284,11 +337,8 @@ async def update_user_xp(
     user_id: int,
     xp_update: XPUpdate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -301,11 +351,8 @@ async def update_user_xp(
 async def ban_user(
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -318,11 +365,8 @@ async def ban_user(
 async def unban_user(
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -336,11 +380,8 @@ async def reset_password(
     user_id: int,
     new_password: PasswordReset,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -355,11 +396,8 @@ async def reset_password(
 @router.get("/groups")
 async def get_groups(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(
         select(Group).options(
             selectinload(Group.members),
@@ -373,11 +411,8 @@ async def approve_group_member(
     group_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     group_result = await db.execute(select(Group).where(Group.id == group_id).options(selectinload(Group.members)))
     group = group_result.scalar_one_or_none()
     user_result = await db.execute(select(User).where(User.id == user_id))
@@ -393,11 +428,8 @@ async def remove_group_member(
     group_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     group_result = await db.execute(select(Group).where(Group.id == group_id).options(selectinload(Group.members)))
     group = group_result.scalar_one_or_none()
     user_result = await db.execute(select(User).where(User.id == user_id))
@@ -415,11 +447,8 @@ async def remove_group_member(
 @router.get("/boss-battles")
 async def get_boss_battles(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(BossBattle))
     return result.scalars().all()
 
@@ -427,27 +456,27 @@ async def get_boss_battles(
 async def create_boss_battle(
     boss_battle: BossBattleCreate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     boss_obj = BossBattle(**boss_battle.dict())
     db.add(boss_obj)
     await db.commit()
     await db.refresh(boss_obj)
     return boss_obj
 
+# Add this to your admin.py file to test if the router is working
+@router.get("/test-admin")
+async def admin_test():
+    return {"message": "Admin router is working"}
+
+
 @router.put("/boss-battles/{boss_id}")
 async def update_boss_battle(
     boss_id: int,
     boss_battle: BossBattleUpdate,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(BossBattle).where(BossBattle.id == boss_id))
     boss_obj = result.scalar_one_or_none()
     if not boss_obj:
@@ -462,11 +491,8 @@ async def update_boss_battle(
 async def delete_boss_battle(
     boss_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(BossBattle).where(BossBattle.id == boss_id))
     boss = result.scalar_one_or_none()
     if not boss:
@@ -479,11 +505,8 @@ async def delete_boss_battle(
 async def activate_boss_battle(
     boss_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     result = await db.execute(select(BossBattle).where(BossBattle.id == boss_id))
     boss = result.scalar_one_or_none()
     if not boss:
@@ -506,11 +529,8 @@ async def activate_boss_battle(
 async def broadcast_message(
     data: dict,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
     subject = data.get("subject")
     message = data.get("message")
     
@@ -577,12 +597,8 @@ async def broadcast_message(
 async def test_broadcast(
     data: dict,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    
     subject = data.get("subject", "Test Broadcast from StudyRPG")
     message = data.get("message", "This is a test broadcast message.")
     
@@ -604,12 +620,8 @@ async def test_broadcast(
 
 @router.get("/broadcast/test-smtp")
 async def test_smtp_connection_endpoint(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    
     try:
         from app.email_utils import test_smtp_connection
         success = await test_smtp_connection()
@@ -629,13 +641,8 @@ async def test_smtp_connection_endpoint(
 @router.get("/feedback")
 async def get_feedback_list(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    # Import Feedback model from the correct location
-    from app.models_feedback import Feedback
     result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
     return result.scalars().all()
 
@@ -643,13 +650,8 @@ async def get_feedback_list(
 async def resolve_feedback(
     feedback_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    # Import Feedback model from the correct location
-    from app.models_feedback import Feedback
     result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))
     feedback = result.scalar_one_or_none()
     if not feedback:
@@ -662,13 +664,8 @@ async def resolve_feedback(
 async def delete_feedback(
     feedback_id: int,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    # Import Feedback model from the correct location
-    from app.models_feedback import Feedback
     result = await db.execute(select(Feedback).where(Feedback.id == feedback_id))
     feedback = result.scalar_one_or_none()
     if not feedback:
@@ -683,21 +680,20 @@ async def delete_feedback(
 @router.get("/stats")
 async def get_admin_stats(
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(verify_admin_token)
 ):
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    require_admin(current_user)
-    
-    # Import Feedback model from the correct location
-    from app.models_feedback import Feedback
-    
     # Get counts
     users_count = (await db.execute(select(func.count()).select_from(User))).scalar_one()
     quests_count = (await db.execute(select(func.count()).select_from(Quest))).scalar_one()
     shop_items_count = (await db.execute(select(func.count()).select_from(ShopItem))).scalar_one()
     boss_battles_count = (await db.execute(select(func.count()).select_from(BossBattle))).scalar_one()
-    feedback_count = (await db.execute(select(func.count()).select_from(Feedback))).scalar_one()
+    
+    # Handle feedback count with error handling
+    try:
+        feedback_count = (await db.execute(select(func.count()).select_from(Feedback))).scalar_one()
+    except Exception as e:
+        logger.warning(f"Failed to get feedback count: {e}")
+        feedback_count = 0
 
     return {
         "users": users_count,
@@ -705,4 +701,72 @@ async def get_admin_stats(
         "shop_items": shop_items_count,
         "boss_battles": boss_battles_count,
         "feedback_items": feedback_count,
+        "current_user": current_user.username,  # Add this for debugging
+        "admin_check_passed": True  # Add this for debugging
     }
+
+# =========================================================
+# ADMIN DEBUG INFO
+# =========================================================
+@router.get("/debug/admin-info")
+async def get_admin_debug_info(
+    current_user: User = Depends(verify_admin_token)
+):
+    """Debug endpoint to check admin configuration"""
+    
+    return {
+        "current_user": current_user.username,
+        "expected_admin": ADMIN_USERNAME,
+        "is_admin": current_user.username.lower() == ADMIN_USERNAME.lower(),
+        "admin_configured": bool(ADMIN_USERNAME and ADMIN_PASSWORD),
+        "env_admin_username": ADMIN_USERNAME,
+        "env_has_password": bool(ADMIN_PASSWORD)
+    }
+
+# =========================================================
+# DEBUG ENDPOINTS (temporary)
+# =========================================================
+@router.get("/debug/auth-test")
+async def debug_auth_test(
+    current_user: User = Depends(verify_admin_token)
+):
+    """Debug endpoint to test authentication"""
+    return {
+        "authenticated": True,
+        "user": current_user.username,
+        "is_admin": current_user.username.lower() == ADMIN_USERNAME.lower(),
+        "env_admin": ADMIN_USERNAME
+    }
+
+@router.get("/debug/env-check")
+async def debug_env_check():
+    """Debug endpoint to check environment variables (no auth required)"""
+    return {
+        "ADMIN_USERNAME": ADMIN_USERNAME,
+        "ADMIN_PASSWORD_SET": bool(ADMIN_PASSWORD),
+        "SECRET_KEY_SET": bool(SECRET_KEY),
+        "ALGORITHM": ALGORITHM
+    }
+
+# Function to create admin user if it doesn't exist
+async def create_admin_user_if_not_exists(db: AsyncSession):
+    """
+    Create admin user if it doesn't exist
+    """
+    result = await db.execute(select(User).where(User.username == ADMIN_USERNAME))
+    admin_user = result.scalar_one_or_none()
+    
+    if not admin_user:
+        admin_user = User(
+            username=ADMIN_USERNAME,
+            email=ADMIN_EMAIL,
+            hashed_password=get_password_hash(ADMIN_PASSWORD),
+            is_active=True,
+            is_verified=True,
+            role="admin"
+        )
+        db.add(admin_user)
+        await db.commit()
+        logger.info("Admin user created successfully")
+    else:
+        logger.info("Admin user already exists")

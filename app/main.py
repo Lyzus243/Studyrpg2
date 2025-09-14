@@ -97,8 +97,11 @@ templates = Jinja2Templates(directory=TEMPLATE_DIR)
 manager = ConnectionManager()
 
 # ------------------------ Admin restriction ------------------------
+# Update the admin_only function:
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")
+
 async def admin_only(current_user: models.User = Depends(get_current_user)):
-    if current_user.username != "Lyzus":
+    if current_user.username != ADMIN_USERNAME:
         raise HTTPException(status_code=403, detail="Admin access only")
     return current_user
 
@@ -267,6 +270,36 @@ async def analytics_page(request: Request, user: models.User = Depends(get_authe
 async def badges_page(request: Request, user: models.User = Depends(get_authenticated_user)):
     return templates.TemplateResponse("badge.html", {"request": request, "user": user})
 
+
+
+from fastapi.middleware import Middleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+]
+
+
+# app = FastAPI(middleware=middleware)
+
+# @app.middleware("http")
+# async def add_csp_header(request, call_next):
+#     response = await call_next(request)
+#     response.headers["Content-Security-Policy"] = "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'"
+#     return response
+
+@app.get("/test")
+async def test_endpoint():
+    return {"message": "Server is working"}
 
 
 # ------------------------

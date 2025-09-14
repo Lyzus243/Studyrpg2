@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Boss Battle — Demo (No Auth, Character Assets)</title>
+
+  <!-- Tailwind + FontAwesome for simple UI -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #111216;
+      --text: #DCDDDE;
+      --accent: #5865F2;
+    }
+    html,body { height:100%; margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial; }
+    .wrap { max-width:1100px; margin:18px auto; padding:12px; }
+    #demo-arena { width:100%; height:640px; background:linear-gradient(180deg,#071019,#040306); border-radius:12px; overflow:hidden; position:relative; box-shadow:0 12px 40px rgba(0,0,0,0.6); }
+    .panel { background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)), var(--panel); padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); margin-top:12px; }
+    .health-bar { height:28px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+    .health-fill { height:100%; transition:width 300ms linear, background-color 250ms linear; }
+    .log { max-height:260px; overflow:auto; font-family:monospace; background:rgba(255,255,255,0.01); padding:8px; border-radius:8px; }
+    .btn { padding:10px 14px; border-radius:8px; cursor:pointer; border:none; }
+    .btn-primary { background:linear-gradient(180deg,var(--accent),#3b49c6); color:#fff; }
+    @media (max-width:900px){ #demo-arena { height:420px } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="text-3xl font-bold mb-4"><i class="fas fa-dragon mr-2"></i>Boss Battle — Demo (No Auth)</h1>
+
+    <div id="demo-arena" aria-label="Demo 3D arena"></div>
+
+    <div class="panel grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <div><strong>Boss Health</strong></div>
+          <div id="boss-health-text">1200 / 1200</div>
+        </div>
+        <div class="health-bar mb-3"><div id="boss-health-fill" class="health-fill" style="width:100%; background:#e74c3c;"></div></div>
+
+        <div class="flex gap-3 mb-3">
+          <button id="attack-btn" class="btn btn-primary"><i class="fas fa-sword mr-2"></i>Attack</button>
+          <button id="special-btn" class="btn btn-primary"><i class="fas fa-bolt mr-2"></i>Special</button>
+          <button id="heal-btn" class="btn"><i class="fas fa-heart mr-2"></i>Heal</button>
+          <button id="reset-btn" class="btn ml-auto">Reset</button>
+        </div>
+
+        <div class="flex gap-4 text-sm">
+          <div>Phase: <strong id="boss-phase">1</strong></div>
+          <div>SP: <strong id="skill-points">10</strong></div>
+          <div>Status: <strong id="battle-status">Idle</strong></div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-2">Battle Log</h3>
+        <div id="battle-log" class="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js modules + loaders -->
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/loaders/DRACOLoader.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/controls/OrbitControls.js';
+
+    // Demo model URLs (Khronos glTF Sample Models raw GitHub)
+    const bossCandidates = [
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Fox/glTF-Binary/Fox.glb',
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb'
+    ];
+    const playerCandidates = [
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb',
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Soldier/glTF-Binary/Soldier.glb'
+    ];
+
+    // Basic scene setup
+    const container = document.getElementById('demo-arena');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x02040a);
+    scene.fog = new THREE.FogExp2(0x000000, 0.0009);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 3000);
+    camera.position.set(0, 45, 140);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, -4, 0);
+    controls.update();
+
+    // Lighting + arena
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x111122, 0.6); scene.add(hemi);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(60,120,40); scene.add(dir);
+
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(160, 64), new THREE.MeshStandardMaterial({ color:0x071219, roughness:0.95 }));
+    ground.rotation.x = -Math.PI/2; ground.position.y = -28; scene.add(ground);
+
+    // Effects group for particles and shock
+    const effects = new THREE.Group(); scene.add(effects);
+    const shockMat = new THREE.MeshBasicMaterial({ color: 0x88b7ff, transparent:true, opacity:0.0, side: THREE.DoubleSide });
+    const shock = new THREE.Mesh(new THREE.RingGeometry(36, 40, 64), shockMat);
+    shock.rotation.x = -Math.PI/2; shock.position.y = -6; scene.add(shock);
+
+    // GLTF loader setup
+    const draco = new DRACOLoader();
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(draco);
+
+    // Mixers & clock
+    const mixers = [];
+    const clock = new THREE.Clock();
+
+    // Game state
+    let maxBossHealth = 1200;
+    let bossHealth = maxBossHealth;
+    let bossAlive = true;
+    let skillPoints = 10;
+    let currentPhase = 1;
+
+    // DOM helpers
+    const logEl = document.getElementById('battle-log');
+    function log(msg){ const d = document.createElement('div'); d.textContent = '['+new Date().toLocaleTimeString()+'] '+msg; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; }
+
+    function updateUI(){
+      const pct = Math.max(0, Math.floor((bossHealth/maxBossHealth)*100));
+      document.getElementById('boss-health-fill').style.width = pct + '%';
+      document.getElementById('boss-health-text').textContent = `${bossHealth} / ${maxBossHealth}`;
+      const fill = document.getElementById('boss-health-fill');
+      if (pct > 70) fill.style.background = '#e74c3c';
+      else if (pct > 40) fill.style.background = '#f39c12';
+      else fill.style.background = '#c0392b';
+      document.getElementById('skill-points').textContent = skillPoints;
+    }
+
+    // Helper: attempt candidates sequentially
+    async function tryLoad(cands){
+      for (const url of cands){
+        try {
+          const gltf = await new Promise((res, rej) => {
+            loader.load(url, res, undefined, rej);
+          });
+          return { url, gltf };
+        } catch(err){
+          console.warn('load failed', url, err && err.message ? err.message : err);
+          continue;
+        }
+      }
+      return null;
+    }
+
+    // Build simple particle sprite
+    function makeParticleSprite(color=0xffcc66, size=12){
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(64,64,0,64,64,64);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.2, 'rgba(255,220,120,0.95)');
+      g.addColorStop(0.55, 'rgba(255,140,60,0.6)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,128,128);
+      const tex = new THREE.CanvasTexture(c);
+      const mat = new THREE.SpriteMaterial({ map: tex, color, transparent:true, blending:THREE.AdditiveBlending });
+      const s = new THREE.Sprite(mat); s.scale.set(size, size, 1);
+      return s;
+    }
+
+    function spawnBurst(power=1){
+      const count = Math.floor(12 * power);
+      for (let i=0;i<count;i++){
+        const sp = makeParticleSprite(0xffcc66, 8 + Math.random()*9*power);
+        sp.position.set((Math.random()-0.5)*18, (Math.random()*18)-2, (Math.random()-0.5)*18);
+        sp.userData = { vel: new THREE.Vector3((Math.random()-0.5)*80*power, 22 + Math.random()*60*power, (Math.random()-0.5)*80*power) };
+        effects.add(sp);
+        setTimeout(()=>{ try{ effects.remove(sp); sp.material.map.dispose(); sp.material.dispose(); }catch(e){} }, 1400 + Math.random()*600);
+      }
+    }
+
+    // placeholders for loaded nodes
+    let bossNode = null, bossMixer = null, bossActions = null;
+    let playerNode = null, playerMixer = null, playerActions = null;
+
+    (async () => {
+      // load boss
+      const bossRes = await tryLoad(bossCandidates);
+      if (bossRes && bossRes.gltf){
+        bossNode = bossRes.gltf.scene || bossRes.gltf.scenes[0];
+        bossNode.traverse(c => { if (c.isMesh){ c.castShadow = true; c.frustumCulled = false; } });
+        bossNode.scale.set(2.0,2.0,2.0);
+        bossNode.position.set(0, -6, -8);
+        scene.add(bossNode);
+        if (bossRes.gltf.animations && bossRes.gltf.animations.length){
+          bossMixer = new THREE.AnimationMixer(bossNode);
+          bossActions = bossRes.gltf.animations.map(a => bossMixer.clipAction(a));
+          bossActions[0].play();
+          mixers.push(bossMixer);
+        }
+        log('Loaded boss: ' + bossRes.url);
+      } else {
+        // fallback boss
+        const geo = new THREE.IcosahedronGeometry(30, 2);
+        const mat = new THREE.MeshStandardMaterial({ color:0x552222, roughness:0.6, metalness:0.2 });
+        bossNode = new THREE.Mesh(geo, mat);
+        bossNode.position.set(0,-6,-8);
+        scene.add(bossNode);
+        log('Using procedural boss (models not available).');
+      }
+
+      // load player (ally)
+      const playerRes = await tryLoad(playerCandidates);
+      if (playerRes && playerRes.gltf){
+        playerNode = playerRes.gltf.scene || playerRes.gltf.scenes[0];
+        playerNode.traverse(c => { if (c.isMesh){ c.castShadow = true; c.frustumCulled = false; } });
+        playerNode.scale.set(1.4,1.4,1.4);
+        playerNode.position.set(-44, -6, 18);
+        scene.add(playerNode);
+        if (playerRes.gltf.animations && playerRes.gltf.animations.length){
+          playerMixer = new THREE.AnimationMixer(playerNode);
+          playerActions = playerRes.gltf.animations.map(a => playerMixer.clipAction(a));
+          // try to find idle
+          const idle = playerActions.find(a => a._clip && /idle/i.test(a._clip.name)) || playerActions[0];
+          if (idle) idle.play();
+          mixers.push(playerMixer);
+        }
+        log('Loaded player: ' + playerRes.url);
+      } else {
+        // placeholder player
+        const pgeo = new THREE.BoxGeometry(12,24,8);
+        const pmat = new THREE.MeshStandardMaterial({ color:0x335566 });
+        playerNode = new THREE.Mesh(pgeo, pmat);
+        playerNode.position.set(-44,-6,18);
+        scene.add(playerNode);
+        log('Using procedural player (models not available).');
+      }
+    })();
+
+    // damage & visual effects
+    function applyDamage(dmg, special=false){
+      if (!bossAlive) return;
+      bossHealth = Math.max(0, bossHealth - dmg);
+      // quick scale pulse
+      if (bossNode){
+        const orig = bossNode.scale.clone();
+        bossNode.scale.multiplyScalar(1.06);
+        setTimeout(()=> bossNode.scale.copy(orig), 160);
+      }
+      spawnBurst(special?1.6:1.0);
+      shock.material.opacity = 1.0 * (special?1.4:1.0);
+      updateUI();
+      log((special ? '💥 SPECIAL' : '⚔️ Attack') + ` hit for ${dmg} dmg`);
+      if (bossHealth <= 0){
+        bossAlive = false;
+        onBossDefeated();
+      } else {
+        const pct = (bossHealth / maxBossHealth)*100;
+        const newPhase = (pct>70)?1:(pct>40)?2:3;
+        if (newPhase !== currentPhase){ currentPhase = newPhase; document.getElementById('boss-phase').textContent = currentPhase; log('⚠️ Boss changed phase to ' + currentPhase); }
+      }
+    }
+
+    function onBossDefeated(){
+      log('🏆 Boss defeated!');
+      document.getElementById('battle-status').textContent = 'Victory';
+      let s = 1.0;
+      const vanish = setInterval(()=>{
+        if (!bossNode){ clearInterval(vanish); return; }
+        bossNode.rotation.y += 0.6;
+        bossNode.scale.multiplyScalar(0.92);
+        s *= 0.92;
+        if (s < 0.03){ clearInterval(vanish); try{ scene.remove(bossNode); }catch(e){} }
+      }, 28);
+    }
+
+    // UI button hooks (no auth/server calls in demo)
+    document.getElementById('attack-btn').addEventListener('click', ()=>{
+      if (!bossAlive) return;
+      const damage = 45 + Math.floor(Math.random()*30);
+      applyDamage(damage, false);
+    });
+
+    document.getElementById('special-btn').addEventListener('click', ()=>{
+      if (!bossAlive) return;
+      if (skillPoints < 3){ log('❌ Not enough SP'); return; }
+      skillPoints -= 3;
+      const damage = 120 + Math.floor(Math.random()*60);
+      applyDamage(damage, true);
+      updateUI();
+    });
+
+    document.getElementById('heal-btn').addEventListener('click', ()=> {
+      log('❤️ Healed group for 80 HP (simulated).');
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', ()=> {
+      bossHealth = maxBossHealth; bossAlive = true; skillPoints = 10; currentPhase = 1;
+      document.getElementById('battle-status').textContent = 'Idle';
+      if (bossNode) bossNode.scale.set(1,1,1);
+      updateUI(); log('🔁 Battle reset');
+    });
+
+    // animate loop
+    function animate(){
+      const dt = clock.getDelta();
+      mixers.forEach(m=> m.update(dt));
+      // particle motion
+      effects.children.forEach(c=>{
+        if (c.userData && c.userData.vel) c.position.addScaledVector(c.userData.vel, dt);
+        if (c.material) c.material.opacity = Math.max(0, (c.material.opacity || 1) - dt*1.6);
+      });
+      shock.material.opacity = Math.max(0, shock.material.opacity - dt*0.9);
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // resize handler
+    window.addEventListener('resize', ()=>{
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    // initial UI state
+    updateUI();
+    log('Demo loaded — no authentication required. Models are fetched at runtime from Khronos glTF sample models.');
+  </script>
+</body>
+</html>

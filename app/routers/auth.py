@@ -348,6 +348,11 @@ async def register_user(
         logger.exception("Registration error")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# Add this to your auth.py file to test if the router is working
+@auth_router.get("/test-auth")
+async def auth_test():
+    return {"message": "Auth router is working"}
+
 @auth_router.post("/token", response_model=Token)
 async def login_for_access_token(
     response: Response,

@@ -1,19 +1,21 @@
-# Ignore everything
-*
-app/__pycache__/
-app/routers/__pycache__/
-# Keep these folders
-!alembic/
-app/
-!static/
-!tests/
+# # Ignore everything
+# *
+# app/__pycache__/
+# app/routers/__pycache__/
+# static/templates/libs
+# static/templates/utils
+# # Keep these folders
+# !alembic/
+# !app/
+# !static/
+# !tests/
 
-# Keep specific files
-!alembic.ini
-!app.db
-!your_database.db
+# # Keep specific files
+# !alembic.ini
+# !app.db
+# !your_database.db
 
-# Also keep the .gitignore file itself
-!.gitignore
-.env
-app/.env
+# # Also keep the .gitignore file itself
+# !.gitignore
+# # .env
+# # app/.env

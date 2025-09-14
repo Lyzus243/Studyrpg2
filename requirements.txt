@@ -18,3 +18,35 @@ uvicorn
 pandas
 schedule
 flask
+
+
+
+# S C:\Users\USER\Desktop\STUDYRPG2> & C:/Users/USER/AppData/Local/Programs/Python/Python313/python.exe c:/Users/USER/Desktop/STUDYRPG2/configuration.py
+# Environment Configuration Check:
+# ==================================================
+# ✅ ADMIN_USERNAME: Lyzus308
+# ✅ ADMIN_PASSWORD: ************ (hidden)
+# ✅ SECRET_KEY: 6ce8b40f93... (truncated)
+# ✅ ALGORITHM: HS256
+
+# Testing with admin username: Lyzus308
+# ==================================================
+# 1. Getting admin token...
+# ✅ Token obtained: eyJhbGciOiJIUzI1NiIs...
+
+# 2. Testing Bearer token authentication...
+# Debug endpoint: 404
+# ❌ Debug failed: {'detail': 'Not Found'}
+
+# 3. Testing main admin endpoints...
+# ❌ /admin/stats: 403 - Admin access only
+# ❌ /admin/users: 403 - Admin access only
+# ❌ /admin/shop: 403 - Admin access only
+# ❌ /admin/boss-battles: ERROR - Expecting value: line 2 column 9 (char 9)
+
+# 4. Testing cookie authentication...
+# ✅ /admin/dashboard: Cookie auth working
+# ✅ /admin/debug: Cookie auth working
+
+# ==================================================
+# Test completed!

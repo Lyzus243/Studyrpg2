@@ -1,6 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style id="discord-theme-override">
+:root{
+  --bg: #0b0d10;        /* primary background (near-black) */
+  --panel: #111216;     /* panels and cards */
+  --accent: #5865F2;    /* Discord blurple */
+  --text: #DCDDDE;      /* main text */
+  --muted: #72767D;     /* muted text */
+  --border: rgba(255,255,255,0.06);
+}
+
+html,body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+/* Make primary containers dark panels */
+header, nav, footer, .navbar, .header, .topbar, .app-bar, .panel, .card, .container, .box {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Links and accents */
+a, a:link, a:visited, .link, .accent {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+}
+
+/* Buttons and interactive elements */
+button, .btn, .button, input[type="button"], input[type="submit"] {
+  background: rgba(88,101,242,0.95) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset !important;
+  border-radius: 6px !important;
+}
+
+/* Outline / secondary buttons */
+button.secondary, .btn-secondary, .button.secondary {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Inputs */
+input, textarea, select, .form-control {
+  background: #0f1113 !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Cards and panels */
+.card, .panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+}
+
+/* Tables */
+table {
+  color: var(--text) !important;
+}
+table thead th {
+  color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Scrollbar (modern browsers) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 10px; }
+
+/* Utility muted text */
+.muted, .text-muted, small {
+  color: var(--muted) !important;
+}
+
+/* Ensure images that used light backgrounds remain visible */
+img {
+  filter: none !important;
+}
+
+/* Fallback stronger override for inline styles and components */
+[style*="background"], [style*="background-color"] {
+  background-color: unset !important;
+}
+
+</style>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyRPG Shop</title>
@@ -11,11 +104,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(
                 135deg,
-                #1a1a2e 0%,
-                #1e3c72 25%,
-                #e52d27 60%,
-                #ffb347 85%,
-                #6df0ff 100%
+                black 100%
+                
             );
             background-size: 400% 400%;
             animation: gradientPulse 15s ease infinite;

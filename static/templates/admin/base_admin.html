@@ -1,13 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style id="discord-theme-override">
+:root{
+  --bg: #0b0d10;        /* primary background (near-black) */
+  --panel: #111216;     /* panels and cards */
+  --accent: #5865F2;    /* Discord blurple */
+  --text: #DCDDDE;      /* main text */
+  --muted: #72767D;     /* muted text */
+  --border: rgba(255,255,255,0.06);
+}
+
+html,body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+/* Make primary containers dark panels */
+header, nav, footer, .navbar, .header, .topbar, .app-bar, .panel, .card, .container, .box {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Links and accents */
+a, a:link, a:visited, .link, .accent {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+}
+
+/* Buttons and interactive elements */
+button, .btn, .button, input[type="button"], input[type="submit"] {
+  background: rgba(88,101,242,0.95) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset !important;
+  border-radius: 6px !important;
+}
+
+/* Outline / secondary buttons */
+button.secondary, .btn-secondary, .button.secondary {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Inputs */
+input, textarea, select, .form-control {
+  background: #0f1113 !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Cards and panels */
+.card, .panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+}
+
+/* Tables */
+table {
+  color: var(--text) !important;
+}
+table thead th {
+  color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Scrollbar (modern browsers) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 10px; }
+
+/* Utility muted text */
+.muted, .text-muted, small {
+  color: var(--muted) !important;
+}
+
+/* Ensure images that used light backgrounds remain visible */
+img {
+  filter: none !important;
+}
+
+/* Fallback stronger override for inline styles and components */
+[style*="background"], [style*="background-color"] {
+  background-color: unset !important;
+}
+
+</style>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Admin Portal - StudyRPG</title>
-    
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+
     <style>
         /* ===== BASE STYLES ===== */
         * {
@@ -17,11 +110,11 @@
         body {
             background: linear-gradient(
                 135deg,
-                #1a1a2e 0%,       /* Deep night (mystery/quests) */
-                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-                #e52d27 60%,      /* Blood red (danger/battle) */
-                #ffb347 85%,      /* Ember glow (energy/climax) */
-                #6df0ff 100%      /* Cyber neon (tech/futurism) */
+                #1a1a2e 0%,
+                #1e3c72 25%,
+                #e52d27 60%,
+                #ffb347 85%,
+                #6df0ff 100%
             );
             background-size: 400% 400%;
             animation: gradientPulse 15s ease infinite;
@@ -357,7 +450,6 @@
             z-index: 1000;
             padding: 1rem;
         }
-
         .modal-rpg.active {
             display: flex;
         }
@@ -480,7 +572,7 @@
                 min-width: 300px;
             }
         }
-        
+
         /* ===== LOADING INDICATOR ===== */
         .loading {
             display: inline-block;
@@ -492,7 +584,7 @@
             animation: spin 1s ease-in-out infinite;
             margin-right: 10px;
         }
-        
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -529,13 +621,13 @@
         .boss-battle-table th {
             background: linear-gradient(to right, #8b0000, #b22222);
         }
-        
+
         /* ===== FEEDBACK TABLE ===== */
         .feedback-resolved {
             color: #6df0ff;
             font-weight: bold;
         }
-        
+
         .feedback-pending {
             color: #ffb347;
             font-weight: bold;
@@ -550,57 +642,54 @@
                 <i class="fas fa-dragon"></i>
                 <h1>Admin Portal</h1>
             </div>
-            
+
             <!-- Audio Element and Control -->
             <audio id="admin-audio" src="/static/sounds/battleThemeA.mp3" loop style="display: none;"></audio>
             <div class="audio-control" onclick="toggleAudio()">
                 <i class="fas fa-volume-up" id="audio-icon"></i>
                 <span id="audio-label">Sound On</span>
             </div>
-            
-            <img id="user-avatar" class="avatar-preview" src="https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Admin Avatar">
-            
-            <div id="user-name" class="username-label">
-                Lyzus
-            </div>
+
+            <img id="user-avatar" class="avatar-preview" src="https://tse4.mm.bing.net/th/id/OIP.l22qwDOBsQYRDJT5qn4ttwAAAA?w=270&h=380&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Admin Avatar"/>
+
+            <div id="user-name" class="username-label">Admin User</div>
 
             <!-- Admin Navigation -->
             <a href="#" class="sidebar-btn" id="shop-nav" onclick="showAdminSection('shop-section')">
                 <i class="fas fa-store"></i>
                 <span>Shop</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn" id="quests-nav" onclick="showAdminSection('quests-section')">
                 <i class="fas fa-tasks"></i>
                 <span>Quests</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn" id="users-nav" onclick="showAdminSection('users-section')">
                 <i class="fas fa-users"></i>
                 <span>Users</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn" id="groups-nav" onclick="showAdminSection('groups-section')">
                 <i class="fas fa-layer-group"></i>
                 <span>Groups</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn" id="boss-nav" onclick="showAdminSection('boss-section')">
                 <i class="fas fa-dragon"></i>
                 <span>Boss Battles</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn" id="broadcast-nav" onclick="showAdminSection('broadcast-section')">
                 <i class="fas fa-bullhorn"></i>
                 <span>Broadcast</span>
             </a>
-            
-            <!-- New Feedback Navigation -->
+
             <a href="#" class="sidebar-btn" id="feedback-nav" onclick="showAdminSection('feedback-section')">
                 <i class="fas fa-comments"></i>
                 <span>Feedback</span>
             </a>
-            
+
             <a href="#" class="sidebar-btn">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
@@ -650,7 +739,7 @@
                             <i class="fas fa-plus"></i> Add New Item
                         </button>
                     </div>
-                    
+
                     <table id="shop-items-table">
                         <thead>
                             <tr>
@@ -679,7 +768,7 @@
                             <i class="fas fa-plus"></i> Create Quest
                         </button>
                     </div>
-                    
+
                     <table id="quests-table">
                         <thead>
                             <tr>
@@ -708,7 +797,7 @@
                             <i class="fas fa-user-plus"></i> Add User
                         </button>
                     </div>
-                    
+
                     <table id="users-table">
                         <thead>
                             <tr>
@@ -738,7 +827,7 @@
                             <i class="fas fa-plus"></i> Create Group
                         </button>
                     </div>
-                    
+
                     <table id="groups-table">
                         <thead>
                             <tr>
@@ -758,7 +847,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Boss Battles Section -->
                 <div id="boss-section" class="admin-section" style="display:none;">
                     <div class="admin-content-header">
@@ -767,7 +856,7 @@
                             <i class="fas fa-plus"></i> Create Boss Battle
                         </button>
                     </div>
-                    
+
                     <table id="boss-table" class="boss-battle-table">
                         <thead>
                             <tr>
@@ -787,32 +876,32 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Broadcast Section -->
                 <div id="broadcast-section" class="admin-section" style="display:none;">
                     <div class="admin-content-header">
                         <h3>Broadcast Message</h3>
                     </div>
-                    
+
                     <div class="broadcast-form">
                         <div class="form-group">
                             <label for="broadcast-subject">Subject</label>
                             <input type="text" id="broadcast-subject" placeholder="Enter message subject">
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="broadcast-message">Message</label>
                             <textarea id="broadcast-message" rows="5" placeholder="Enter your message to all users"></textarea>
                         </div>
-                        
+
                         <button class="btn-primary" onclick="previewBroadcast()">
                             <i class="fas fa-eye"></i> Preview
                         </button>
-                        
+
                         <button class="btn-primary" onclick="sendBroadcast()" style="margin-left: 10px;">
                             <i class="fas fa-paper-plane"></i> Send to All Users
                         </button>
-                        
+
                         <div id="broadcast-preview" class="broadcast-preview" style="display: none;">
                             <h4>Preview:</h4>
                             <div class="broadcast-preview-content">
@@ -822,7 +911,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Feedback Section -->
                 <div id="feedback-section" class="admin-section" style="display:none;">
                     <div class="admin-content-header">
@@ -831,7 +920,7 @@
                             <i class="fas fa-sync"></i> Refresh
                         </button>
                     </div>
-                    
+
                     <table id="feedback-table">
                         <thead>
                             <tr>
@@ -918,7 +1007,7 @@
                 </div>
                 <div class="form-group">
                     <label for="quest-reward">Reward (XP)</label>
-                    <input type="number" id="quest-reward" name="reward_xp" min="0" value="100" required>
+                    <input type="number" id="quest-reward" name="reward_xp" min="0" value="0" required>
                 </div>
                 <div class="form-group">
                     <label for="quest-difficulty">Difficulty</label>
@@ -1008,7 +1097,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Boss Battle Modal -->
     <div id="boss-modal" class="modal-rpg">
         <div class="modal-content">
@@ -1071,15 +1160,18 @@
         // Initialize the admin interface
         document.addEventListener('DOMContentLoaded', function() {
             // Get token from localStorage
-            token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+            token = localStorage.getItem('admin_token');
             if (!token) {
                 window.location.href = '/admin/login';
                 return;
             }
-            
+
+            // Verify token is valid by making a test request
+            verifyToken();
+
             // Set active navigation
             setActiveNav();
-            
+
             // Load initial data
             loadShopItems();
             loadQuests();
@@ -1089,7 +1181,7 @@
             loadFeedback();
             loadCurrentAdmin();
             loadStats();
-            
+
             // Set up form handlers
             document.getElementById('shop-item-form').addEventListener('submit', handleShopItemSubmit);
             document.getElementById('quest-form').addEventListener('submit', handleQuestSubmit);
@@ -1097,6 +1189,32 @@
             document.getElementById('group-form').addEventListener('submit', handleGroupSubmit);
             document.getElementById('boss-form').addEventListener('submit', handleBossSubmit);
         });
+
+        // Verify token
+        async function verifyToken() {
+            try {
+                const response = await fetch('/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    // Token is invalid, redirect to login
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '/admin/login';
+                    return;
+                }
+
+                const user = await response.json();
+                if (user.username !== 'admin') {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '/admin/login';
+                }
+            } catch (error) {
+                console.error('Token verification failed:', error);
+                localStorage.removeItem('admin_token');
+                window.location.href = '/admin/login';
+            }
+        }
 
         // Set active navigation
         function setActiveNav() {
@@ -1115,10 +1233,11 @@
             document.querySelectorAll('.admin-section').forEach(section => {
                 section.style.display = 'none';
             });
-            
+
             // Show selected section
-            document.getElementById(sectionId).style.display = 'block';
-            
+            const el = document.getElementById(sectionId);
+            if (el) el.style.display = 'block';
+
             // Update page title
             const titleMap = {
                 'shop-section': 'Shop Management',
@@ -1129,7 +1248,7 @@
                 'broadcast-section': 'Broadcast Center',
                 'feedback-section': 'User Feedback'
             };
-            document.getElementById('page-title').textContent = titleMap[sectionId];
+            document.getElementById('page-title').textContent = titleMap[sectionId] || 'Admin Dashboard';
         }
 
         // Open modals
@@ -1213,7 +1332,7 @@
             }
             document.getElementById('group-modal').classList.add('active');
         }
-        
+
         function openBossBattleModal(bossId = null) {
             if (bossId) {
                 const boss = bossBattles.find(b => b.id === bossId);
@@ -1242,7 +1361,8 @@
 
         // Close modals
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+            const el = document.getElementById(modalId);
+            if (el) el.classList.remove('active');
         }
 
         // Audio control function
@@ -1250,7 +1370,9 @@
             const audio = document.getElementById('admin-audio');
             const icon = document.getElementById('audio-icon');
             const label = document.getElementById('audio-label');
-            
+
+            if (!audio) return;
+
             if (audio.paused) {
                 audio.play()
                     .then(() => {
@@ -1271,14 +1393,14 @@
                 const response = await fetch('/auth/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (!response.ok) throw new Error('Failed to load admin info');
-                
+
                 const user = await response.json();
                 currentUser = user;
-                
+
                 // Update UI
-                document.getElementById('user-name').textContent = currentUser.username;
+                document.getElementById('user-name').textContent = currentUser.username || 'Admin User';
                 if (currentUser.avatar_url) {
                     document.getElementById('user-avatar').src = currentUser.avatar_url;
                 }
@@ -1286,16 +1408,16 @@
                 console.error('Error loading admin info:', error);
             }
         }
-        
+
         // Load stats
         async function loadStats() {
             try {
                 const response = await fetch('/admin/stats', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (!response.ok) throw new Error('Failed to load stats');
-                
+
                 const stats = await response.json();
                 document.getElementById('user-count').textContent = `${stats.users} Users`;
                 document.getElementById('quest-count').textContent = `${stats.quests} Quests`;
@@ -1311,11 +1433,22 @@
         async function loadShopItems() {
             try {
                 const response = await fetch('/admin/shop', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load shop items');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Token expired or invalid
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load shop items');
+                }
+
                 shopItems = await response.json();
                 renderShopItems();
             } catch (error) {
@@ -1333,11 +1466,21 @@
         async function loadQuests() {
             try {
                 const response = await fetch('/admin/quests', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load quests');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load quests');
+                }
+
                 quests = await response.json();
                 renderQuests();
             } catch (error) {
@@ -1355,11 +1498,21 @@
         async function loadUsers() {
             try {
                 const response = await fetch('/admin/users', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load users');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load users');
+                }
+
                 users = await response.json();
                 renderUsers();
             } catch (error) {
@@ -1377,11 +1530,21 @@
         async function loadGroups() {
             try {
                 const response = await fetch('/admin/groups', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load groups');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load groups');
+                }
+
                 groups = await response.json();
                 renderGroups();
             } catch (error) {
@@ -1395,15 +1558,25 @@
                 `;
             }
         }
-        
+
         async function loadBossBattles() {
             try {
                 const response = await fetch('/admin/boss-battles', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load boss battles');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load boss battles');
+                }
+
                 bossBattles = await response.json();
                 renderBossBattles();
             } catch (error) {
@@ -1417,15 +1590,25 @@
                 `;
             }
         }
-        
+
         async function loadFeedback() {
             try {
                 const response = await fetch('/admin/feedback', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to load feedback');
-                
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        window.location.href = '/admin/login';
+                        return;
+                    }
+                    throw new Error('Failed to load feedback');
+                }
+
                 feedbackList = await response.json();
                 renderFeedback();
             } catch (error) {
@@ -1444,7 +1627,7 @@
         function renderShopItems() {
             const tableBody = document.getElementById('shop-items-body');
             tableBody.innerHTML = '';
-            
+
             shopItems.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1463,12 +1646,20 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (shopItems.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;">No shop items</td>
+                    </tr>
+                `;
+            }
         }
 
         function renderQuests() {
             const tableBody = document.getElementById('quests-body');
             tableBody.innerHTML = '';
-            
+
             quests.forEach(quest => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1487,17 +1678,25 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (quests.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;">No quests</td>
+                    </tr>
+                `;
+            }
         }
 
         function renderUsers() {
             const tableBody = document.getElementById('users-body');
             tableBody.innerHTML = '';
-            
+
             users.forEach(user => {
-                const status = user.is_banned ? 
-                    '<span style="color:#e52d27">Banned</span>' : 
+                const status = user.is_banned ?
+                    '<span style="color:#e52d27">Banned</span>' :
                     (user.is_active ? '<span style="color:#6df0ff">Active</span>' : '<span style="color:#ffb347">Inactive</span>');
-                
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.username}</td>
@@ -1522,16 +1721,24 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center;">No users</td>
+                    </tr>
+                `;
+            }
         }
 
         function renderGroups() {
             const tableBody = document.getElementById('groups-body');
             tableBody.innerHTML = '';
-            
+
             groups.forEach(group => {
                 const memberCount = group.members ? group.members.length : 0;
                 const questCount = group.quests ? group.quests.length : 0;
-                
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${group.name}</td>
@@ -1549,12 +1756,20 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (groups.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;">No groups</td>
+                    </tr>
+                `;
+            }
         }
-        
+
         function renderBossBattles() {
             const tableBody = document.getElementById('boss-body');
             tableBody.innerHTML = '';
-            
+
             bossBattles.forEach(boss => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1576,12 +1791,20 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (bossBattles.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center;">No boss battles</td>
+                    </tr>
+                `;
+            }
         }
-        
+
         function renderFeedback() {
             const tableBody = document.getElementById('feedback-body');
             tableBody.innerHTML = '';
-            
+
             feedbackList.forEach(feedback => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1606,6 +1829,14 @@
                 `;
                 tableBody.appendChild(row);
             });
+
+            if (feedbackList.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center;">No feedback</td>
+                    </tr>
+                `;
+            }
         }
 
         // Form handlers
@@ -1765,7 +1996,7 @@
                 alert(`Error saving group: ${error.message}`);
             }
         }
-        
+
         async function handleBossSubmit(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1807,116 +2038,129 @@
 
         // Delete functions
         async function deleteShopItem(itemId) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                try {
-                    const response = await fetch(`/admin/shop/${itemId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to delete item');
+            if (!confirm('Are you sure you want to delete this item?')) return;
+            try {
+                const response = await fetch(`/admin/shop/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadShopItems();
-                } catch (error) {
-                    console.error('Error deleting item:', error);
-                    alert(`Error deleting item: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to delete item');
                 }
+
+                loadShopItems();
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                alert(`Error deleting item: ${error.message}`);
             }
         }
 
         async function deleteQuest(questId) {
-            if (confirm('Are you sure you want to delete this quest?')) {
-                try {
-                    const response = await fetch(`/admin/quests/${questId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to delete quest');
+            if (!confirm('Are you sure you want to delete this quest?')) return;
+            try {
+                const response = await fetch(`/admin/quests/${questId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadQuests();
-                } catch (error) {
-                    console.error('Error deleting quest:', error);
-                    alert(`Error deleting quest: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to delete quest');
                 }
+
+                loadQuests();
+            } catch (error) {
+                console.error('Error deleting quest:', error);
+                alert(`Error deleting quest: ${error.message}`);
             }
         }
 
         async function banUser(userId) {
-            if (confirm('Are you sure you want to ban this user?')) {
-                try {
-                    const response = await fetch(`/admin/users/${userId}/ban`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to ban user');
+            if (!confirm('Are you sure you want to ban this user?')) return;
+            try {
+                const response = await fetch(`/admin/users/${userId}/ban`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadUsers();
-                } catch (error) {
-                    console.error('Error banning user:', error);
-                    alert(`Error banning user: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to ban user');
                 }
+
+                loadUsers();
+            } catch (error) {
+                console.error('Error banning user:', error);
+                alert(`Error banning user: ${error.message}`);
             }
         }
 
         async function unbanUser(userId) {
-            if (confirm('Are you sure you want to unban this user?')) {
-                try {
-                    const response = await fetch(`/admin/users/${userId}/unban`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to unban user');
+            if (!confirm('Are you sure you want to unban this user?')) return;
+            try {
+                const response = await fetch(`/admin/users/${userId}/unban`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadUsers();
-                } catch (error) {
-                    console.error('Error unbanning user:', error);
-                    alert(`Error unbanning user: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to unban user');
                 }
+
+                loadUsers();
+            } catch (error) {
+                console.error('Error unbanning user:', error);
+                alert(`Error unbanning user: ${error.message}`);
             }
         }
 
         async function deleteGroup(groupId) {
-            if (confirm('Are you sure you want to delete this group?')) {
-                try {
-                    const response = await fetch(`/admin/groups/${groupId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to delete group');
+            if (!confirm('Are you sure you want to delete this group?')) return;
+            try {
+                const response = await fetch(`/admin/groups/${groupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadGroups();
-                } catch (error) {
-                    console.error('Error deleting group:', error);
-                    alert(`Error deleting group: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to delete group');
                 }
+
+                loadGroups();
+            } catch (error) {
+                console.error('Error deleting group:', error);
+                alert(`Error deleting group: ${error.message}`);
             }
         }
-        
+
         // Boss battle actions
         async function toggleBossStatus(bossId) {
             try {
                 const response = await fetch(`/admin/boss-battles/${bossId}/activate`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
 
                 if (!response.ok) {
@@ -1932,64 +2176,71 @@
         }
 
         async function deleteBossBattle(bossId) {
-            if (confirm('Are you sure you want to delete this boss battle?')) {
-                try {
-                    const response = await fetch(`/admin/boss-battles/${bossId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to delete boss battle');
+            if (!confirm('Are you sure you want to delete this boss battle?')) return;
+            try {
+                const response = await fetch(`/admin/boss-battles/${bossId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
 
-                    loadBossBattles();
-                } catch (error) {
-                    console.error('Error deleting boss battle:', error);
-                    alert(`Error deleting boss battle: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to delete boss battle');
                 }
+
+                loadBossBattles();
+            } catch (error) {
+                console.error('Error deleting boss battle:', error);
+                alert(`Error deleting boss battle: ${error.message}`);
             }
         }
-        
+
         // Feedback actions
         async function resolveFeedback(feedbackId) {
             try {
                 const response = await fetch(`/admin/feedback/${feedbackId}/resolve`, {
                     method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.detail || 'Failed to resolve feedback');
                 }
-                
+
                 loadFeedback();
             } catch (error) {
                 console.error('Error resolving feedback:', error);
                 alert(`Error resolving feedback: ${error.message}`);
             }
         }
-        
+
         async function deleteFeedback(feedbackId) {
-            if (confirm('Are you sure you want to delete this feedback?')) {
-                try {
-                    const response = await fetch(`/admin/feedback/${feedbackId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Failed to delete feedback');
+            if (!confirm('Are you sure you want to delete this feedback?')) return;
+            try {
+                const response = await fetch(`/admin/feedback/${feedbackId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
-                    
-                    loadFeedback();
-                } catch (error) {
-                    console.error('Error deleting feedback:', error);
-                    alert(`Error deleting feedback: ${error.message}`);
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to delete feedback');
                 }
+
+                loadFeedback();
+            } catch (error) {
+                console.error('Error deleting feedback:', error);
+                alert(`Error deleting feedback: ${error.message}`);
             }
         }
 
@@ -1997,12 +2248,12 @@
         function previewBroadcast() {
             const subject = document.getElementById('broadcast-subject').value;
             const message = document.getElementById('broadcast-message').value;
-            
+
             if (!subject || !message) {
                 alert('Please fill in both subject and message fields');
                 return;
             }
-            
+
             document.getElementById('preview-subject').textContent = subject;
             document.getElementById('preview-message').textContent = message;
             document.getElementById('broadcast-preview').style.display = 'block';
@@ -2011,16 +2262,16 @@
         async function sendBroadcast() {
             const subject = document.getElementById('broadcast-subject').value;
             const message = document.getElementById('broadcast-message').value;
-            
+
             if (!subject || !message) {
                 alert('Please fill in both subject and message fields');
                 return;
             }
-            
+
             if (!confirm('Are you sure you want to send this message to ALL users?')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch('/admin/broadcast', {
                     method: 'POST',
@@ -2030,12 +2281,12 @@
                     },
                     body: JSON.stringify({ subject, message })
                 });
-                
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.detail || 'Failed to send broadcast');
                 }
-                
+
                 const result = await response.json();
                 alert(`Broadcast sent successfully to ${result.success_count} of ${result.total_users} users!`);
                 document.getElementById('broadcast-subject').value = '';
@@ -2050,7 +2301,6 @@
         // Logout
         function logout() {
             localStorage.removeItem('admin_token');
-            sessionStorage.removeItem('admin_token');
             window.location.href = '/admin/login';
         }
 
