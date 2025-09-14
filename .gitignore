@@ -1,9 +1,7 @@
 # Ignore everything
 *
 app/__pycache__/
-app/routers/__pycache__/
-static/templates/libs
-static/templates/utils
+
 # Keep these folders
 !alembic/
 !app/
@@ -19,3 +17,4 @@ static/templates/utils
 !.gitignore
 .env
 app/.env
+models/t5-small/model.safetensors
