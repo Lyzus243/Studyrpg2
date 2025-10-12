@@ -65,9 +65,15 @@ app = FastAPI(
 )
 
 # Middleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -100,10 +106,10 @@ manager = ConnectionManager()
 # Update the admin_only function:
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")
 
-async def admin_only(current_user: models.User = Depends(get_current_user)):
-    if current_user.username != ADMIN_USERNAME:
-        raise HTTPException(status_code=403, detail="Admin access only")
-    return current_user
+# async def admin_only(current_user: models.User = Depends(get_current_user)):
+#     if current_user.username != ADMIN_USERNAME:
+#         raise HTTPException(status_code=403, detail="Admin access only")
+#     return current_user
 
 # ------------------------ Routers ------------------------
 app.include_router(auth.auth_router, prefix="/auth")
@@ -120,11 +126,12 @@ app.include_router(ai.ai_router, prefix="/ai")
 app.include_router(analytics.analytics_router, prefix="/analytics")
 app.include_router(leveling_router.leveling_router, prefix="/leveling")
 
+
+# Keep admin_only for API routes
+app.include_router(admin.router, prefix="", tags=["Admin"])
 # Remove admin_only dependency from UI routes
 app.include_router(admin_ui.admin_ui, tags=["Admin UI"])
 
-# Keep admin_only for API routes
-app.include_router(admin.router, prefix="/admin", tags=["Admin"], dependencies=[Depends(admin_only)])
 
 # Update the get_authenticated_user function in main.py
 async def get_authenticated_user(request: Request, db: AsyncSession = Depends(get_async_session)) -> models.User:

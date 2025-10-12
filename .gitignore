@@ -11,11 +11,12 @@ app/__pycache__/
 # Keep specific files
 !alembic.ini
 !app.db
+!app/admin_auth.py
 !your_database.db
 
 # Also keep the .gitignore file itself
 !.gitignore
-.env
+# .env
 app/.env
 models/t5-small/model.safetensors
 models/t5-small/model.safetensors

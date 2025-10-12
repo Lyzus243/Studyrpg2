@@ -17,19 +17,21 @@ import os
 import logging
 from dotenv import load_dotenv
 from jose import JWTError, jwt
+# In admin.py, replace the duplicate functions with:
+from app.admin_auth import verify_admin_token, require_admin
 
+# Remove the local definitions of these functions
 logger = logging.getLogger(__name__)
 load_dotenv()
 # Use HTTPBearer instead of OAuth2PasswordBearer for API endpoints
 security = HTTPBearer()
-# Use prefix for all admin routes
+# Use prefix for all admin routes - REMOVED PREFIX since it's added in main.py
 router = APIRouter(prefix="", tags=["admin"])
 
 # Admin credentials from .env
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin1234567")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")  # ✅ ADD DEFAULT
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin1234567")  # ✅ ADD DEFAULT
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "pumlezerti@necub.com")
-
 # JWT settings (should match your auth settings)
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGO", "HS256")
@@ -103,71 +105,19 @@ class FeedbackCreate(FeedbackBase):
 class FeedbackUpdate(BaseModel):
     resolved: Optional[bool] = None
 
-def require_admin(user: User):
-    """Check if user is admin based on .env credentials"""
-    if not user:
-        logger.warning("No user provided to admin check")
-        raise HTTPException(status_code=403, detail="Admin access only")
-    
-    # Check if username matches admin username from .env (case-insensitive)
-    if user.username.lower() != ADMIN_USERNAME.lower():
-        logger.warning(f"Admin access denied for user: {user.username} (expected: {ADMIN_USERNAME})")
-        raise HTTPException(status_code=403, detail="Admin access only")
-    
-    logger.info(f"✅ Admin access granted for user: {user.username}")
-    return True
 
-async def verify_admin_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_async_session)
-):
-    """
-    Simple admin token verifier that only checks username against ADMIN_USERNAME
-    """
-    if not credentials:
-        logger.info("No credentials received")
-        raise HTTPException(status_code=401, detail="Not authenticated")
+@router.get("/admin/test-simple")
+async def test_simple():
+    """Test endpoint without auth"""
+    return {"message": "This works without auth"}
 
-    token = credentials.credentials
-    if not token:
-        logger.info("No token in credentials")
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    # Decode and verify token
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if os.getenv("DEBUG", "false").lower() == "true":
-            logger.debug("Decoded JWT payload: %s", payload)
-    except JWTError as e:
-        logger.warning("JWT decode failed: %s", e)
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-
-    # Get the subject (username) from the token
-    subject = payload.get("sub")
-    if not subject:
-        logger.warning("No sub found in token payload: %s", payload)
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-
-    # Query DB for user by username (case-insensitive)
-    try:
-        result = await db.execute(select(User).where(func.lower(User.username) == str(subject).lower()))
-        user = result.scalar_one_or_none()
-    except Exception as e:
-        logger.error("DB lookup error in verify_admin_token: %s", e)
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-    if not user:
-        logger.warning("Token subject %s has no matching DB user", subject)
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-
-    # Only check if username matches ADMIN_USERNAME (case-insensitive)
-    if user.username.lower() != ADMIN_USERNAME.lower():
-        logger.warning("User %s is not admin (expected: %s)", user.username, ADMIN_USERNAME)
-        raise HTTPException(status_code=403, detail="Admin access only")
-
-    logger.info("Admin verified by username match: %s", user.username)
-    return user
-
+@router.get("/admin/test-with-auth")
+async def test_with_auth(current_user: User = Depends(verify_admin_token)):
+    """Test endpoint with auth"""
+    return {
+        "message": "This works WITH auth",
+        "user": current_user.username
+    }
 
 @router.get("/debug/env-check")
 async def debug_env_check():
@@ -181,7 +131,7 @@ async def debug_env_check():
 # =========================================================
 # SHOP MANAGEMENT
 # =========================================================
-@router.get("/shop")
+@router.get("/admin/shop")
 async def get_shop_items(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -189,7 +139,7 @@ async def get_shop_items(
     result = await db.execute(select(ShopItem))
     return result.scalars().all()
 
-@router.post("/shop", response_model=ShopItemCreate)
+@router.post("/admin/shop", response_model=ShopItemCreate)
 async def add_shop_item(
     item: ShopItemCreate,
     db: AsyncSession = Depends(get_async_session),
@@ -201,7 +151,7 @@ async def add_shop_item(
     await db.refresh(shop_item)
     return shop_item
 
-@router.put("/shop/{item_id}")
+@router.put("/admin/shop/{item_id}")
 async def update_shop_item(
     item_id: int,
     item: ShopItemUpdate,
@@ -218,7 +168,7 @@ async def update_shop_item(
     await db.refresh(shop_item)
     return shop_item
 
-@router.delete("/shop/{item_id}")
+@router.delete("/admin/shop/{item_id}")
 async def delete_shop_item(
     item_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -235,7 +185,7 @@ async def delete_shop_item(
 # =========================================================
 # QUEST MANAGEMENT
 # =========================================================
-@router.get("/quests")
+@router.get("/admin/quests")
 async def get_quests(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -243,7 +193,7 @@ async def get_quests(
     result = await db.execute(select(Quest))
     return result.scalars().all()
 
-@router.post("/quests", response_model=QuestCreate)
+@router.post("/admin/quests", response_model=QuestCreate)
 async def create_quest(
     quest: QuestCreate,
     db: AsyncSession = Depends(get_async_session),
@@ -255,7 +205,7 @@ async def create_quest(
     await db.refresh(quest_obj)
     return quest_obj
 
-@router.put("/quests/{quest_id}")
+@router.put("/admin/quests/{quest_id}")
 async def update_quest(
     quest_id: int,
     quest: QuestUpdate,
@@ -272,7 +222,7 @@ async def update_quest(
     await db.refresh(quest_obj)
     return quest_obj
 
-@router.delete("/quests/{quest_id}")
+@router.delete("/admin/quests/{quest_id}")
 async def delete_quest(
     quest_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -286,7 +236,7 @@ async def delete_quest(
     await db.commit()
     return {"detail": "Quest deleted"}
 
-@router.post("/quests/{quest_id}/assign/{group_id}")
+@router.post("/admin/quests/{quest_id}/assign/{group_id}")
 async def assign_quest_to_group(
     quest_id: int,
     group_id: int,
@@ -309,7 +259,7 @@ async def assign_quest_to_group(
 # =========================================================
 # USER MANAGEMENT
 # =========================================================
-@router.get("/users")
+@router.get("/admin/users")
 async def get_users(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -317,7 +267,7 @@ async def get_users(
     result = await db.execute(select(User))
     return result.scalars().all()
 
-@router.put("/users/{user_id}/role")
+@router.put("/admin/users/{user_id}/role")
 async def update_user_role(
     user_id: int,
     role_update: UserRoleUpdate,
@@ -332,7 +282,7 @@ async def update_user_role(
     await db.commit()
     return {"detail": f"User role updated to {role_update.role}"}
 
-@router.put("/users/{user_id}/xp")
+@router.put("/admin/users/{user_id}/xp")
 async def update_user_xp(
     user_id: int,
     xp_update: XPUpdate,
@@ -347,7 +297,7 @@ async def update_user_xp(
     await db.commit()
     return {"detail": f"User XP updated by {xp_update.xp} points"}
 
-@router.put("/users/{user_id}/ban")
+@router.put("/admin/users/{user_id}/ban")
 async def ban_user(
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -361,7 +311,7 @@ async def ban_user(
     await db.commit()
     return {"detail": "User banned"}
 
-@router.put("/users/{user_id}/unban")
+@router.put("/admin/users/{user_id}/unban")
 async def unban_user(
     user_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -375,7 +325,7 @@ async def unban_user(
     await db.commit()
     return {"detail": "User unbanned"}
 
-@router.put("/users/{user_id}/reset-password")
+@router.put("/admin/users/{user_id}/reset-password")
 async def reset_password(
     user_id: int,
     new_password: PasswordReset,
@@ -393,7 +343,7 @@ async def reset_password(
 # =========================================================
 # GROUP MANAGEMENT
 # =========================================================
-@router.get("/groups")
+@router.get("/admin/groups")
 async def get_groups(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -401,12 +351,13 @@ async def get_groups(
     result = await db.execute(
         select(Group).options(
             selectinload(Group.members),
-            selectinload(Group.quests)
+            # select(Group)
+
         )
     )
     return result.scalars().all()
 
-@router.put("/groups/{group_id}/approve/{user_id}")
+@router.put("/admin/groups/{group_id}/approve/{user_id}")
 async def approve_group_member(
     group_id: int,
     user_id: int,
@@ -423,7 +374,7 @@ async def approve_group_member(
     await db.commit()
     return {"detail": "User approved and added to group"}
 
-@router.put("/groups/{group_id}/remove/{user_id}")
+@router.put("/admin/groups/{group_id}/remove/{user_id}")
 async def remove_group_member(
     group_id: int,
     user_id: int,
@@ -444,7 +395,7 @@ async def remove_group_member(
 # =========================================================
 # BOSS BATTLE MANAGEMENT
 # =========================================================
-@router.get("/boss-battles")
+@router.get("/admin/boss-battles")
 async def get_boss_battles(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -452,7 +403,7 @@ async def get_boss_battles(
     result = await db.execute(select(BossBattle))
     return result.scalars().all()
 
-@router.post("/boss-battles")
+@router.post("/admin/boss-battles")
 async def create_boss_battle(
     boss_battle: BossBattleCreate,
     db: AsyncSession = Depends(get_async_session),
@@ -465,12 +416,11 @@ async def create_boss_battle(
     return boss_obj
 
 # Add this to your admin.py file to test if the router is working
-@router.get("/test-admin")
+@router.get("/admin/test-admin")
 async def admin_test():
     return {"message": "Admin router is working"}
 
-
-@router.put("/boss-battles/{boss_id}")
+@router.put("/admin/boss-battles/{boss_id}")
 async def update_boss_battle(
     boss_id: int,
     boss_battle: BossBattleUpdate,
@@ -487,7 +437,7 @@ async def update_boss_battle(
     await db.refresh(boss_obj)
     return boss_obj
 
-@router.delete("/boss-battles/{boss_id}")
+@router.delete("/admin/boss-battles/{boss_id}")
 async def delete_boss_battle(
     boss_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -501,7 +451,7 @@ async def delete_boss_battle(
     await db.commit()
     return {"detail": "Boss battle deleted"}
 
-@router.post("/boss-battles/{boss_id}/activate")
+@router.post("/admin/boss-battles/{boss_id}/activate")
 async def activate_boss_battle(
     boss_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -525,7 +475,7 @@ async def activate_boss_battle(
 # =========================================================
 # BROADCAST MANAGEMENT
 # =========================================================
-@router.post("/broadcast")
+@router.post("/admin/broadcast")
 async def broadcast_message(
     data: dict,
     db: AsyncSession = Depends(get_async_session),
@@ -593,7 +543,7 @@ async def broadcast_message(
     
     return response_data
 
-@router.post("/broadcast/test")
+@router.post("/admin/broadcast/test")
 async def test_broadcast(
     data: dict,
     db: AsyncSession = Depends(get_async_session),
@@ -618,7 +568,7 @@ async def test_broadcast(
         logger.error(f"Test broadcast failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Test broadcast failed: {str(e)}")
 
-@router.get("/broadcast/test-smtp")
+@router.get("/admin/broadcast/test-smtp")
 async def test_smtp_connection_endpoint(
     current_user: User = Depends(verify_admin_token)
 ):
@@ -638,7 +588,7 @@ async def test_smtp_connection_endpoint(
 # =========================================================
 # FEEDBACK MANAGEMENT
 # =========================================================
-@router.get("/feedback")
+@router.get("/admin/feedback")
 async def get_feedback_list(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -646,7 +596,7 @@ async def get_feedback_list(
     result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
     return result.scalars().all()
 
-@router.put("/feedback/{feedback_id}/resolve")
+@router.put("/admin/feedback/{feedback_id}/resolve")
 async def resolve_feedback(
     feedback_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -660,7 +610,7 @@ async def resolve_feedback(
     await db.commit()
     return {"detail": "Feedback resolved"}
 
-@router.delete("/feedback/{feedback_id}")
+@router.delete("/admin/feedback/{feedback_id}")
 async def delete_feedback(
     feedback_id: int,
     db: AsyncSession = Depends(get_async_session),
@@ -677,7 +627,7 @@ async def delete_feedback(
 # =========================================================
 # ANALYTICS & STATS
 # =========================================================
-@router.get("/stats")
+@router.get("/admin/stats")
 async def get_admin_stats(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(verify_admin_token)
@@ -708,7 +658,7 @@ async def get_admin_stats(
 # =========================================================
 # ADMIN DEBUG INFO
 # =========================================================
-@router.get("/debug/admin-info")
+@router.get("/admin/debug/admin-info")
 async def get_admin_debug_info(
     current_user: User = Depends(verify_admin_token)
 ):
@@ -726,7 +676,7 @@ async def get_admin_debug_info(
 # =========================================================
 # DEBUG ENDPOINTS (temporary)
 # =========================================================
-@router.get("/debug/auth-test")
+@router.get("/admin/debug/auth-test")
 async def debug_auth_test(
     current_user: User = Depends(verify_admin_token)
 ):
@@ -738,7 +688,7 @@ async def debug_auth_test(
         "env_admin": ADMIN_USERNAME
     }
 
-@router.get("/debug/env-check")
+@router.get("/admin/debug/env-check")
 async def debug_env_check():
     """Debug endpoint to check environment variables (no auth required)"""
     return {

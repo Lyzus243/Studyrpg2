@@ -1155,20 +1155,49 @@ img {
         let bossBattles = [];
         let feedbackList = [];
         let currentUser = null;
-        let token = null;
+
+        // Enhanced fetch wrapper with automatic credentials and error handling
+        async function adminFetch(url, options = {}) {
+            const config = {
+                credentials: 'same-origin', // ✅ REQUIRED - sends cookies with requests
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers,
+                },
+            };
+
+            try {
+                const response = await fetch(url, config);
+                
+                // Handle 401 Unauthorized - redirect to login
+                if (response.status === 401) {
+                    console.warn('Authentication failed, redirecting to login');
+                    window.location.href = '/admin/login';
+                    throw new Error('Unauthorized - redirecting to login');
+                }
+                
+                // Handle other error statuses
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                return response;
+            } catch (error) {
+                console.error(`Fetch error for ${url}:`, error);
+                if (error.message.includes('Unauthorized')) {
+                    // Already handled redirect above
+                    throw error;
+                }
+                throw new Error(`Network error: ${error.message}`);
+            }
+        }
 
         // Initialize the admin interface
         document.addEventListener('DOMContentLoaded', function() {
-            // Get token from localStorage
-            token = localStorage.getItem('admin_token');
-            if (!token) {
-                window.location.href = '/admin/login';
-                return;
-            }
-
-            // Verify token is valid by making a test request
-            verifyToken();
-
+            console.log('Admin dashboard initializing...');
+            
             // Set active navigation
             setActiveNav();
 
@@ -1188,38 +1217,25 @@ img {
             document.getElementById('user-form').addEventListener('submit', handleUserSubmit);
             document.getElementById('group-form').addEventListener('submit', handleGroupSubmit);
             document.getElementById('boss-form').addEventListener('submit', handleBossSubmit);
+            
+            console.log('Admin dashboard initialized');
         });
-
-        // Verify token
-        async function verifyToken() {
-            try {
-                const response = await fetch('/auth/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    // Token is invalid, redirect to login
-                    localStorage.removeItem('admin_token');
-                    window.location.href = '/admin/login';
-                    return;
-                }
-
-                const user = await response.json();
-                if (user.username !== 'admin') {
-                    localStorage.removeItem('admin_token');
-                    window.location.href = '/admin/login';
-                }
-            } catch (error) {
-                console.error('Token verification failed:', error);
-                localStorage.removeItem('admin_token');
-                window.location.href = '/admin/login';
-            }
-        }
 
         // Set active navigation
         function setActiveNav() {
             const navLinks = document.querySelectorAll('.sidebar-btn');
             navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // Remove active class from all
+                    navLinks.forEach(l => {
+                        l.style.background = 'rgba(42, 82, 152, 0.8)';
+                        l.style.borderLeft = '4px solid #ffb347';
+                    });
+                    // Add active class to clicked
+                    this.style.background = 'linear-gradient(to right, #e52d27, #ff6b35)';
+                    this.style.borderLeft = '4px solid #6df0ff';
+                });
+                
                 if (link.getAttribute('id') === 'shop-nav') {
                     link.style.background = 'linear-gradient(to right, #e52d27, #ff6b35)';
                     link.style.borderLeft = '4px solid #6df0ff';
@@ -1249,9 +1265,17 @@ img {
                 'feedback-section': 'User Feedback'
             };
             document.getElementById('page-title').textContent = titleMap[sectionId] || 'Admin Dashboard';
+            
+            // Load data for the section if needed
+            if (sectionId === 'shop-section') loadShopItems();
+            if (sectionId === 'quests-section') loadQuests();
+            if (sectionId === 'users-section') loadUsers();
+            if (sectionId === 'groups-section') loadGroups();
+            if (sectionId === 'boss-section') loadBossBattles();
+            if (sectionId === 'feedback-section') loadFeedback();
         }
 
-        // Open modals
+        // Open modals (keep existing modal functions, but ensure they use adminFetch)
         function openShopItemModal(itemId = null) {
             if (itemId) {
                 const item = shopItems.find(i => i.id === itemId);
@@ -1390,65 +1414,42 @@ img {
         // Load current admin user
         async function loadCurrentAdmin() {
             try {
-                const response = await fetch('/auth/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load admin info');
-
-                const user = await response.json();
-                currentUser = user;
-
-                // Update UI
-                document.getElementById('user-name').textContent = currentUser.username || 'Admin User';
-                if (currentUser.avatar_url) {
-                    document.getElementById('user-avatar').src = currentUser.avatar_url;
-                }
+                const response = await adminFetch('/admin/debug/admin-info');
+                const adminInfo = await response.json();
+                
+                document.getElementById('user-name').textContent = adminInfo.current_user || 'Admin User';
+                document.getElementById('user-avatar').alt = `Avatar for ${adminInfo.current_user}`;
             } catch (error) {
                 console.error('Error loading admin info:', error);
+                document.getElementById('user-name').textContent = 'Admin User';
             }
         }
 
         // Load stats
         async function loadStats() {
             try {
-                const response = await fetch('/admin/stats', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Failed to load stats');
-
+                const response = await adminFetch('/admin/stats');
                 const stats = await response.json();
+                
                 document.getElementById('user-count').textContent = `${stats.users} Users`;
                 document.getElementById('quest-count').textContent = `${stats.quests} Quests`;
-                document.getElementById('item-count').textContent = `${stats.shop_items} Shop Items`;
+                document.getElementById('item-count').textContent = `${stats.shop_items} Items`;
                 document.getElementById('boss-count').textContent = `${stats.boss_battles} Bosses`;
                 document.getElementById('feedback-count').textContent = `${stats.feedback_items} Feedback`;
             } catch (error) {
                 console.error('Error loading stats:', error);
+                document.getElementById('user-count').textContent = 'Users';
+                document.getElementById('quest-count').textContent = 'Quests';
+                document.getElementById('item-count').textContent = 'Shop Items';
+                document.getElementById('boss-count').textContent = 'Bosses';
+                document.getElementById('feedback-count').textContent = 'Feedback';
             }
         }
 
-        // Load data from backend
+        // Load data from backend - ALL UPDATED WITH adminFetch
         async function loadShopItems() {
             try {
-                const response = await fetch('/admin/shop', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        // Token expired or invalid
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load shop items');
-                }
-
+                const response = await adminFetch('/admin/shop');
                 shopItems = await response.json();
                 renderShopItems();
             } catch (error) {
@@ -1465,22 +1466,7 @@ img {
 
         async function loadQuests() {
             try {
-                const response = await fetch('/admin/quests', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load quests');
-                }
-
+                const response = await adminFetch('/admin/quests');
                 quests = await response.json();
                 renderQuests();
             } catch (error) {
@@ -1497,22 +1483,7 @@ img {
 
         async function loadUsers() {
             try {
-                const response = await fetch('/admin/users', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load users');
-                }
-
+                const response = await adminFetch('/admin/users');
                 users = await response.json();
                 renderUsers();
             } catch (error) {
@@ -1529,22 +1500,7 @@ img {
 
         async function loadGroups() {
             try {
-                const response = await fetch('/admin/groups', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load groups');
-                }
-
+                const response = await adminFetch('/admin/groups');
                 groups = await response.json();
                 renderGroups();
             } catch (error) {
@@ -1561,22 +1517,7 @@ img {
 
         async function loadBossBattles() {
             try {
-                const response = await fetch('/admin/boss-battles', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load boss battles');
-                }
-
+                const response = await adminFetch('/admin/boss-battles');
                 bossBattles = await response.json();
                 renderBossBattles();
             } catch (error) {
@@ -1593,22 +1534,7 @@ img {
 
         async function loadFeedback() {
             try {
-                const response = await fetch('/admin/feedback', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('admin_token');
-                        window.location.href = '/admin/login';
-                        return;
-                    }
-                    throw new Error('Failed to load feedback');
-                }
-
+                const response = await adminFetch('/admin/feedback');
                 feedbackList = await response.json();
                 renderFeedback();
             } catch (error) {
@@ -1623,7 +1549,7 @@ img {
             }
         }
 
-        // Render data to tables
+        // Render functions remain the same...
         function renderShopItems() {
             const tableBody = document.getElementById('shop-items-body');
             tableBody.innerHTML = '';
@@ -1839,7 +1765,7 @@ img {
             }
         }
 
-        // Form handlers
+        // Form handlers - ALL UPDATED WITH adminFetch
         async function handleShopItemSubmit(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1857,25 +1783,18 @@ img {
             const method = itemId ? 'PUT' : 'POST';
 
             try {
-                const response = await fetch(url, {
+                const response = await adminFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(itemData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to save shop item');
-                }
-
+                const result = await response.json();
                 closeModal('shop-item-modal');
                 loadShopItems();
+                showNotification('Shop item saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving shop item:', error);
-                alert(`Error saving shop item: ${error.message}`);
+                showNotification(`Error saving shop item: ${error.message}`, 'error');
             }
         }
 
@@ -1895,25 +1814,17 @@ img {
             const method = questId ? 'PUT' : 'POST';
 
             try {
-                const response = await fetch(url, {
+                const response = await adminFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(questData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to save quest');
-                }
-
                 closeModal('quest-modal');
                 loadQuests();
+                showNotification('Quest saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving quest:', error);
-                alert(`Error saving quest: ${error.message}`);
+                showNotification(`Error saving quest: ${error.message}`, 'error');
             }
         }
 
@@ -1927,36 +1838,29 @@ img {
                 xp: parseInt(formData.get('xp')) || 0
             };
 
-            // Only include password if provided
             const password = formData.get('password');
             if (password) {
                 userData.password = password;
             }
 
             const userId = document.getElementById('user-id').value;
+            
+            // Note: User creation endpoint might be different - adjust as needed
             const url = userId ? `/admin/users/${userId}/role` : '/admin/users';
             const method = userId ? 'PUT' : 'POST';
 
             try {
-                const response = await fetch(url, {
+                const response = await adminFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(userData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to save user');
-                }
-
                 closeModal('user-modal');
                 loadUsers();
+                showNotification('User saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving user:', error);
-                alert(`Error saving user: ${error.message}`);
+                showNotification(`Error saving user: ${error.message}`, 'error');
             }
         }
 
@@ -1975,25 +1879,17 @@ img {
             const method = groupId ? 'PUT' : 'POST';
 
             try {
-                const response = await fetch(url, {
+                const response = await adminFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(groupData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to save group');
-                }
-
                 closeModal('group-modal');
                 loadGroups();
+                showNotification('Group saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving group:', error);
-                alert(`Error saving group: ${error.message}`);
+                showNotification(`Error saving group: ${error.message}`, 'error');
             }
         }
 
@@ -2014,233 +1910,153 @@ img {
             const method = bossId ? 'PUT' : 'POST';
 
             try {
-                const response = await fetch(url, {
+                const response = await adminFetch(url, {
                     method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(bossData)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to save boss battle');
-                }
-
                 closeModal('boss-modal');
                 loadBossBattles();
+                showNotification('Boss battle saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving boss battle:', error);
-                alert(`Error saving boss battle: ${error.message}`);
+                showNotification(`Error saving boss battle: ${error.message}`, 'error');
             }
         }
 
-        // Delete functions
+        // Delete functions - ALL UPDATED WITH adminFetch
         async function deleteShopItem(itemId) {
             if (!confirm('Are you sure you want to delete this item?')) return;
             try {
-                const response = await fetch(`/admin/shop/${itemId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/shop/${itemId}`, {
+                    method: 'DELETE'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to delete item');
-                }
-
                 loadShopItems();
+                showNotification('Item deleted successfully!', 'success');
             } catch (error) {
                 console.error('Error deleting item:', error);
-                alert(`Error deleting item: ${error.message}`);
+                showNotification(`Error deleting item: ${error.message}`, 'error');
             }
         }
 
         async function deleteQuest(questId) {
             if (!confirm('Are you sure you want to delete this quest?')) return;
             try {
-                const response = await fetch(`/admin/quests/${questId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/quests/${questId}`, {
+                    method: 'DELETE'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to delete quest');
-                }
-
                 loadQuests();
+                showNotification('Quest deleted successfully!', 'success');
             } catch (error) {
                 console.error('Error deleting quest:', error);
-                alert(`Error deleting quest: ${error.message}`);
+                showNotification(`Error deleting quest: ${error.message}`, 'error');
             }
         }
 
         async function banUser(userId) {
             if (!confirm('Are you sure you want to ban this user?')) return;
             try {
-                const response = await fetch(`/admin/users/${userId}/ban`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/users/${userId}/ban`, {
+                    method: 'PUT'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to ban user');
-                }
-
                 loadUsers();
+                showNotification('User banned successfully!', 'success');
             } catch (error) {
                 console.error('Error banning user:', error);
-                alert(`Error banning user: ${error.message}`);
+                showNotification(`Error banning user: ${error.message}`, 'error');
             }
         }
 
         async function unbanUser(userId) {
             if (!confirm('Are you sure you want to unban this user?')) return;
             try {
-                const response = await fetch(`/admin/users/${userId}/unban`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/users/${userId}/unban`, {
+                    method: 'PUT'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to unban user');
-                }
-
                 loadUsers();
+                showNotification('User unbanned successfully!', 'success');
             } catch (error) {
                 console.error('Error unbanning user:', error);
-                alert(`Error unbanning user: ${error.message}`);
+                showNotification(`Error unbanning user: ${error.message}`, 'error');
             }
         }
 
         async function deleteGroup(groupId) {
             if (!confirm('Are you sure you want to delete this group?')) return;
             try {
-                const response = await fetch(`/admin/groups/${groupId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/groups/${groupId}`, {
+                    method: 'DELETE'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to delete group');
-                }
-
                 loadGroups();
+                showNotification('Group deleted successfully!', 'success');
             } catch (error) {
                 console.error('Error deleting group:', error);
-                alert(`Error deleting group: ${error.message}`);
+                showNotification(`Error deleting group: ${error.message}`, 'error');
             }
         }
 
         // Boss battle actions
         async function toggleBossStatus(bossId) {
             try {
-                const response = await fetch(`/admin/boss-battles/${bossId}/activate`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/boss-battles/${bossId}/activate`, {
+                    method: 'POST'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to toggle boss status');
-                }
-
                 loadBossBattles();
+                showNotification('Boss status updated successfully!', 'success');
             } catch (error) {
                 console.error('Error toggling boss status:', error);
-                alert(`Error toggling boss status: ${error.message}`);
+                showNotification(`Error toggling boss status: ${error.message}`, 'error');
             }
         }
 
         async function deleteBossBattle(bossId) {
             if (!confirm('Are you sure you want to delete this boss battle?')) return;
             try {
-                const response = await fetch(`/admin/boss-battles/${bossId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/boss-battles/${bossId}`, {
+                    method: 'DELETE'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to delete boss battle');
-                }
-
                 loadBossBattles();
+                showNotification('Boss battle deleted successfully!', 'success');
             } catch (error) {
                 console.error('Error deleting boss battle:', error);
-                alert(`Error deleting boss battle: ${error.message}`);
+                showNotification(`Error deleting boss battle: ${error.message}`, 'error');
             }
         }
 
         // Feedback actions
         async function resolveFeedback(feedbackId) {
             try {
-                const response = await fetch(`/admin/feedback/${feedbackId}/resolve`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/feedback/${feedbackId}/resolve`, {
+                    method: 'PUT'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to resolve feedback');
-                }
-
                 loadFeedback();
+                showNotification('Feedback resolved successfully!', 'success');
             } catch (error) {
                 console.error('Error resolving feedback:', error);
-                alert(`Error resolving feedback: ${error.message}`);
+                showNotification(`Error resolving feedback: ${error.message}`, 'error');
             }
         }
 
         async function deleteFeedback(feedbackId) {
             if (!confirm('Are you sure you want to delete this feedback?')) return;
             try {
-                const response = await fetch(`/admin/feedback/${feedbackId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                await adminFetch(`/admin/feedback/${feedbackId}`, {
+                    method: 'DELETE'
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to delete feedback');
-                }
-
                 loadFeedback();
+                showNotification('Feedback deleted successfully!', 'success');
             } catch (error) {
                 console.error('Error deleting feedback:', error);
-                alert(`Error deleting feedback: ${error.message}`);
+                showNotification(`Error deleting feedback: ${error.message}`, 'error');
             }
         }
 
@@ -2250,7 +2066,7 @@ img {
             const message = document.getElementById('broadcast-message').value;
 
             if (!subject || !message) {
-                alert('Please fill in both subject and message fields');
+                showNotification('Please fill in both subject and message fields', 'error');
                 return;
             }
 
@@ -2264,7 +2080,7 @@ img {
             const message = document.getElementById('broadcast-message').value;
 
             if (!subject || !message) {
-                alert('Please fill in both subject and message fields');
+                showNotification('Please fill in both subject and message fields', 'error');
                 return;
             }
 
@@ -2273,34 +2089,95 @@ img {
             }
 
             try {
-                const response = await fetch('/admin/broadcast', {
+                const response = await adminFetch('/admin/broadcast', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify({ subject, message })
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to send broadcast');
-                }
-
                 const result = await response.json();
-                alert(`Broadcast sent successfully to ${result.success_count} of ${result.total_users} users!`);
+                showNotification(`Broadcast sent to ${result.success_count} of ${result.total_users} users!`, 'success');
                 document.getElementById('broadcast-subject').value = '';
                 document.getElementById('broadcast-message').value = '';
                 document.getElementById('broadcast-preview').style.display = 'none';
             } catch (error) {
                 console.error('Error sending broadcast:', error);
-                alert(`Error sending broadcast: ${error.message}`);
+                showNotification(`Error sending broadcast: ${error.message}`, 'error');
             }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.admin-notification');
+            existingNotifications.forEach(notif => notif.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `admin-notification admin-notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()">&times;</button>
+                </div>
+            `;
+
+            // Add styles if not already added
+            if (!document.querySelector('#notification-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'notification-styles';
+                styles.textContent = `
+                    .admin-notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 10000;
+                        background: #2f3136;
+                        border-left: 4px solid #7289da;
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        max-width: 400px;
+                        animation: slideIn 0.3s ease;
+                    }
+                    .admin-notification-success { border-left-color: #43b581; }
+                    .admin-notification-error { border-left-color: #ed4245; }
+                    .admin-notification-warning { border-left-color: #faa81a; }
+                    .notification-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    .notification-content button {
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 18px;
+                        cursor: pointer;
+                        margin-left: auto;
+                    }
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(styles);
+            }
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
         }
 
         // Logout
         function logout() {
-            localStorage.removeItem('admin_token');
+            // Clear the cookie by setting it to expire
+            document.cookie = "admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.href = '/admin/login';
         }
 
