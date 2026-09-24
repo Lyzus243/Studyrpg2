@@ -364,3 +364,45 @@ class Event(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
 
+
+
+# --------------------------
+# Security Models
+# --------------------------
+
+class TokenBlacklist(Base):
+    __tablename__ = "token_blacklist"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    jti: Mapped[str] = mapped_column(String(256), unique=True, index=True, nullable=False)
+    blacklisted_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+class LoginAttempt(Base):
+    __tablename__ = "login_attempt"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(150), index=True, nullable=False)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    success: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AccountLockout(Base):
+    __tablename__ = "account_lockout"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(150), unique=True, index=True, nullable=False)
+    locked_until: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    last_attempt_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), nullable=True)
+    action: Mapped[str] = mapped_column(String(100), nullable=False)
+    resource: Mapped[Optional[str]] = mapped_column(String(200))
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500))
+    details: Mapped[Optional[dict]] = mapped_column(JSON)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

@@ -1,23 +1,31 @@
-# Ignore everything
+# Ignore everything by default
 *
-app/__pycache__/
 
-# Keep these folders
+# Keep top-level folders
 !alembic/
 !app/
+!app/routers/
+!app/routers/**
 !static/
+!static/templates/
+!static/templates/**
+!static/templates/admin/
+!static/templates/admin/**
 !tests/
 
 # Keep specific files
 !alembic.ini
 !app.db
-!app/admin_auth.py
 !your_database.db
-
-# Also keep the .gitignore file itself
+!app/*.py
+!app/routers/*.py
 !.gitignore
-# .env
-app/.env
-models/t5-small/model.safetensors
-models/t5-small/model.safetensors
+!requirements.txt
+!.env.example
+
+# Ignore secrets and compiled files
 .env
+app/.env
+*.pyc
+**/__pycache__/
+models/t5-small/model.safetensors

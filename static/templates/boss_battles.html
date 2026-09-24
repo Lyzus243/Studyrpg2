@@ -1,926 +1,655 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Group Boss Battle</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0b0d10;
-      --panel: #0f1114;
-      --accent: #5865F2;
-      --text: #DCDDDE;
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    #arena {
-      width: 100%;
-      height: 500px;
-      background: linear-gradient(180deg, #071019, #040306);
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-      margin-bottom: 20px;
-    }
-    .panel {
-      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)), var(--panel);
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.04);
-      margin-bottom: 20px;
-    }
-    .health-bar {
-      height: 22px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-    .health-fill {
-      height: 100%;
-      transition: width 300ms linear, background-color 250ms linear;
-    }
-    .log {
-      max-height: 240px;
-      overflow: auto;
-      font-family: monospace;
-      background: rgba(255,255,255,0.01);
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .btn {
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      border: none;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      background: linear-gradient(180deg, var(--accent), #3b49c6);
-      color: #fff;
-    }
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .character-card {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-    .status-overlay {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      z-index: 10;
-    }
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      font-size: 18px;
-    }
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top: 4px solid var(--accent);
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .combatant {
-      position: absolute;
-      width: 40px;
-      height: 60px;
-      background: #e74c3c;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-    }
-    .combatant.player {
-      background: #3498db;
-    }
-    .combatant.healer {
-      background: #2ecc71;
-    }
-    .combatant.boss {
-      width: 60px;
-      height: 80px;
-      background: #e74c3c;
-    }
-    #fallback-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boss Battles - StudyRPG</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  :root {
+    --bg:#0b0d10;--panel:#111216;--accent:#5865F2;--accent2:#38bdf8;
+    --text:#DCDDDE;--muted:#72767D;--border:rgba(255,255,255,0.06);
+    --success:#22c55e;--error:#ef4444;--gold:#f59e0b;
+    --tank:#3b82f6;--attacker:#ef4444;--healer:#22c55e;--support:#a855f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:radial-gradient(circle at top,#0b1020,#05070d 70%);color:var(--text);min-height:100vh;}
+  .page-wrapper{display:flex;min-height:100vh;}
+  .sidebar{width:260px;background:#0f172a;padding:2rem 1.2rem;display:flex;flex-direction:column;align-items:center;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .avatar-preview{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:1rem;}
+  .welcome-text{text-align:center;margin-bottom:1.5rem;font-size:1rem;}
+  .welcome-text .username{font-weight:bold;color:var(--accent2);display:block;font-size:1.1rem;}
+  .sidebar-btn{background:#1e293b;color:white;border:none;padding:0.75rem;margin:0.25rem 0;border-radius:8px;cursor:pointer;text-decoration:none;display:flex;gap:0.6rem;align-items:center;justify-content:center;width:100%;font-size:0.88rem;transition:background 0.2s;}
+  .sidebar-btn:hover{background:#334155;}
+  .sidebar-btn.active{background:var(--accent);}
+  .logout-btn{margin-top:auto;background:#7f1d1d;color:white;border:none;padding:0.75rem;border-radius:8px;cursor:pointer;width:100%;font-size:0.88rem;display:flex;gap:0.6rem;align-items:center;justify-content:center;}
+  .main-content{flex:1;padding:2rem;overflow-y:auto;}
+  .back-link{color:var(--muted);text-decoration:none;font-size:0.88rem;display:inline-flex;align-items:center;gap:0.4rem;margin-bottom:1.5rem;transition:color 0.2s;}
+  .back-link:hover{color:var(--text);}
+  .page-header{display:flex;align-items:center;gap:1rem;margin-bottom:2rem;}
+  .page-header h1{font-size:1.8rem;color:white;}
+  .page-header i{font-size:2rem;color:var(--error);}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+  .card-title{font-size:1.1rem;font-weight:bold;color:white;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.6rem;}
+  #no-access-screen{display:none;text-align:center;padding:4rem 2rem;}
+  #no-access-screen .icon{font-size:4rem;margin-bottom:1rem;}
+  #no-access-screen h2{font-size:1.5rem;color:white;margin-bottom:0.8rem;}
+  #no-access-screen p{color:var(--muted);margin-bottom:1.5rem;}
+  .join-group-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.8rem 1.8rem;background:var(--accent);color:white;border-radius:10px;text-decoration:none;font-weight:bold;transition:background 0.2s;}
+  .join-group-btn:hover{background:#4752c4;}
+  #battle-content{display:none;}
+  .matchmaking-banner{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(99,102,241,0.3);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;text-align:center;}
+  .matchmaking-banner h2{color:white;font-size:1.2rem;margin-bottom:0.4rem;}
+  .matchmaking-banner p{color:var(--muted);font-size:0.88rem;margin-bottom:1rem;}
+  .match-btn{padding:0.8rem 2rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),#4752c4);color:white;font-weight:bold;font-size:0.95rem;cursor:pointer;transition:transform 0.2s;display:inline-flex;align-items:center;gap:0.5rem;}
+  .match-btn:hover{transform:scale(1.03);}
+  .match-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .matching-status{display:none;align-items:center;gap:1rem;justify-content:center;margin-top:1rem;}
+  .matching-status.show{display:flex;}
+  .spinner{width:24px;height:24px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent);animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1rem;}
+  .role-card{border:2px solid var(--border);border-radius:12px;padding:1.2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:#0f172a;}
+  .role-card:hover{border-color:rgba(255,255,255,0.2);}
+  .role-card.sel-tank{border-color:var(--tank);background:rgba(59,130,246,0.1);}
+  .role-card.sel-attacker{border-color:var(--attacker);background:rgba(239,68,68,0.1);}
+  .role-card.sel-healer{border-color:var(--healer);background:rgba(34,197,94,0.1);}
+  .role-card.sel-support{border-color:var(--support);background:rgba(168,85,247,0.1);}
+  .role-card .role-icon{font-size:2rem;margin-bottom:0.5rem;}
+  .role-card .role-name{font-weight:bold;font-size:0.95rem;color:white;}
+  .role-card .role-desc{font-size:0.75rem;color:var(--muted);margin-top:0.3rem;}
+  .role-card .role-stat{font-size:0.78rem;margin-top:0.4rem;font-weight:bold;}
+  .boss-section{margin-bottom:1.5rem;}
+  .boss-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;}
+  .boss-name{font-size:1.1rem;font-weight:bold;color:var(--error);}
+  .boss-phase{font-size:0.78rem;background:rgba(239,68,68,0.15);color:var(--error);border:1px solid rgba(239,68,68,0.3);padding:0.2rem 0.6rem;border-radius:99px;}
+  .hp-track{height:20px;background:#1e293b;border-radius:99px;overflow:hidden;position:relative;}
+  .hp-fill{height:100%;border-radius:99px;transition:width 0.4s ease,background 0.3s;background:linear-gradient(90deg,#991b1b,var(--error));}
+  .hp-fill.warning{background:linear-gradient(90deg,#92400e,var(--gold));}
+  .hp-fill.critical{background:linear-gradient(90deg,#374151,#6b7280);}
+  .hp-text{display:flex;justify-content:space-between;font-size:0.8rem;color:var(--muted);margin-top:0.4rem;}
+  .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.8rem;margin-bottom:1.5rem;}
+  .member-card{background:#0f172a;border:1px solid var(--border);border-radius:10px;padding:0.9rem;}
+  .member-card.you{border-color:var(--accent);}
+  .member-top{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;}
+  .member-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:bold;flex-shrink:0;}
+  .member-name{font-size:0.88rem;font-weight:bold;color:white;}
+  .member-role-badge{font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:99px;font-weight:bold;}
+  .member-hp-bar{height:6px;background:#1e293b;border-radius:99px;overflow:hidden;}
+  .member-hp-fill{height:100%;border-radius:99px;transition:width 0.3s;}
+  .member-stats{display:flex;gap:0.8rem;margin-top:0.5rem;font-size:0.75rem;color:var(--muted);}
+  /* Charge + Question */
+  .charge-section{background:#070a0e;border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;}
+  .charge-label{display:flex;justify-content:space-between;font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;}
+  .charge-track{height:12px;background:#1e293b;border-radius:99px;overflow:hidden;margin-bottom:1rem;}
+  .charge-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.4s ease;}
+  .q-box{background:#0f172a;border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:0.8rem;}
+  .q-text{font-size:0.9rem;color:white;margin-bottom:0.8rem;font-weight:500;}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;}
+  .opt{padding:0.55rem 0.7rem;border-radius:8px;border:1px solid var(--border);background:#111216;color:var(--text);font-size:0.8rem;cursor:pointer;text-align:left;transition:all 0.15s;}
+  .opt:hover{border-color:var(--accent2);background:rgba(88,101,242,0.1);}
+  .opt.correct{border-color:var(--success);background:rgba(34,197,94,0.15);color:#86efac;}
+  .opt.wrong{border-color:var(--error);background:rgba(239,68,68,0.12);color:#fca5a5;}
+  .opt:disabled{cursor:not-allowed;}
+  .q-feedback{font-size:0.8rem;padding:0.4rem 0.7rem;border-radius:6px;margin-top:0.5rem;display:none;}
+  .q-feedback.ok{background:rgba(34,197,94,0.15);color:#86efac;display:block;}
+  .q-feedback.bad{background:rgba(239,68,68,0.12);color:#fca5a5;display:block;}
+  .next-q-btn{width:100%;padding:0.6rem;border-radius:8px;border:none;background:#1e293b;color:var(--text);font-size:0.82rem;cursor:pointer;margin-top:0.5rem;}
+  .next-q-btn:hover{background:#334155;}
+  /* Actions */
+  .action-row{display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;}
+  .action-btn{flex:1;min-width:120px;padding:0.8rem;border-radius:10px;border:none;font-weight:bold;font-size:0.88rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+  .action-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .action-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .btn-attack{background:linear-gradient(135deg,#991b1b,var(--error));color:white;}
+  .btn-heal{background:linear-gradient(135deg,#14532d,var(--success));color:white;}
+  .btn-shield{background:linear-gradient(135deg,#1e3a8a,var(--tank));color:white;}
+  .btn-support{background:linear-gradient(135deg,#581c87,var(--support));color:white;}
+  .btn-special{background:linear-gradient(135deg,var(--gold),#d97706);color:#000;}
+  .battle-stats{display:flex;gap:1.5rem;flex-wrap:wrap;padding:0.8rem 0;border-top:1px solid var(--border);font-size:0.85rem;}
+  .battle-stats span{color:var(--muted);}
+  .battle-stats strong{color:var(--accent2);}
+  .battle-log{background:#070a0e;border:1px solid var(--border);border-radius:10px;padding:0.8rem;height:200px;overflow-y:auto;font-family:monospace;font-size:0.82rem;}
+  .log-entry{padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .log-entry .time{color:var(--muted);margin-right:0.5rem;}
+  .log-entry.attack{color:#fca5a5;}
+  .log-entry.heal{color:#86efac;}
+  .log-entry.shield{color:#93c5fd;}
+  .log-entry.support{color:#d8b4fe;}
+  .log-entry.system{color:var(--gold);}
+  .log-entry.boss{color:#f87171;}
+  .xp-banner{display:none;background:rgba(34,197,94,0.1);border:1px solid var(--success);border-radius:12px;padding:1.2rem;text-align:center;margin-bottom:1.5rem;animation:fadeIn 0.4s ease;}
+  .xp-banner.show{display:block;}
+  .xp-banner h3{color:var(--success);font-size:1.2rem;margin-bottom:0.4rem;}
+  .xp-banner .xp-amount{font-size:1.5rem;font-weight:bold;color:var(--gold);}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  .battle-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;}
+  .battle-overlay.show{display:flex;}
+  .overlay-box{border-radius:20px;padding:3rem 2.5rem;text-align:center;max-width:440px;width:90%;animation:scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+  .overlay-box.victory{background:linear-gradient(135deg,#052e16,#14532d);border:2px solid var(--success);}
+  .overlay-box.defeat{background:linear-gradient(135deg,#1c0606,#450a0a);border:2px solid var(--error);}
+  @keyframes scaleIn{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .overlay-box .big-icon{font-size:4rem;margin-bottom:0.5rem;}
+  .overlay-box h1{font-size:2rem;color:white;margin-bottom:0.5rem;}
+  .overlay-box .xp-val{font-size:2rem;font-weight:bold;color:var(--gold);}
+  .overlay-box .sp-val{font-size:1rem;color:var(--accent2);margin-top:0.3rem;}
+  .overlay-close{margin-top:1.5rem;padding:0.8rem 2rem;border-radius:10px;border:none;font-weight:bold;font-size:1rem;cursor:pointer;background:linear-gradient(135deg,var(--gold),#d97706);color:#000;}
+  .xp-pop{position:fixed;top:20%;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),#d97706);color:#000;padding:0.5rem 1.4rem;border-radius:99px;font-weight:bold;font-size:1.1rem;animation:floatUp 2s ease forwards;pointer-events:none;z-index:9998;}
+  @keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0);}100%{opacity:0;transform:translateX(-50%) translateY(-90px);}}
+  .battles-table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+  .battles-table th{text-align:left;padding:0.6rem 0.8rem;color:var(--muted);border-bottom:1px solid var(--border);}
+  .battles-table td{padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);}
+  .badge{padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:bold;}
+  .badge-active{background:rgba(34,197,94,0.15);color:var(--success);}
+  .badge-victory{background:rgba(245,158,11,0.15);color:var(--gold);}
+  .badge-defeat{background:rgba(239,68,68,0.15);color:var(--error);}
+  .join-btn{padding:0.35rem 0.9rem;border-radius:6px;border:none;background:var(--accent);color:white;font-size:0.8rem;cursor:pointer;font-weight:bold;transition:background 0.2s;}
+  .join-btn:hover{background:#4752c4;}
+  .hidden{display:none!important;}
+  @media(max-width:768px){.sidebar{display:none;}.main-content{padding:1rem;}.role-grid{grid-template-columns:1fr 1fr;}.members-grid{grid-template-columns:1fr 1fr;}.opts{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Group Boss Battle</h1>
-      <div id="user-info" class="flex items-center">
-        <span id="username" class="mr-3">Loading...</span>
-        <button id="logout-btn" class="btn btn-secondary text-sm">Logout</button>
+<div class="page-wrapper">
+  <aside class="sidebar">
+    <div class="avatar-preview"><i class="fas fa-user"></i></div>
+    <div class="welcome-text">Welcome,<span class="username" id="sidebar-username">...</span></div>
+    <a href="/dashboard"      class="sidebar-btn"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/battles/group"  class="sidebar-btn active"><i class="fas fa-dragon"></i> Boss Battles</a>
+    <a href="/groups"         class="sidebar-btn"><i class="fas fa-users"></i> Study Groups</a>
+    <a href="/quests"         class="sidebar-btn"><i class="fas fa-scroll"></i> Quests</a>
+    <a href="/leveling"       class="sidebar-btn"><i class="fas fa-chart-line"></i> Leveling</a>
+    <a href="/memory"         class="sidebar-btn"><i class="fas fa-brain"></i> Memory</a>
+    <a href="/flashcard"      class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
+    <a href="/leaderboard"    class="sidebar-btn"><i class="fas fa-trophy"></i> Leaderboard</a>
+    <a href="/analytics"      class="sidebar-btn"><i class="fas fa-chart-pie"></i> Analytics</a>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </aside>
+  <main class="main-content">
+    <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <div class="page-header"><i class="fas fa-dragon"></i><h1>Group Boss Battles</h1></div>
+    <div class="xp-banner" id="xp-banner">
+      <h3>🎉 Battle Complete!</h3>
+      <div class="xp-amount" id="xp-banner-amount">+0 XP</div>
+      <div style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;" id="xp-banner-sp"></div>
+    </div>
+    <div id="no-access-screen">
+      <div class="icon">🔒</div>
+      <h2>Study Group Required</h2>
+      <p>You need to be in a study group to access Boss Battles.<br>Join or create a group first, then come back.</p>
+      <a href="/groups" class="join-group-btn"><i class="fas fa-users"></i> Go to Study Groups</a>
+    </div>
+    <div id="battle-content">
+      <div class="matchmaking-banner">
+        <h2>⚔️ Auto Matchmaking</h2>
+        <p>Matched with players of similar level. Answer questions correctly to charge your action bar, then unleash your role ability.</p>
+        <button class="match-btn" id="find-battle-btn" onclick="findOrCreateBattle()"><i class="fas fa-search"></i> Find a Battle</button>
+        <div class="matching-status" id="matching-status"><div class="spinner"></div><span>Searching for a battle...</span></div>
+      </div>
+      <!-- Role Selection -->
+      <div class="card" id="role-section">
+        <div class="card-title"><i class="fas fa-shield-alt" style="color:var(--accent2)"></i> Choose Your Role</div>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem;">Answer questions to charge your bar. Each role has a different charge requirement and action.</p>
+        <div class="role-grid">
+          <div class="role-card" data-role="tank" onclick="selectRole('tank',this)">
+            <div class="role-icon">🛡️</div>
+            <div class="role-name" style="color:var(--tank)">Tank</div>
+            <div class="role-desc">Absorbs damage, shields team from boss attacks</div>
+            <div class="role-stat" style="color:var(--tank)">2 correct = Shield · +50% Defence</div>
+          </div>
+          <div class="role-card" data-role="attacker" onclick="selectRole('attacker',this)">
+            <div class="role-icon">⚔️</div>
+            <div class="role-name" style="color:var(--attacker)">Attacker</div>
+            <div class="role-desc">Deals damage to the boss with correct answers</div>
+            <div class="role-stat" style="color:var(--attacker)">1 correct = Attack · +30% Damage</div>
+          </div>
+          <div class="role-card" data-role="healer" onclick="selectRole('healer',this)">
+            <div class="role-icon">💚</div>
+            <div class="role-name" style="color:var(--healer)">Healer</div>
+            <div class="role-desc">Restores HP to team members</div>
+            <div class="role-stat" style="color:var(--healer)">2 correct = Heal · Revive ally</div>
+          </div>
+          <div class="role-card" data-role="support" onclick="selectRole('support',this)">
+            <div class="role-icon">✨</div>
+            <div class="role-name" style="color:var(--support)">Support</div>
+            <div class="role-desc">Buffs teammates' XP gain and damage output</div>
+            <div class="role-stat" style="color:var(--support)">1 correct = Buff · +20% Team XP</div>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--muted);">Selected role: <strong id="selected-role-label" style="color:var(--accent2)">None</strong></p>
+      </div>
+      <!-- Active Battle -->
+      <div class="card hidden" id="active-battle-card">
+        <div class="card-title"><i class="fas fa-fire" style="color:var(--error)"></i> Active Battle — <span id="active-battle-name">—</span></div>
+        <div class="boss-section">
+          <div class="boss-header">
+            <div class="boss-name" id="boss-display-name">🐉 Shadow Colossus</div>
+            <div class="boss-phase" id="boss-phase-label">Phase 1</div>
+          </div>
+          <div class="hp-track"><div class="hp-fill" id="boss-hp-fill" style="width:100%"></div></div>
+          <div class="hp-text"><span id="boss-hp-current">—</span><span id="boss-hp-max">—</span></div>
+        </div>
+        <!-- Members -->
+        <div class="card-title" style="margin-bottom:0.8rem"><i class="fas fa-users" style="color:var(--accent2)"></i> Party Members</div>
+        <div class="members-grid" id="members-grid"><div style="color:var(--muted);font-size:0.85rem;">Loading members...</div></div>
+        <!-- Charge + Question -->
+        <div class="card-title" style="margin-bottom:0.8rem"><i class="fas fa-bolt" style="color:var(--gold)"></i> Answer to Charge</div>
+        <div class="charge-section">
+          <div class="charge-label"><span>Charge bar</span><span id="charge-text">0 / 1</span></div>
+          <div class="charge-track"><div class="charge-fill" id="charge-fill" style="width:0%"></div></div>
+          <div class="q-box" id="q-box">
+            <div class="q-text" id="q-text">Loading question...</div>
+            <div class="opts" id="q-opts"></div>
+            <div class="q-feedback" id="q-feedback"></div>
+          </div>
+          <button class="next-q-btn hidden" id="next-q-btn" onclick="loadQuestion()">Next Question →</button>
+        </div>
+        <!-- Actions -->
+        <div class="card-title" style="margin-bottom:0.8rem"><i class="fas fa-crosshairs" style="color:var(--gold)"></i> Your Actions</div>
+        <div class="action-row" id="action-buttons"></div>
+        <div class="battle-stats">
+          <div><span>Your Role:</span> <strong id="your-role-display">—</strong></div>
+          <div><span>Phase:</span> <strong id="phase-display">1</strong></div>
+          <div><span>SP:</span> <strong id="sp-display">12</strong></div>
+          <div><span>Damage Dealt:</span> <strong id="dmg-display">0</strong></div>
+        </div>
+        <!-- Battle Log -->
+        <div class="card-title" style="margin:1rem 0 0.8rem"><i class="fas fa-scroll" style="color:var(--muted)"></i> Battle Log</div>
+        <div class="battle-log" id="battle-log"></div>
+      </div>
+      <!-- Battles Table -->
+      <div class="card">
+        <div class="card-title"><i class="fas fa-list" style="color:var(--accent2)"></i> Group Battles</div>
+        <table class="battles-table">
+          <thead><tr><th>Battle</th><th>Difficulty</th><th>Boss HP</th><th>Reward XP</th><th>Status</th><th></th></tr></thead>
+          <tbody id="battles-tbody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem;">Loading battles...</td></tr></tbody>
+        </table>
       </div>
     </div>
-
-    <div id="no-groups-message" class="panel hidden">
-      <h2 class="text-xl font-bold mb-4">Access Required</h2>
-      <p>You need to be a member of a study group to access boss battles.</p>
-      <p class="mt-2">Please join a study group first, then return to this page.</p>
-    </div>
-
-    <div id="battle-container" class="hidden">
-      <div id="arena">
-        <div id="loading" class="loading">
-          <div class="text-center">
-            <div class="spinner"></div>
-            <p>Loading 3D battle environment...</p>
-          </div>
-        </div>
-        <div id="status-overlay" class="status-overlay hidden">
-          Group: <span id="group-name">Loading...</span> | 
-          Battle: <span id="battle-name">Loading...</span>
-        </div>
-        <canvas id="fallback-canvas" class="hidden"></canvas>
-      </div>
-
-      <div class="panel grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2">
-          <h2 class="text-xl font-bold mb-4">Battle Controls</h2>
-          
-          <div class="mb-6">
-            <div class="flex justify-between items-center mb-2">
-              <div><strong>Boss Health</strong></div>
-              <div id="boss-health-text">1400 / 1400</div>
-            </div>
-            <div class="health-bar">
-              <div id="boss-health-fill" class="health-fill" style="width:100%; background:#e74c3c;"></div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="character-card">
-              <h3 class="font-semibold mb-2">Attacker</h3>
-              <div class="flex justify-between items-center mb-2">
-                <span>Health:</span>
-                <span id="attacker-health">100 / 100</span>
-              </div>
-              <div class="health-bar mb-3">
-                <div id="attacker-health-fill" class="health-fill" style="width:100%; background:#3498db;"></div>
-              </div>
-              <button id="attack-btn" class="btn btn-primary w-full">⚔️ Attack</button>
-            </div>
-
-            <div class="character-card">
-              <h3 class="font-semibold mb-2">Healer</h3>
-              <div class="flex justify-between items-center mb-2">
-                <span>Health:</span>
-                <span id="healer-health">100 / 100</span>
-              </div>
-              <div class="health-bar mb-3">
-                <div id="healer-health-fill" class="health-fill" style="width:100%; background:#2ecc71;"></div>
-              </div>
-              <button id="heal-btn" class="btn btn-secondary w-full">❤️ Heal</button>
-            </div>
-          </div>
-
-          <div class="flex gap-4 mb-4">
-            <button id="special-btn" class="btn btn-primary flex-1">💥 Special Attack (Costs 4 SP)</button>
-            <button id="reset-btn" class="btn btn-secondary">↺ Reset</button>
-          </div>
-
-          <div class="flex gap-6 text-sm">
-            <div>Phase: <strong id="boss-phase">1</strong></div>
-            <div>SP: <strong id="skill-points">12</strong></div>
-            <div>Status: <strong id="battle-status">Idle</strong></div>
-          </div>
-        </div>
-
-        <div>
-          <h2 class="text-xl font-bold mb-4">Battle Log</h2>
-          <div id="battle-log" class="log">
-            <div>Welcome to the boss battle!</div>
-            <div>Join a battle to start fighting.</div>
-          </div>
-
-          <h2 class="text-xl font-bold my-4">Group Members</h2>
-          <div id="group-members" class="log">
-            <div>Loading group members...</div>
-          </div>
-        </div>
-      </div>
-    </div>
+  </main>
+</div>
+<!-- Victory Overlay -->
+<div class="battle-overlay" id="victory-overlay">
+  <div class="overlay-box victory">
+    <div class="big-icon">🏆</div><h1>Victory!</h1>
+    <p style="color:#86efac">The boss has been defeated!</p>
+    <div style="margin:1rem 0"><div class="xp-val" id="victory-xp">+0 XP</div><div class="sp-val" id="victory-sp">+0 Skill Points</div></div>
+    <p style="color:var(--muted);font-size:0.85rem;">XP awarded to all party members.</p>
+    <button class="overlay-close" onclick="closeOverlay('victory-overlay')">Claim Rewards ⚔️</button>
   </div>
+</div>
+<!-- Defeat Overlay -->
+<div class="battle-overlay" id="defeat-overlay">
+  <div class="overlay-box defeat">
+    <div class="big-icon">💀</div><h1>Defeated...</h1>
+    <p style="color:#fca5a5">The boss was too powerful this time.</p>
+    <button class="overlay-close" style="background:var(--error);color:white;" onclick="closeOverlay('defeat-overlay')">Try Again</button>
+  </div>
+</div>
+<script>
+  // ── Auth ──
+  function getToken(){return localStorage.getItem('access_token');}
+  function logout(){localStorage.removeItem('access_token');document.cookie='access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';window.location.href='/login';}
+  function authHeaders(){return{'Authorization':`Bearer ${getToken()}`,'Content-Type':'application/json'};}
+  function checkAuth(){
+    const token=getToken();if(!token){window.location.href='/login';return false;}
+    try{const p=JSON.parse(atob(token.split('.')[1]));if(Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='/login';return false;}return true;}
+    catch{window.location.href='/login';return false;}
+  }
 
-  <!-- Three.js and other libraries -->
-  <script src="./libs/three.module.js"></script>
-  <script src="./libs/GLTFLoader.js"></script>
-  <script src="./libs/DRACOLoader.js"></script>
-  <script src="./libs/OrbitControls.js"></script>
+  // ── State ──
+  let currentGroupId=null,currentBattleId=null,selectedRole=null;
+  let skillPoints=12,ws=null,battlePhase=1,dmgDealt=0;
+  let charge=0,chargeNeeded=1,charged=false,qAnswered=false;
 
-  <script>
-    // Global variables
-    let currentUser = null;
-    let authToken = null;
-    let currentGroupId = null;
-    let currentBattleId = null;
-    let ws = null;
-    let scene, camera, renderer, controls;
-    let bossModel, attackerModel, healerModel;
-    let bossHealth = 1400;
-    let maxBossHealth = 1400;
-    let attackerHealth = 100;
-    let healerHealth = 100;
-    let skillPoints = 12;
-    let battleStatus = "Idle";
-    let bossAlive = true;
-    let currentPhase = 1;
+  const ROLES={
+    tank:{label:'Tank',icon:'🛡️',color:'var(--tank)',chargeNeeded:2,actions:['shield','attack']},
+    attacker:{label:'Attacker',icon:'⚔️',color:'var(--attacker)',chargeNeeded:1,actions:['attack','special']},
+    healer:{label:'Healer',icon:'💚',color:'var(--healer)',chargeNeeded:2,actions:['heal','attack']},
+    support:{label:'Support',icon:'✨',color:'var(--support)',chargeNeeded:1,actions:['buff','attack']}
+  };
+  const ACTIONS={
+    attack:{label:'Attack',icon:'⚔️',cls:'btn-attack',damage:20,sp:0},
+    special:{label:'Special',icon:'💥',cls:'btn-attack',damage:45,sp:3},
+    shield:{label:'Shield',icon:'🛡️',cls:'btn-shield',damage:0,sp:2},
+    heal:{label:'Heal Ally',icon:'💚',cls:'btn-heal',damage:0,sp:2},
+    buff:{label:'Buff Team',icon:'⚡',cls:'btn-support',damage:0,sp:2}
+  };
 
-    // Initialize the application
-    document.addEventListener('DOMContentLoaded', async function() {
-      await checkAuthentication();
-      await checkGroupAccess();
-      initializeEventListeners();
-      
-      if (document.getElementById('battle-container').classList.contains('hidden')) {
-        return; // Don't initialize battle if user doesn't have access
+  // ── Questions Bank ──
+  const QUESTIONS=[
+    {q:'What is the powerhouse of the cell?',opts:['Nucleus','Mitochondria','Ribosome','Golgi body'],ans:1},
+    {q:'What is 12 × 12?',opts:['124','144','132','148'],ans:1},
+    {q:'Which planet is closest to the sun?',opts:['Venus','Earth','Mercury','Mars'],ans:2},
+    {q:'What language runs in a web browser?',opts:['Python','Java','JavaScript','C++'],ans:2},
+    {q:'What is H2O commonly known as?',opts:['Hydrogen','Oxygen','Salt','Water'],ans:3},
+    {q:'How many sides does a hexagon have?',opts:['5','7','8','6'],ans:3},
+    {q:'What is the capital of France?',opts:['Berlin','Paris','Rome','Madrid'],ans:1},
+    {q:'What does CPU stand for?',opts:['Core Processing Unit','Central Program Unit','Central Processing Unit','Computer Power Unit'],ans:2},
+    {q:'What is the speed of light (approx)?',opts:['300,000 km/s','150,000 km/s','500,000 km/s','1,000,000 km/s'],ans:0},
+    {q:'Who wrote Romeo and Juliet?',opts:['Dickens','Hemingway','Shakespeare','Twain'],ans:2},
+  ];
+  let qIdx=0;
+
+  function selectRole(role,el){
+    document.querySelectorAll('.role-card').forEach(c=>{c.className='role-card';});
+    el.classList.add('sel-'+role);
+    selectedRole=role;
+    chargeNeeded=ROLES[role].chargeNeeded;
+    document.getElementById('selected-role-label').textContent=ROLES[role].label;
+  }
+
+  // ── Init ──
+  window.addEventListener('DOMContentLoaded',async()=>{
+    if(!checkAuth())return;
+    await loadUser();
+    await checkAccess();
+  });
+
+  async function loadUser(){
+    try{
+      const res=await fetch('/users/me',{headers:authHeaders()});
+      if(res.status===401){window.location.href='/login';return;}
+      const u=await res.json();
+      document.getElementById('sidebar-username').textContent=u.username||'User';
+    }catch(e){console.error(e);}
+  }
+
+  async function checkAccess(){
+    try{
+      const res=await fetch('/groups/my-groups',{headers:authHeaders()});
+      if(res.status===401){window.location.href='/login';return;}
+      const data=await res.json();
+      const groups=Array.isArray(data)?data:(data.groups||[]);
+      if(!groups.length){document.getElementById('no-access-screen').style.display='block';return;}
+      currentGroupId=groups[0].id||groups[0].group_id;
+      document.getElementById('battle-content').style.display='block';
+      await loadBattles();
+    }catch(e){console.error(e);document.getElementById('no-access-screen').style.display='block';}
+  }
+
+  async function loadBattles(){
+    if(!currentGroupId)return;
+    try{
+      const res=await fetch(`/battles/group/?group_id=${currentGroupId}`,{headers:authHeaders()});
+      if(!res.ok)throw new Error();
+      const battles=await res.json();
+      renderBattlesTable(Array.isArray(battles)?battles:(battles.battles||[]));
+    }catch(e){
+      document.getElementById('battles-tbody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center;">Could not load battles.</td></tr>';
+    }
+  }
+
+  function renderBattlesTable(battles){
+    const tbody=document.getElementById('battles-tbody');
+    if(!battles.length){tbody.innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem;">No battles yet. Create one!</td></tr>';return;}
+    tbody.innerHTML=battles.map(b=>{
+      const pct=Math.round((b.current_health/b.group_health)*100);
+      const status=b.is_completed?(b.passed?'<span class="badge badge-victory">Victory</span>':'<span class="badge badge-defeat">Defeat</span>'):'<span class="badge badge-active">Active</span>';
+      return`<tr>
+        <td>${b.name||'Battle #'+b.id}</td>
+        <td>${'★'.repeat(b.difficulty||1)}</td>
+        <td>${b.current_health} / ${b.group_health} <small style="color:var(--muted)">(${pct}%)</small></td>
+        <td style="color:var(--gold)">+${b.reward_xp||0} XP</td>
+        <td>${status}</td>
+        <td>${!b.is_completed?`<button class="join-btn" onclick="joinBattle(${b.id},'${b.name||'Boss Battle'}')">Join</button>`:'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function findOrCreateBattle(){
+    if(!currentGroupId){alert('No group found.');return;}
+    const btn=document.getElementById('find-battle-btn');
+    btn.disabled=true;
+    document.getElementById('matching-status').classList.add('show');
+    await new Promise(r=>setTimeout(r,1500));
+    try{
+      const res=await fetch(`/battles/group/?group_id=${currentGroupId}`,{headers:authHeaders()});
+      const data=await res.json();
+      const battles=Array.isArray(data)?data:(data.battles||[]);
+      const open=battles.find(b=>!b.is_completed);
+      if(open){addLog('Found an active battle! Click Join to enter.','system');await loadBattles();}
+      else{
+        const create=await fetch('/battles/group/',{method:'POST',headers:authHeaders(),body:JSON.stringify({group_id:currentGroupId,name:'Shadow Colossus',difficulty:autoMatchDifficulty(),max_health:1400,reward_xp:200,reward_skill_points:10})});
+        if(!create.ok)throw new Error();
+        const nb=await create.json();
+        addLog(`New battle created: ${nb.name||'Shadow Colossus'}`,'system');
+        await loadBattles();
       }
-      
-      await initializeBattle();
-    });
+    }catch(e){console.error(e);addLog('Could not find or create a battle.','system');}
+    finally{document.getElementById('matching-status').classList.remove('show');btn.disabled=false;}
+  }
 
-    // Check if user is authenticated
-    async function checkAuthentication() {
-      try {
-        // Try to get token from localStorage
-        authToken = localStorage.getItem('access_token');
-        
-        if (!authToken) {
-          // Try to get token from cookies
-          const cookies = document.cookie.split(';');
-          for (const cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'access_token') {
-              authToken = decodeURIComponent(value);
-              break;
-            }
-          }
-        }
-        
-        if (!authToken) {
-          window.location.href = '/login';
-          return;
-        }
-        
-        // Verify token by fetching user info
-        const response = await fetch('/users/me', {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          currentUser = await response.json();
-          document.getElementById('username').textContent = currentUser.username;
-        } else {
-          window.location.href = '/login';
-        }
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        window.location.href = '/login';
-      }
+  function autoMatchDifficulty(){
+    try{const p=JSON.parse(atob(getToken().split('.')[1]));return Math.min(Math.ceil((p.level||1)/5),10);}
+    catch{return 3;}
+  }
+
+  async function joinBattle(battleId,battleName){
+    if(!selectedRole){alert('Please select a role before joining!');document.getElementById('role-section').scrollIntoView({behavior:'smooth'});return;}
+    try{
+      const res=await fetch(`/battles/group/${battleId}/join`,{method:'POST',headers:authHeaders(),body:JSON.stringify({role:selectedRole})});
+      if(res.status===401){window.location.href='/login';return;}
+      currentBattleId=battleId;
+      document.getElementById('active-battle-name').textContent=battleName;
+      document.getElementById('active-battle-card').classList.remove('hidden');
+      document.getElementById('your-role-display').textContent=ROLES[selectedRole].label;
+      chargeNeeded=ROLES[selectedRole].chargeNeeded;
+      document.getElementById('charge-text').textContent=`0 / ${chargeNeeded}`;
+      renderActionButtons(selectedRole);
+      await loadBattleState(battleId);
+      await loadMembers(battleId);
+      connectWebSocket(battleId);
+      loadQuestion();
+      addLog(`You joined as ${ROLES[selectedRole].label}!`,'system');
+    }catch(e){console.error(e);alert('Failed to join battle.');}
+  }
+
+  async function loadBattleState(battleId){
+    try{
+      const res=await fetch(`/battles/group/${battleId}`,{headers:authHeaders()});
+      if(!res.ok)return;
+      const b=await res.json();
+      const maxHp=b.group_health||1400;
+      const pct=(b.current_health/maxHp)*100;
+      document.getElementById('boss-hp-fill').style.width=pct+'%';
+      document.getElementById('boss-hp-current').textContent=b.current_health;
+      document.getElementById('boss-hp-max').textContent=`/ ${maxHp} HP`;
+      document.getElementById('boss-display-name').textContent='🐉 '+(b.name||'Shadow Colossus');
+      battlePhase=pct>60?1:pct>30?2:3;
+      document.getElementById('boss-phase-label').textContent=`Phase ${battlePhase}`;
+      document.getElementById('phase-display').textContent=battlePhase;
+      const fill=document.getElementById('boss-hp-fill');
+      fill.className='hp-fill'+(pct<30?' critical':pct<60?' warning':'');
+      if(b.is_completed){if(b.passed)showVictory(b.reward_xp,b.reward_skill_points);else showDefeat();}
+    }catch(e){console.error(e);}
+  }
+
+  async function loadMembers(battleId){
+    try{
+      const res=await fetch(`/battles/group/${battleId}/members`,{headers:authHeaders()});
+      if(!res.ok)return;
+      const members=await res.json();
+      renderMembers(Array.isArray(members)?members:(members.members||[]));
+    }catch(e){console.error(e);}
+  }
+
+  function renderMembers(members){
+    const roleColors={tank:'#3b82f6',attacker:'#ef4444',healer:'#22c55e',support:'#a855f7'};
+    const grid=document.getElementById('members-grid');
+    if(!members.length){grid.innerHTML='<div style="color:var(--muted);font-size:0.85rem;">No members yet.</div>';return;}
+    grid.innerHTML=members.map(m=>{
+      const role=m.role||'attacker',color=roleColors[role]||'var(--accent2)';
+      const hp=m.health||100,maxhp=m.max_health||100,hpPct=Math.round((hp/maxhp)*100);
+      return`<div class="member-card${m.is_you?' you':''}">
+        <div class="member-top">
+          <div class="member-avatar" style="background:${color}22;color:${color}">${(m.username||'?')[0].toUpperCase()}</div>
+          <div><div class="member-name">${m.username||'Unknown'}${m.is_you?' (You)':''}</div>
+          <span class="member-role-badge" style="background:${color}22;color:${color}">${ROLES[role]?.icon||''} ${ROLES[role]?.label||role}</span></div>
+        </div>
+        <div class="member-hp-bar"><div class="member-hp-fill" style="width:${hpPct}%;background:${color}"></div></div>
+        <div class="member-stats"><span>HP: ${hp}/${maxhp}</span><span>Dmg: ${m.damage_dealt||0}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderActionButtons(role){
+    const actions=ROLES[role]?.actions||['attack'];
+    document.getElementById('action-buttons').innerHTML=actions.map(key=>{
+      const a=ACTIONS[key];
+      return`<button class="action-btn ${a.cls}" id="btn-${key}" disabled onclick="doAction('${key}')">${a.icon} ${a.label}${a.sp>0?` (${a.sp} SP)`:''}</button>`;
+    }).join('');
+  }
+
+  // ── Question System ──
+  function loadQuestion(){
+    qAnswered=false;
+    if(!charged){
+      const q=QUESTIONS[qIdx%QUESTIONS.length];
+      document.getElementById('q-text').textContent=q.q;
+      document.getElementById('q-feedback').className='q-feedback';
+      document.getElementById('q-feedback').textContent='';
+      document.getElementById('next-q-btn').classList.add('hidden');
+      document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>`<button class="opt" onclick="answerQuestion(${i})">${o}</button>`).join('');
     }
+  }
 
-    // Check if user has group access
-    async function checkGroupAccess() {
-      try {
-        const response = await fetch('/check-access', {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.has_access) {
-            document.getElementById('battle-container').classList.remove('hidden');
-            await loadGroupBattles();
-          } else {
-            document.getElementById('no-groups-message').classList.remove('hidden');
-          }
-        } else {
-          document.getElementById('no-groups-message').classList.remove('hidden');
-          log('Error checking group access');
-        }
-      } catch (error) {
-        console.error('Group access check failed:', error);
-        document.getElementById('no-groups-message').classList.remove('hidden');
-        log('Failed to check group access');
-      }
-    }
-
-    // Load group battles
-    async function loadGroupBattles() {
-      try {
-        const response = await fetch('/group/' + currentGroupId, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          const battles = await response.json();
-          
-          // For simplicity, join the first active battle or create a new one
-          const activeBattle = battles.find(b => !b.is_completed) || battles[0];
-          
-          if (activeBattle) {
-            currentBattleId = activeBattle.id;
-            await joinBattle(currentBattleId);
-            document.getElementById('battle-name').textContent = `Battle #${activeBattle.id}`;
-            document.getElementById('status-overlay').classList.remove('hidden');
-          } else {
-            // Create a new battle if none exists
-            await createNewBattle();
-          }
-        } else {
-          log('Failed to load group battles');
-        }
-      } catch (error) {
-        console.error('Failed to load battles:', error);
-        log('Failed to load battles');
-      }
-    }
-
-    // Create a new battle
-    async function createNewBattle() {
-      try {
-        const battleData = {
-          group_id: currentGroupId,
-          difficulty: 5, // Medium difficulty
-          max_health: maxBossHealth,
-          current_health: maxBossHealth,
-          reward_xp: 100,
-          reward_skill_points: 5
-        };
-        
-        const response = await fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify(battleData)
-        });
-        
-        if (response.ok) {
-          const battle = await response.json();
-          currentBattleId = battle.id;
-          await joinBattle(currentBattleId);
-          document.getElementById('battle-name').textContent = `Battle #${battle.id}`;
-          document.getElementById('status-overlay').classList.remove('hidden');
-          log('New battle created!');
-        } else {
-          log('Failed to create new battle');
-        }
-      } catch (error) {
-        console.error('Failed to create battle:', error);
-        log('Failed to create battle');
-      }
-    }
-
-    // Join a battle
-    async function joinBattle(battleId) {
-      try {
-        const response = await fetch(`/${battleId}/join`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          log('Joined the battle successfully!');
-          initializeWebSocket(battleId);
-          loadGroupMembers();
-        } else {
-          log('Failed to join battle');
-        }
-      } catch (error) {
-        console.error('Failed to join battle:', error);
-        log('Failed to join battle');
-      }
-    }
-
-    // Initialize WebSocket connection
-    function initializeWebSocket(battleId) {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/${battleId}/ws?token=${authToken}`;
-      
-      ws = new WebSocket(wsUrl);
-      
-      ws.onopen = function() {
-        log('Connected to battle');
-      };
-      
-      ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
-      };
-      
-      ws.onclose = function() {
-        log('Disconnected from battle. Attempting to reconnect...');
-        setTimeout(() => initializeWebSocket(battleId), 3000);
-      };
-      
-      ws.onerror = function(error) {
-        console.error('WebSocket error:', error);
-        log('WebSocket connection error');
-      };
-    }
-
-    // Handle WebSocket messages
-    function handleWebSocketMessage(data) {
-      switch (data.type) {
-        case 'battle_update':
-          updateBattleState(data);
-          break;
-        case 'user_joined_battle':
-          log(`User ${data.user_id} joined the battle`);
-          loadGroupMembers();
-          break;
-        case 'chat_message':
-          log(`[Chat] ${data.username}: ${data.content}`);
-          break;
-        case 'error':
-          log(`Error: ${data.message}`);
-          break;
-        default:
-          console.log('Unknown message type:', data.type);
-      }
-    }
-
-    // Update battle state from server
-    function updateBattleState(data) {
-      if (data.current_health !== undefined) {
-        bossHealth = data.current_health;
-        updateBossHealthUI();
-        
-        if (bossHealth <= 0 && bossAlive) {
-          bossDefeated();
-        }
-      }
-      
-      if (data.score !== undefined) {
-        // Update score if needed
-      }
-      
-      if (data.is_completed !== undefined) {
-        battleStatus = data.is_completed ? "Completed" : "Active";
-        document.getElementById('battle-status').textContent = battleStatus;
-      }
-    }
-
-    // Initialize event listeners
-    function initializeEventListeners() {
-      document.getElementById('attack-btn').addEventListener('click', handleAttack);
-      document.getElementById('special-btn').addEventListener('click', handleSpecialAttack);
-      document.getElementById('heal-btn').addEventListener('click', handleHeal);
-      document.getElementById('reset-btn').addEventListener('click', handleReset);
-      document.getElementById('logout-btn').addEventListener('click', handleLogout);
-    }
-
-    // Handle attack action
-    async function handleAttack() {
-      if (!bossAlive) return;
-      
-      const damage = 60 + Math.floor(Math.random() * 40);
-      await sendAttack(damage, false);
-    }
-
-    // Handle special attack
-    async function handleSpecialAttack() {
-      if (!bossAlive) return;
-      if (skillPoints < 4) {
-        log("Not enough skill points for special attack!");
-        return;
-      }
-      
-      const damage = 180 + Math.floor(Math.random() * 90);
-      skillPoints -= 4;
-      updateSkillPointsUI();
-      await sendAttack(damage, true);
-    }
-
-    // Handle heal action
-    async function handleHeal() {
-      try {
-        const response = await fetch('/heal', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          log("Healed the party for 120 HP!");
-          
-          // Update local state if needed
-          if (result.boss_health !== undefined) {
-            bossHealth = result.boss_health;
-            updateBossHealthUI();
-          }
-        } else {
-          log("Heal failed!");
-        }
-      } catch (error) {
-        console.error('Heal failed:', error);
-        log("Heal failed!");
-      }
-    }
-
-    // Send attack to server
-    async function sendAttack(damage, isSpecial) {
-      try {
-        const response = await fetch(`/${currentBattleId}/attack`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            damage: damage,
-            special: isSpecial
-          })
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          log(`${isSpecial ? 'Special attack' : 'Attack'} hit for ${damage} damage!`);
-          
-          // Update local state
-          bossHealth = result.current_health;
-          updateBossHealthUI();
-          
-          if (bossHealth <= 0 && bossAlive) {
-            bossDefeated();
-          }
-        } else {
-          log("Attack failed!");
-        }
-      } catch (error) {
-        console.error('Attack failed:', error);
-        log("Attack failed!");
-      }
-    }
-
-    // Handle reset
-    function handleReset() {
-      bossHealth = maxBossHealth;
-      attackerHealth = 100;
-      healerHealth = 100;
-      skillPoints = 12;
-      currentPhase = 1;
-      bossAlive = true;
-      battleStatus = "Idle";
-      
-      updateBossHealthUI();
-      updatePlayerHealthUI();
-      updateSkillPointsUI();
-      document.getElementById('battle-status').textContent = battleStatus;
-      document.getElementById('boss-phase').textContent = currentPhase;
-      
-      log("Battle has been reset");
-    }
-
-    // Handle logout
-    function handleLogout() {
-      localStorage.removeItem('access_token');
-      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      window.location.href = '/login';
-    }
-
-    // Update boss health UI
-    function updateBossHealthUI() {
-      const percent = (bossHealth / maxBossHealth) * 100;
-      document.getElementById('boss-health-fill').style.width = percent + '%';
-      document.getElementById('boss-health-text').textContent = `${bossHealth} / ${maxBossHealth}`;
-      
-      // Update color based on health percentage
-      const fill = document.getElementById('boss-health-fill');
-      if (percent > 70) {
-        fill.style.background = '#e74c3c';
-      } else if (percent > 40) {
-        fill.style.background = '#f39c12';
+  function answerQuestion(idx){
+    if(qAnswered||charged)return;
+    qAnswered=true;
+    const q=QUESTIONS[qIdx%QUESTIONS.length];
+    const btns=document.querySelectorAll('.opt');
+    btns.forEach(b=>b.disabled=true);
+    const fb=document.getElementById('q-feedback');
+    if(idx===q.ans){
+      btns[idx].className='opt correct';
+      charge=Math.min(chargeNeeded,charge+1);
+      updateChargebar();
+      if(charge>=chargeNeeded){
+        charged=true;
+        fb.className='q-feedback ok'; fb.textContent='Charge complete! Use your action below ↓';
+        enableActionButtons();
+        addLog('Charge bar full — action ready!','system');
       } else {
-        fill.style.background = '#c0392b';
+        fb.className='q-feedback ok'; fb.textContent=`Correct! Charge: ${charge}/${chargeNeeded}`;
+        addLog(`Correct answer! Charge ${charge}/${chargeNeeded}`,'system');
+        document.getElementById('next-q-btn').classList.remove('hidden');
       }
-      
-      // Update phase
-      const newPhase = percent > 70 ? 1 : percent > 40 ? 2 : 3;
-      if (newPhase !== currentPhase) {
-        currentPhase = newPhase;
-        document.getElementById('boss-phase').textContent = currentPhase;
-        log(`Boss entered phase ${currentPhase}!`);
+    } else {
+      btns[idx].className='opt wrong';
+      btns[q.ans].className='opt correct';
+      fb.className='q-feedback bad'; fb.textContent='Wrong! Boss counter-attacks!';
+      addLog('Wrong answer — boss attacks the party!','boss');
+      bossCounterAttack();
+      document.getElementById('next-q-btn').classList.remove('hidden');
+    }
+    qIdx++;
+  }
+
+  function updateChargebar(){
+    const pct=(charge/chargeNeeded)*100;
+    document.getElementById('charge-fill').style.width=pct+'%';
+    document.getElementById('charge-text').textContent=`${charge} / ${chargeNeeded}`;
+  }
+
+  function enableActionButtons(){
+    document.querySelectorAll('.action-btn').forEach(b=>{b.disabled=false;});
+  }
+
+  function resetCharge(){
+    charge=0; charged=false;
+    updateChargebar();
+    document.querySelectorAll('.action-btn').forEach(b=>{b.disabled=true;});
+    setTimeout(loadQuestion,300);
+  }
+
+  // ── Actions ──
+  async function doAction(actionKey){
+    if(!charged||!currentBattleId)return;
+    const action=ACTIONS[actionKey];
+    if(action.sp>0&&skillPoints<action.sp){addLog(`Not enough SP! (Need ${action.sp})`,'system');return;}
+    if(action.sp>0){skillPoints-=action.sp;document.getElementById('sp-display').textContent=skillPoints;}
+    try{
+      if(action.damage>0){
+        const damage=action.damage+(battlePhase>1?10*(battlePhase-1):0);
+        const res=await fetch(`/battles/group/${currentBattleId}/attack`,{method:'POST',headers:authHeaders(),body:JSON.stringify({damage})});
+        if(res.status===401){window.location.href='/login';return;}
+        if(!res.ok)throw new Error();
+        dmgDealt+=damage;
+        document.getElementById('dmg-display').textContent=dmgDealt;
+        addLog(`${action.icon} You used ${action.label} for ${damage} damage!`,'attack');
+        showXPPop(`-${damage} HP`);
+        await loadBattleState(currentBattleId);
+      } else {
+        if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:actionKey,role:selectedRole}));
+        const logType=actionKey==='heal'?'heal':actionKey==='shield'?'shield':'support';
+        addLog(`${action.icon} You used ${action.label}!`,logType);
       }
-    }
+    }catch(e){console.error(e);addLog(`Failed to perform ${action.label}.`,'system');}
+    resetCharge();
+  }
 
-    // Update player health UI
-    function updatePlayerHealthUI() {
-      document.getElementById('attacker-health').textContent = `${attackerHealth} / 100`;
-      document.getElementById('attacker-health-fill').style.width = `${attackerHealth}%`;
-      
-      document.getElementById('healer-health').textContent = `${healerHealth} / 100`;
-      document.getElementById('healer-health-fill').style.width = `${healerHealth}%`;
-    }
+  function bossCounterAttack(){
+    // Visual feedback only — backend handles actual HP changes via WS
+    addLog(`🐉 Boss attacks the party for ${10+battlePhase*5} damage!`,'boss');
+  }
 
-    // Update skill points UI
-    function updateSkillPointsUI() {
-      document.getElementById('skill-points').textContent = skillPoints;
-    }
+  // ── Battle Log ──
+  function addLog(msg,type=''){
+    const log=document.getElementById('battle-log');
+    const entry=document.createElement('div');
+    entry.className=`log-entry ${type}`;
+    entry.innerHTML=`<span class="time">[${new Date().toLocaleTimeString()}]</span>${msg}`;
+    log.appendChild(entry);
+    log.scrollTop=log.scrollHeight;
+  }
 
-    // Boss defeated sequence
-    function bossDefeated() {
-      bossAlive = false;
-      battleStatus = "Victory!";
-      document.getElementById('battle-status').textContent = battleStatus;
-      log("Congratulations! The boss has been defeated!");
-      
-      if (ws) {
-        ws.send(JSON.stringify({
-          type: "chat_message",
-          content: "We defeated the boss! Great job team!"
-        }));
-      }
-    }
+  // ── WebSocket ──
+  function connectWebSocket(battleId){
+    const token=getToken(),proto=location.protocol==='https:'?'wss':'ws';
+    ws=new WebSocket(`${proto}://${location.host}/battles/group/${battleId}/ws?token=${token}`);
+    ws.onopen=()=>addLog('Connected to battle server.','system');
+    ws.onclose=()=>addLog('Disconnected from battle server.','system');
+    ws.onmessage=(e)=>{try{handleWSMessage(JSON.parse(e.data));}catch{}};
+  }
 
-    // Add message to battle log
-    function log(message) {
-      const logElement = document.getElementById('battle-log');
-      const entry = document.createElement('div');
-      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-      logElement.appendChild(entry);
-      logElement.scrollTop = logElement.scrollHeight;
-    }
-
-    // Load group members
-    async function loadGroupMembers() {
-      try {
-        const response = await fetch(`/group/${currentGroupId}/members`, {
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        
-        if (response.ok) {
-          const members = await response.json();
-          const membersElement = document.getElementById('group-members');
-          membersElement.innerHTML = '';
-          
-          members.forEach(member => {
-            const memberElement = document.createElement('div');
-            memberElement.textContent = member.username;
-            membersElement.appendChild(memberElement);
-          });
+  function handleWSMessage(data){
+    switch(data.type){
+      case 'battle_update':
+        if(data.current_health!==undefined){
+          const maxHp=1400,pct=(data.current_health/maxHp)*100;
+          document.getElementById('boss-hp-fill').style.width=pct+'%';
+          document.getElementById('boss-hp-current').textContent=data.current_health;
         }
-      } catch (error) {
-        console.error('Failed to load group members:', error);
-      }
+        if(data.is_completed){if(data.passed)showVictory(200,10);else showDefeat();}
+        break;
+      case 'heal': addLog(`💚 ${data.username||'Ally'} healed the party!`,'heal'); break;
+      case 'shield': addLog(`🛡️ ${data.username||'Tank'} raised a shield!`,'shield'); break;
+      case 'buff':
+        addLog(`⚡ ${data.username||'Support'} buffed the team! (+20% XP)`,'support');
+        skillPoints=Math.min(skillPoints+2,20);
+        document.getElementById('sp-display').textContent=skillPoints;
+        break;
+      case 'battle_created': addLog('A new battle has been created!','system'); loadBattles(); break;
     }
+  }
 
-    // Initialize the 3D battle environment
-    async function initializeBattle() {
-      // Check if WebGL is available
-      if (!isWebGLAvailable()) {
-        log("WebGL not available - using fallback 2D mode");
-        initializeFallback2D();
-        return;
-      }
-      
-      try {
-        // Initialize Three.js scene
-        initThreeJS();
-        
-        // Load models
-        await loadModels();
-        
-        // Start animation loop
-        animate();
-        
-        // Hide loading indicator
-        document.getElementById('loading').style.display = 'none';
-        
-        log("3D battle environment loaded successfully!");
-      } catch (error) {
-        console.error('Failed to initialize 3D environment:', error);
-        log("Failed to load 3D environment - using fallback 2D mode");
-        initializeFallback2D();
-      }
-    }
-
-    // Check if WebGL is available
-    function isWebGLAvailable() {
-      try {
-        const canvas = document.createElement('canvas');
-        return !!window.WebGLRenderingContext && 
-          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-      } catch (e) {
-        return false;
-      }
-    }
-
-    // Initialize Three.js
-    function initThreeJS() {
-      // Setup scene
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x02040a);
-      scene.fog = new THREE.FogExp2(0x000000, 0.0009);
-      
-      // Setup camera
-      camera = new THREE.PerspectiveCamera(
-        50, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
-      );
-      camera.position.set(0, 5, 10);
-      
-      // Setup renderer
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(document.getElementById('arena').clientWidth, 
-                       document.getElementById('arena').clientHeight);
-      renderer.shadowMap.enabled = true;
-      
-      // Clear previous content and add renderer to DOM
-      const arena = document.getElementById('arena');
-      while (arena.firstChild) {
-        arena.removeChild(arena.firstChild);
-      }
-      arena.appendChild(renderer.domElement);
-      
-      // Add lights
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-      scene.add(ambientLight);
-      
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(5, 10, 7.5);
-      directionalLight.castShadow = true;
-      scene.add(directionalLight);
-      
-      // Add ground
-      const groundGeometry = new THREE.PlaneGeometry(20, 20);
-      const groundMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x071219, 
-        roughness: 0.8,
-        metalness: 0.2
-      });
-      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
-      scene.add(ground);
-      
-      // Add simple grid for reference
-      const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
-      scene.add(gridHelper);
-      
-      // Setup orbit controls
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, 1, 0);
-      controls.update();
-    }
-
-    // Load 3D models
-    async function loadModels() {
-      // For simplicity, we'll use primitive geometries instead of loading external models
-      // In a real implementation, you would use GLTFLoader to load models
-      
-      // Create boss model
-      const bossGeometry = new THREE.ConeGeometry(1, 3, 8);
-      const bossMaterial = new THREE.MeshPhongMaterial({ color: 0xe74c3c });
-      bossModel = new THREE.Mesh(bossGeometry, bossMaterial);
-      bossModel.position.set(0, 1.5, 0);
-      bossModel.castShadow = true;
-      scene.add(bossModel);
-      
-      // Create attacker model
-      const attackerGeometry = new THREE.BoxGeometry(0.8, 1.8, 0.8);
-      const attackerMaterial = new THREE.MeshPhongMaterial({ color: 0x3498db });
-      attackerModel = new THREE.Mesh(attackerGeometry, attackerMaterial);
-      attackerModel.position.set(-3, 0.9, 3);
-      attackerModel.castShadow = true;
-      scene.add(attackerModel);
-      
-      // Create healer model
-      const healerGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1.8, 16);
-      const healerMaterial = new THREE.MeshPhongMaterial({ color: 0x2ecc71 });
-      healerModel = new THREE.Mesh(healerGeometry, healerMaterial);
-      healerModel.position.set(3, 0.9, 3);
-      healerModel.castShadow = true;
-      scene.add(healerModel);
-    }
-
-    // Animation loop
-    function animate() {
-      requestAnimationFrame(animate);
-      
-      // Simple idle animations
-      if (bossModel) {
-        bossModel.rotation.y += 0.01;
-      }
-      
-      if (attackerModel) {
-        attackerModel.position.y = 0.9 + Math.sin(Date.now() * 0.003) * 0.1;
-      }
-      
-      if (healerModel) {
-        healerModel.position.y = 0.9 + Math.sin(Date.now() * 0.003 + 0.5) * 0.1;
-      }
-      
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    // Initialize fallback 2D mode
-    function initializeFallback2D() {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('fallback-canvas').classList.remove('hidden');
-      
-      const canvas = document.getElementById('fallback-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Set canvas size
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      
-      // Draw initial scene
-      draw2DScene(ctx);
-      
-      log("2D battle mode activated");
-    }
-
-    // Draw 2D scene
-    function draw2DScene(ctx) {
-      // Clear canvas
-      ctx.fillStyle = '#071019';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw ground
-      ctx.fillStyle = '#0f1114';
-      ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
-      
-      // Draw boss
-      ctx.fillStyle = '#e74c3c';
-      ctx.fillRect(canvas.width / 2 - 30, canvas.height * 0.7 - 80, 60, 80);
-      
-      // Draw attacker
-      ctx.fillStyle = '#3498db';
-      ctx.fillRect(canvas.width / 4 - 20, canvas.height * 0.7 - 60, 40, 60);
-      
-      // Draw healer
-      ctx.fillStyle = '#2ecc71';
-      ctx.fillRect(canvas.width * 3/4 - 20, canvas.height * 0.7 - 60, 40, 60);
-      
-      // Draw health bars
-      ctx.fillStyle = '#333';
-      ctx.fillRect(canvas.width / 2 - 50, canvas.height * 0.7 - 100, 100, 10);
-      ctx.fillStyle = '#e74c3c';
-      ctx.fillRect(canvas.width / 2 - 50, canvas.height * 0.7 - 100, 100 * (bossHealth / maxBossHealth), 10);
-    }
-  </script>
+  function showVictory(xp,sp){
+    document.getElementById('victory-xp').textContent=`+${xp} XP`;
+    document.getElementById('victory-sp').textContent=`+${sp} Skill Points`;
+    document.getElementById('victory-overlay').classList.add('show');
+    document.getElementById('xp-banner-amount').textContent=`+${xp} XP`;
+    document.getElementById('xp-banner-sp').textContent=`+${sp} Skill Points`;
+    document.getElementById('xp-banner').classList.add('show');
+    showXPPop(`+${xp} XP`);
+    localStorage.setItem('pending_levelup_check','1');
+  }
+  function showDefeat(){document.getElementById('defeat-overlay').classList.add('show');}
+  function closeOverlay(id){document.getElementById(id).classList.remove('show');if(id==='victory-overlay')loadBattles();}
+  function showXPPop(text){
+    const el=document.createElement('div');el.className='xp-pop';el.textContent=text;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2000);
+  }
+</script>
 </body>
 </html>

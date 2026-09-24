@@ -1,644 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<style id="discord-theme-override">
-:root{
-  --bg: #0b0d10;        /* primary background (near-black) */
-  --panel: #111216;     /* panels and cards */
-  --accent: #5865F2;    /* Discord blurple */
-  --text: #DCDDDE;      /* main text */
-  --muted: #72767D;     /* muted text */
-  --border: rgba(255,255,255,0.06);
-}
-
-html,body {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif !important;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100%;
-}
-
-/* Make primary containers dark panels */
-header, nav, footer, .navbar, .header, .topbar, .app-bar, .panel, .card, .container, .box {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-}
-
-/* Links and accents */
-a, a:link, a:visited, .link, .accent {
-  color: var(--accent) !important;
-  text-decoration: none !important;
-}
-
-/* Buttons and interactive elements */
-button, .btn, .button, input[type="button"], input[type="submit"] {
-  background: rgba(88,101,242,0.95) !important;
-  color: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.3) inset !important;
-  border-radius: 6px !important;
-}
-
-/* Outline / secondary buttons */
-button.secondary, .btn-secondary, .button.secondary {
-  background: transparent !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-}
-
-/* Inputs */
-input, textarea, select, .form-control {
-  background: #0f1113 !important;
-  color: var(--text) !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
-}
-
-/* Cards and panels */
-.card, .panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)) , var(--panel) !important;
-  border-radius: 8px !important;
-  padding: 12px !important;
-}
-
-/* Tables */
-table {
-  color: var(--text) !important;
-}
-table thead th {
-  color: var(--muted) !important;
-  border-bottom: 1px solid var(--border) !important;
-}
-
-/* Scrollbar (modern browsers) */
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 10px; }
-
-/* Utility muted text */
-.muted, .text-muted, small {
-  color: var(--muted) !important;
-}
-
-/* Ensure images that used light backgrounds remain visible */
-img {
-  filter: none !important;
-}
-
-/* Fallback stronger override for inline styles and components */
-[style*="background"], [style*="background-color"] {
-  background-color: unset !important;
-}
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leveling - StudyRPG</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0b0d10; --panel: #111216; --accent: #5865F2; --accent2: #38bdf8;
+    --text: #DCDDDE; --muted: #72767D; --border: rgba(255,255,255,0.06);
+    --success: #22c55e; --error: #ef4444; --gold: #f59e0b; --gold2: #fcd34d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: radial-gradient(circle at top, #0b1020, #05070d 70%); color: var(--text); min-height: 100vh; }
+  .page-wrapper { display: flex; min-height: 100vh; }
+  .sidebar { width: 260px; background: #0f172a; padding: 2rem 1.2rem; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .avatar-preview { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #22d3ee); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem; }
+  .welcome-text { text-align: center; margin-bottom: 1.5rem; font-size: 1rem; }
+  .welcome-text .username { font-weight: bold; color: var(--accent2); display: block; font-size: 1.1rem; }
+  .sidebar-btn { background: #1e293b; color: white; border: none; padding: 0.75rem; margin: 0.25rem 0; border-radius: 8px; cursor: pointer; text-decoration: none; display: flex; gap: 0.6rem; align-items: center; justify-content: center; width: 100%; font-size: 0.88rem; transition: background 0.2s; }
+  .sidebar-btn:hover { background: #334155; }
+  .sidebar-btn.active { background: var(--accent); }
+  .logout-btn { margin-top: auto; background: #7f1d1d; color: white; border: none; padding: 0.75rem; border-radius: 8px; cursor: pointer; width: 100%; font-size: 0.88rem; display: flex; gap: 0.6rem; align-items: center; justify-content: center; }
+  .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+  .back-link { color: var(--muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.5rem; transition: color 0.2s; }
+  .back-link:hover { color: var(--text); }
+  .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.8rem; color: white; }
+  .page-header i { font-size: 2rem; color: var(--gold); }
+  .hero-card { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border: 1px solid rgba(99,102,241,0.3); border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+  .hero-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 50%, rgba(99,102,241,0.12), transparent 60%); pointer-events: none; }
+  .hero-top { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .level-badge { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #d97706); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(245,158,11,0.4); flex-shrink: 0; animation: glowPulse 3s ease-in-out infinite; }
+  @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 30px rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 50px rgba(245,158,11,0.7); } }
+  .level-badge .lbl { font-size: 0.7rem; color: rgba(0,0,0,0.7); font-weight: 600; text-transform: uppercase; }
+  .level-badge .num { font-size: 2.8rem; font-weight: 900; color: #000; line-height: 1; }
+  .hero-info { flex: 1; }
+  .hero-info h2 { font-size: 1.5rem; color: white; margin-bottom: 0.3rem; }
+  .hero-info .rank-label { display: inline-block; font-size: 0.8rem; background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); padding: 0.2rem 0.7rem; border-radius: 99px; margin-bottom: 1rem; }
+  .hero-info .total-xp { font-size: 0.9rem; color: var(--muted); }
+  .hero-info .total-xp span { color: var(--accent2); font-weight: bold; }
+  .xp-labels { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .xp-labels .current { color: var(--accent2); font-weight: bold; }
+  .xp-track { height: 16px; background: #1e293b; border-radius: 99px; overflow: hidden; position: relative; }
+  .xp-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6366f1, var(--accent2)); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); position: relative; width: 0%; }
+  .xp-fill::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25)); animation: shimmer 2s infinite; }
+  @keyframes shimmer { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+  .xp-pct { text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+  .xp-pct span { color: var(--accent2); font-weight: bold; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; text-align: center; }
+  .stat-card .icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .stat-card .val { font-size: 1.7rem; font-weight: bold; color: var(--accent2); }
+  .stat-card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .card-title { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem; }
+  .milestone-list { display: flex; flex-direction: column; }
+  .milestone { display: flex; align-items: flex-start; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
+  .milestone:last-child { border-bottom: none; }
+  .ms-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .ms-dot.done { background: rgba(34,197,94,0.2); color: var(--success); border: 1px solid var(--success); }
+  .ms-dot.next { background: rgba(245,158,11,0.2); color: var(--gold); border: 1px solid var(--gold); animation: glowPulse 2s infinite; }
+  .ms-dot.future { background: #1e293b; color: var(--muted); border: 1px solid var(--border); }
+  .ms-info { flex: 1; }
+  .ms-info .ms-title { font-size: 0.95rem; font-weight: bold; color: white; }
+  .ms-info .ms-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+  .ms-xp { font-size: 0.82rem; color: var(--gold); font-weight: bold; white-space: nowrap; }
+  .sources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
+  .source-item { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.8rem; }
+  .source-item .src-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .source-item .src-name { font-size: 0.85rem; color: var(--text); }
+  .source-item .src-xp { font-size: 0.78rem; color: var(--gold); }
+  .levelup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
+  .levelup-overlay.show { display: flex; }
+  .levelup-box { background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid var(--gold); border-radius: 24px; padding: 3rem 2.5rem; text-align: center; max-width: 420px; width: 90%; animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes scaleIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .levelup-box .trophy { font-size: 4rem; margin-bottom: 0.5rem; }
+  .levelup-box h1 { font-size: 2rem; color: var(--gold); margin-bottom: 0.3rem; }
+  .levelup-box .new-lvl { font-size: 3.5rem; font-weight: 900; color: white; line-height: 1; margin: 0.5rem 0; }
+  .levelup-box p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .levelup-box .rank-reveal { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 0.7rem 1rem; color: var(--gold); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .levelup-close { padding: 0.8rem 2.5rem; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--gold), #d97706); color: #000; font-weight: bold; font-size: 1rem; cursor: pointer; }
+  .xp-pop { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--gold), #d97706); color: #000; padding: 0.6rem 1.6rem; border-radius: 99px; font-weight: bold; font-size: 1.2rem; animation: floatUp 2s ease forwards; pointer-events: none; z-index: 9998; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-100px); } }
+  @media (max-width: 768px) { .sidebar { display: none; } .main-content { padding: 1rem; } .hero-top { flex-direction: column; align-items: flex-start; } }
 </style>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyRPG - Leveling System</title>
-    
-    <!-- Font Awesome -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
-
-    <style>
-        /* ===== BASE STYLES ===== */
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(
-                135deg,
-                #1a1a2e 0%,       /* Deep night (mystery/quests) */
-                #1e3c72 25%,      /* Steel blue (survival/cold tech) */
-                #e52d27 60%,      /* Blood red (danger/battle) */
-                #ffb347 85%,      /* Ember glow (energy/climax) */
-                #6df0ff 100%      /* Cyber neon (tech/futurism) */
-            );
-            background-size: 400% 400%;
-            animation: gradientPulse 15s ease infinite;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #1e3c72;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        @keyframes gradientPulse {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* ===== LAYOUT ===== */
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            background-color: #1e3c72;
-            color: #fff;
-            padding: 2rem 1.5rem;
-            width: 250px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .avatar-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #fff;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #8a5a44 0%, #a87c6c 50%, #c4a89c 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2.5rem;
-            box-shadow: 0 4px 15px rgba(138, 90, 68, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .avatar-preview:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(138, 90, 68, 0.6);
-        }
-
-        .username-label {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .username-label h1 {
-            margin: 0;
-            font-size: inherit;
-        }
-
-        .sidebar-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 0.9rem 1rem;
-            background-color: #2a5298;
-            color: #fff;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 1.05rem;
-            width: 100%;
-            margin: 1rem 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-btn:hover {
-            background-color: #3a6db1;
-            transform: scale(1.03);
-        }
-
-        .sidebar-btn i {
-            font-size: 1.2rem;
-        }
-
-        .logout-btn {
-            background-color: #e52d27;
-            border: none;
-            color: white;
-            padding: 0.6rem 1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: auto;
-            width: 100%;
-            transition: background 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background-color: #ff4c4c;
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        .main-content {
-            flex: 1;
-            padding: 2rem 1.5rem;
-            overflow-y: auto;
-        }
-
-        /* ===== LEVELING CONTENT ===== */
-        .leveling-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .section-title {
-            color: #1e3c72;
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2rem;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(90deg, #e52d27, #ffb347);
-            margin: 0.5rem auto;
-            border-radius: 2px;
-        }
-
-        /* LEVEL DISPLAY */
-        .level-display {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #e3f0fc, #ffffff);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .level-number {
-            font-size: 3.5rem;
-            font-weight: bold;
-            color: #e52d27;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 0.5rem;
-        }
-
-        .level-label {
-            font-size: 1.2rem;
-            color: #1e3c72;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-        }
-
-        .total-xp {
-            font-size: 1rem;
-            color: #4a5568;
-            margin-bottom: 1rem;
-        }
-
-        /* PROGRESS BAR */
-        .progress-container {
-            margin-bottom: 0;
-        }
-
-        .progress-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-            color: #1e3c72;
-        }
-
-        .progress-bar {
-            height: 25px;
-            background: #e0e7ff;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffb347, #e52d27);
-            border-radius: 20px;
-            transition: width 0.5s ease-in-out;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 10px;
-            color: white;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-            min-width: 0;
-        }
-
-        /* LOADING STATES */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e2e8f0;
-            border-top: 2px solid #2a5298;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                padding: 1rem;
-            }
-
-            .sidebar .avatar-preview {
-                width: 60px;
-                height: 60px;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .sidebar {
-                padding: 0.5rem;
-            }
-
-            .main-content {
-                padding: 0.5rem;
-            }
-            
-            .level-number {
-                font-size: 2.5rem;
-            }
-            
-            .leveling-container {
-                padding: 1rem;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div id="user-avatar" class="avatar-preview">
-                <i class="fas fa-user"></i>
-            </div>
-            <div id="user-name" class="username-label">
-                <h1>Leveling System</h1>
-            </div>
-
-            <!-- Dashboard Link -->
-            <a href="/dashboard" class="sidebar-btn">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-
-            <!-- Skills Link -->
-            <a href="/skills" class="sidebar-btn">
-                <i class="fas fa-star"></i>
-                <span>Skills</span>
-            </a>
-
-            <!-- Quests Link -->
-            <a href="/quests" class="sidebar-btn">
-                <i class="fas fa-tasks"></i>
-                <span>Quests</span>
-            </a>
-
-            <!-- Leaderboard Link -->
-            <a href="/leaderboard" class="sidebar-btn">
-                <i class="fas fa-trophy"></i>
-                <span>Leaderboard</span>
-            </a>
-
-            <!-- Logout -->
-            <button onclick="logout()" class="logout-btn" tabindex="0">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-            </button>
-        </aside>
-
-        <!-- Main Leveling Content -->
-        <main class="main-content">
-            <div class="leveling-container">
-                <h2 class="section-title">Level Progression</h2>
-                
-                <!-- Level Display -->
-                <div class="level-display">
-                    <div class="level-number" id="current-level">1</div>
-                    <div class="level-label">Current Level</div>
-                    <div class="total-xp" id="total-xp">Total XP: 0</div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-labels">
-                            <span id="current-xp">0 XP</span>
-                            <span id="next-level-xp">100 XP for Next Level</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+<div class="page-wrapper">
+  <aside class="sidebar">
+    <div class="avatar-preview"><i class="fas fa-user"></i></div>
+    <div class="welcome-text">Welcome,<span class="username" id="sidebar-username">...</span></div>
+    <a href="/dashboard"   class="sidebar-btn"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/leveling"    class="sidebar-btn active"><i class="fas fa-chart-line"></i> Leveling</a>
+    <a href="/quests"      class="sidebar-btn"><i class="fas fa-scroll"></i> Quests</a>
+    <a href="/skills"      class="sidebar-btn"><i class="fas fa-project-diagram"></i> Skills</a>
+    <a href="/memory"      class="sidebar-btn"><i class="fas fa-brain"></i> Memory</a>
+    <a href="/flashcard"   class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
+    <a href="/pomodoro"    class="sidebar-btn"><i class="fas fa-clock"></i> Pomodoro</a>
+    <a href="/leaderboard" class="sidebar-btn"><i class="fas fa-trophy"></i> Leaderboard</a>
+    <a href="/analytics"   class="sidebar-btn"><i class="fas fa-chart-pie"></i> Analytics</a>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </aside>
+  <main class="main-content">
+    <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <div class="page-header"><i class="fas fa-chart-line"></i><h1>Level Progression</h1></div>
+    <div class="hero-card">
+      <div class="hero-top">
+        <div class="level-badge"><span class="lbl">Level</span><span class="num" id="hero-level">—</span></div>
+        <div class="hero-info">
+          <h2 id="hero-username">—</h2>
+          <span class="rank-label" id="rank-label">Loading rank...</span>
+          <div class="total-xp">Total XP: <span id="hero-total-xp">—</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="xp-labels"><span class="current" id="xp-current">— XP</span><span id="xp-next-label">— XP to Level —</span></div>
+        <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+        <div class="xp-pct">Progress: <span id="xp-pct-text">0%</span></div>
+      </div>
     </div>
-
-    <script>
-        // Global state
-        let currentLevelData = null;
-
-        // Utility: Get token from localStorage
-        async function getToken() {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                window.location.href = '/login';
-                throw new Error('No token found. Redirecting to login...');
-            }
-            return token;
-        }
-
-        // Load user profile data
-        async function loadUserProfile() {
-            try {
-                const token = await getToken();
-                const response = await fetch('/auth/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const userData = await response.json();
-                    // Update user avatar and name
-                    await loadUserAvatar(userData);
-                    if (userData.username) {
-                        document.getElementById('user-name').textContent = userData.username;
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading user profile:', error);
-            }
-        }
-
-        // Load user avatar
-        async function loadUserAvatar(userData) {
-            try {
-                const avatarElement = document.getElementById('user-avatar');
-                
-                if (userData && userData.avatar_url && userData.avatar_url !== "None") {
-                    // Create an image element for the avatar
-                    avatarElement.innerHTML = '';
-                    const img = document.createElement('img');
-                    img.src = userData.avatar_url;
-                    img.alt = 'User Avatar';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.borderRadius = '50%';
-                    img.style.objectFit = 'cover';
-                    avatarElement.appendChild(img);
-                } else {
-                    // Use default avatar with initials
-                    const username = userData ? userData.username : 'User';
-                    const initials = username ? username.charAt(0).toUpperCase() : 'U';
-                    avatarElement.innerHTML = `<span style="font-size: 2.5rem; font-weight: bold;">${initials}</span>`;
-                }
-            } catch (error) {
-                console.error('Error loading avatar:', error);
-                // Fallback to default icon
-                const avatarElement = document.getElementById('user-avatar');
-                avatarElement.innerHTML = '<i class="fas fa-user"></i>';
-            }
-        }
-
-        // Initialize leveling page
-        (async function init() {
-            try {
-                await loadUserProfile();
-                await loadLevelingData();
-                console.log('Leveling system initialized successfully');
-            } catch (error) {
-                console.error('Initialization error:', error);
-                alert('Failed to initialize leveling system. Please try again.');
-            }
-        })();
-
-        // Load leveling data from backend
-        async function loadLevelingData() {
-            try {
-                const token = await getToken();
-                
-                // Get current level progress using the correct route
-                const progressResponse = await fetch('/leveling/progress', {
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                // Handle unauthorized response
-                if (progressResponse.status === 401) {
-                    localStorage.removeItem('access_token');
-                    window.location.href = '/login';
-                    return;
-                }
-                
-                if (!progressResponse.ok) {
-                    const errorText = await progressResponse.text();
-                    throw new Error(`Failed to load level progress: ${progressResponse.status} - ${errorText}`);
-                }
-                
-                const progressData = await progressResponse.json();
-                currentLevelData = progressData;
-                
-                updateLevelDisplay(progressData);
-                
-            } catch (error) {
-                console.error('Error loading leveling data:', error);
-                alert(`Failed to load leveling data: ${error.message}`);
-            }
-        }
-
-        // Update level display with data from backend
-        function updateLevelDisplay(data) {
-            try {
-                // Update level number
-                const levelEl = document.getElementById('current-level');
-                if (levelEl) levelEl.textContent = data.level || 1;
-                
-                // Update total XP
-                const totalXpEl = document.getElementById('total-xp');
-                if (totalXpEl) totalXpEl.textContent = `Total XP: ${data.total_xp || 0}`;
-                
-                // Update current XP in level
-                const currentXpEl = document.getElementById('current-xp');
-                if (currentXpEl) currentXpEl.textContent = `${data.current_xp || 0} XP`;
-                
-                // Update next level XP requirement
-                const nextLevelXpEl = document.getElementById('next-level-xp');
-                const nextLevelXp = data.xp_for_next_level - data.xp_for_current_level;
-                if (nextLevelXpEl) {
-                    nextLevelXpEl.textContent = `${nextLevelXp} XP for Level ${data.level + 1}`;
-                }
-                
-                // Update progress bar
-                const progressFillEl = document.getElementById('progress-fill');
-                const progressPercentage = Math.round(data.progress_percentage || 0);
-                if (progressFillEl) {
-                    progressFillEl.style.width = `${progressPercentage}%`;
-                    progressFillEl.textContent = progressPercentage > 5 ? `${progressPercentage}%` : '';
-                }
-                
-                console.log('Level display updated:', data);
-            } catch (error) {
-                console.error('Error updating level display:', error);
-            }
-        }
-
-        // Logout function
-        function logout() {
-            localStorage.removeItem('access_token');
-            sessionStorage.removeItem('access_token');
-            window.location.href = '/login';
-        }
-
-        // Error handler for unhandled promise rejections
-        window.addEventListener('unhandledrejection', event => {
-            console.error('Unhandled promise rejection:', event.reason);
-            event.preventDefault();
-        });
-
-        // Error handler for general errors
-        window.addEventListener('error', event => {
-            console.error('Global error:', event.error);
-        });
-    </script>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="icon">⚔️</div><div class="val" id="stat-level">—</div><div class="lbl">Current Level</div></div>
+      <div class="stat-card"><div class="icon">✨</div><div class="val" id="stat-total-xp">—</div><div class="lbl">Total XP</div></div>
+      <div class="stat-card"><div class="icon">🎯</div><div class="val" id="stat-xp-needed">—</div><div class="lbl">XP to Next Level</div></div>
+      <div class="stat-card"><div class="icon">📈</div><div class="val" id="stat-pct">—%</div><div class="lbl">Level Progress</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-flag" style="color:var(--gold)"></i> Level Milestones</div>
+      <div class="milestone-list" id="milestone-list"><div style="color:var(--muted); font-size:0.9rem;">Loading milestones...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-bolt" style="color:var(--accent2)"></i> How to Earn XP</div>
+      <div class="sources-grid">
+        <div class="source-item"><div class="src-icon" style="background:rgba(99,102,241,0.15);color:#818cf8"><i class="fas fa-brain"></i></div><div><div class="src-name">Memory Training</div><div class="src-xp">+10 XP per correct digit</div></div></div>
+        <div class="source-item"><div class="src-icon" style="background:rgba(34,197,94,0.15);color:#4ade80"><i class="fas fa-scroll"></i></div><div><div class="src-name">Complete Quests</div><div class="src-xp">+50–200 XP per quest</div></div></div>
+        <div class="source-item"><div class="src-icon" style="background:rgba(245,158,11,0.15);color:#fbbf24"><i class="fas fa-clock"></i></div><div><div class="src-name">Pomodoro Sessions</div><div class="src-xp">+25 XP per session</div></div></div>
+        <div class="source-item"><div class="src-icon" style="background:rgba(239,68,68,0.15);color:#f87171"><i class="fas fa-dragon"></i></div><div><div class="src-name">Boss Battles</div><div class="src-xp">+100–500 XP per victory</div></div></div>
+        <div class="source-item"><div class="src-icon" style="background:rgba(56,189,248,0.15);color:#38bdf8"><i class="fas fa-clone"></i></div><div><div class="src-name">Flashcard Review</div><div class="src-xp">+5 XP per card reviewed</div></div></div>
+        <div class="source-item"><div class="src-icon" style="background:rgba(168,85,247,0.15);color:#c084fc"><i class="fas fa-users"></i></div><div><div class="src-name">Group Activities</div><div class="src-xp">+30 XP per contribution</div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="levelup-overlay" id="levelup-overlay">
+  <div class="levelup-box">
+    <div class="trophy">🏆</div>
+    <h1>LEVEL UP!</h1>
+    <div class="new-lvl" id="levelup-num">—</div>
+    <div class="rank-reveal" id="levelup-rank">You've reached a new rank!</div>
+    <p>Your dedication is paying off. Keep pushing forward!</p>
+    <button class="levelup-close" onclick="closeLevelUp()">Continue ⚔️</button>
+  </div>
+</div>
+<script>
+  function getToken() { return localStorage.getItem('access_token'); }
+  function logout() { localStorage.removeItem('access_token'); document.cookie='access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;'; window.location.href='/login'; }
+  function authHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
+  function checkAuth() {
+    const token = getToken();
+    if (!token) { window.location.href = '/login'; return false; }
+    try { const p = JSON.parse(atob(token.split('.')[1])); if (Date.now() >= p.exp * 1000) { localStorage.removeItem('access_token'); window.location.href = '/login'; return false; } return true; }
+    catch { window.location.href = '/login'; return false; }
+  }
+  function getRank(level) {
+    if (level >= 50) return '👑 Grandmaster Scholar';
+    if (level >= 40) return '🌟 Elite Sage';
+    if (level >= 30) return '⚔️ Veteran Warrior';
+    if (level >= 20) return '🛡️ Seasoned Knight';
+    if (level >= 15) return '📖 Scholar';
+    if (level >= 10) return '🗡️ Apprentice';
+    if (level >= 5)  return '🌱 Initiate';
+    return '🐣 Novice';
+  }
+  function renderMilestones(currentLevel, totalXP) {
+    const levels = [1, 5, 10, 15, 20, 30, 40, 50];
+    const icons = { done: '<i class="fas fa-check"></i>', next: '<i class="fas fa-star"></i>', future: '<i class="fas fa-lock"></i>' };
+    document.getElementById('milestone-list').innerHTML = levels.map(lvl => {
+      const xpNeeded = (lvl - 1) * 100;
+      const state = currentLevel > lvl ? 'done' : currentLevel === lvl ? 'next' : 'future';
+      return `<div class="milestone">
+        <div class="ms-dot ${state}">${icons[state]}</div>
+        <div class="ms-info">
+          <div class="ms-title">Level ${lvl} — ${getRank(lvl)}</div>
+          <div class="ms-sub">${state === 'done' ? 'Achieved' : state === 'next' ? 'Current level' : `Requires ${xpNeeded} total XP`}</div>
+        </div>
+        <div class="ms-xp">${xpNeeded} XP</div>
+      </div>`;
+    }).join('');
+  }
+  async function loadData() {
+    try {
+      const userRes = await fetch('/users/me', { headers: authHeaders() });
+      if (userRes.status === 401) { window.location.href = '/login'; return; }
+      const user = await userRes.json();
+      document.getElementById('sidebar-username').textContent = user.username || 'User';
+      document.getElementById('hero-username').textContent = user.username || 'User';
+      const progRes = await fetch('/leveling/progress', { headers: authHeaders() });
+      if (progRes.status === 401) { window.location.href = '/login'; return; }
+      if (!progRes.ok) throw new Error('Failed to load progress');
+      const d = await progRes.json();
+      const xpInLevel = d.current_xp, xpNeeded = d.xp_for_next_level - d.xp_for_current_level;
+      const xpToNext = xpNeeded - xpInLevel, pct = Math.round(d.progress_percentage), rank = getRank(d.level);
+      document.getElementById('hero-level').textContent = d.level;
+      document.getElementById('hero-total-xp').textContent = d.total_xp.toLocaleString();
+      document.getElementById('rank-label').textContent = rank;
+      document.getElementById('xp-current').textContent = `${xpInLevel} XP`;
+      document.getElementById('xp-next-label').textContent = `${xpNeeded} XP to Level ${d.level + 1}`;
+      document.getElementById('xp-pct-text').textContent = pct + '%';
+      setTimeout(() => { document.getElementById('xp-fill').style.width = pct + '%'; }, 100);
+      document.getElementById('stat-level').textContent = d.level;
+      document.getElementById('stat-total-xp').textContent = d.total_xp.toLocaleString();
+      document.getElementById('stat-xp-needed').textContent = xpToNext;
+      document.getElementById('stat-pct').textContent = pct + '%';
+      renderMilestones(d.level, d.total_xp);
+      const pendingLevelUp = localStorage.getItem('pending_levelup');
+      if (pendingLevelUp) { localStorage.removeItem('pending_levelup'); setTimeout(() => showLevelUp(parseInt(pendingLevelUp)), 600); }
+    } catch (e) { console.error('Error loading leveling data:', e); }
+  }
+  function showLevelUp(newLvl) {
+    document.getElementById('levelup-num').textContent = newLvl;
+    document.getElementById('levelup-rank').textContent = getRank(newLvl);
+    document.getElementById('levelup-overlay').classList.add('show');
+    showXPPop('LEVEL UP!');
+  }
+  function closeLevelUp() { document.getElementById('levelup-overlay').classList.remove('show'); }
+  function showXPPop(text) {
+    const el = document.createElement('div'); el.className = 'xp-pop'; el.textContent = text;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 2000);
+  }
+  window.addEventListener('DOMContentLoaded', () => { if (!checkAuth()) return; loadData(); });
+</script>
 </body>
 </html>

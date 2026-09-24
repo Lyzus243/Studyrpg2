@@ -19,6 +19,11 @@ from fastapi import Request, Depends
 from jose import jwt, JWTError
 from app.database import get_async_session
 from app import models
+from app.security import (
+    generate_jti, blacklist_token, is_token_blacklisted,
+    record_login_attempt, check_account_locked,
+    audit, sanitise_username, sanitise_email,
+)
 
 # -------------------------------------------------------------------------
 # Config & setup
@@ -107,7 +112,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Create a JWT access token."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "jti": generate_jti()})
     
     # Ensure sub is always a string (standard JWT practice)
     if "sub" in to_encode:
@@ -159,6 +164,17 @@ async def get_current_user(
         # Optional: check expiry if present (jose raises if expired when "exp" is set)
     except JWTError:
         raise credentials_exception
+
+    # Check token blacklist
+    jti = payload.get("jti")
+    if jti:
+        try:
+            if await is_token_blacklisted(db, jti):
+                raise credentials_exception
+        except HTTPException:
+            raise
+        except Exception:
+            pass  # DB error — allow through, log it
 
     try:
         result = await db.execute(select(models.User).where(models.User.username == username))
@@ -381,6 +397,9 @@ async def login_for_access_token(
         logger.exception(f"DB error during login for username: {username}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+    # Check account lockout BEFORE verifying password
+    await check_account_locked(db, username)
+
     # Check if user exists
     if user is None:
         logger.warning(f"Login failed: User '{username}' not found in database")
@@ -389,14 +408,17 @@ async def login_for_access_token(
     # Check password
     if not verify_password(password, user.hashed_password):
         logger.warning(f"Login failed: Invalid password for user '{username}' (ID: {user.id})")
+        await record_login_attempt(db, username, success=False, request=request)
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     # Check email verification
     if not user.is_verified:
         logger.warning(f"Login failed: User '{username}' (ID: {user.id}) is not email verified. is_verified={user.is_verified}")
         raise HTTPException(status_code=401, detail="Email not verified. Please check your email.")
 
     logger.info(f"Login successful for user '{username}' (ID: {user.id})")
+    await record_login_attempt(db, username, success=True, request=request)
+    await audit(db, action="login", user_id=user.id, request=request)
 
     # Update last active time
     user.last_active = datetime.now(timezone.utc)
@@ -421,8 +443,35 @@ async def login_for_access_token(
 
 
 @auth_router.post("/logout")
-async def logout(response: Response):
-    """Logout by clearing the authentication cookie."""
+async def logout(
+    response: Response,
+    request: Request,
+    current_user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Logout — blacklist the JWT and clear the cookie."""
+    token: str | None = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if token:
+        try:
+            from jose import jwt as _jwt
+            import os as _os
+            payload = _jwt.decode(token, _os.getenv("SECRET_KEY"), algorithms=[ALGORITHM])
+            jti = payload.get("jti")
+            exp = payload.get("exp")
+            if jti and exp:
+                from datetime import datetime as _dt, timezone as _tz
+                expires_at = _dt.fromtimestamp(exp, tz=_tz.utc)
+                await blacklist_token(db, jti, expires_at)
+        except Exception:
+            pass  # token already invalid — still clear cookie
+
+    await audit(db, action="logout", user_id=current_user.id, request=request)
     response.delete_cookie(key="access_token", path="/")
     return {"message": "Successfully logged out"}
 

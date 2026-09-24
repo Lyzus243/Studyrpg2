@@ -47,6 +47,13 @@ async def lifespan(app: FastAPI):
     try:
         await init_db()
         logger.info("Database initialized successfully")
+        # Verify WAL mode is active
+        from app.database import engine as _engine
+        from sqlalchemy import text as _text
+        async with _engine.begin() as conn:
+            result = await conn.execute(_text("PRAGMA journal_mode"))
+            mode = result.scalar()
+            logger.info(f"SQLite journal mode: {mode}")
         yield
     except Exception as e:
         logger.critical(f"Failed to initialize database: {str(e)}", exc_info=True)
@@ -88,6 +95,18 @@ class DebugMiddleware(BaseHTTPMiddleware):
             logger.error(f"Request processing failed: {str(e)}")
             raise
 app.add_middleware(DebugMiddleware)
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Path config
 BASE_DIR = Path(__file__).parent.parent

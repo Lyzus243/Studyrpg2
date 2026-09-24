@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Training - StudyRPG</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #111216;
+    --accent: #5865F2;
+    --accent2: #38bdf8;
+    --text: #DCDDDE;
+    --muted: #72767D;
+    --border: rgba(255,255,255,0.06);
+    --success: #22c55e;
+    --error: #ef4444;
+    --gold: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(circle at top, #0b1020, #05070d 70%);
+    color: var(--text); min-height: 100vh;
+  }
+  .page-wrapper { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px; background: #0f172a; padding: 2rem 1.2rem;
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .avatar-preview {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #22d3ee);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin-bottom: 1rem;
+  }
+  .welcome-text { text-align: center; margin-bottom: 1.5rem; font-size: 1rem; }
+  .welcome-text .username { font-weight: bold; color: var(--accent2); display: block; font-size: 1.1rem; }
+  .sidebar-btn {
+    background: #1e293b; color: white; border: none; padding: 0.75rem;
+    margin: 0.25rem 0; border-radius: 8px; cursor: pointer; text-decoration: none;
+    display: flex; gap: 0.6rem; align-items: center; justify-content: center;
+    width: 100%; font-size: 0.88rem; transition: background 0.2s;
+  }
+  .sidebar-btn:hover { background: #334155; }
+  .sidebar-btn.active { background: var(--accent); }
+  .logout-btn {
+    margin-top: auto; background: #7f1d1d; color: white; border: none;
+    padding: 0.75rem; border-radius: 8px; cursor: pointer; width: 100%;
+    font-size: 0.88rem; display: flex; gap: 0.6rem; align-items: center; justify-content: center;
+  }
+  .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+  .back-link {
+    color: var(--muted); text-decoration: none; font-size: 0.88rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-bottom: 1.5rem; transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--text); }
+  .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+  .page-header h1 { font-size: 1.8rem; color: white; }
+  .page-header i { font-size: 2rem; color: var(--accent2); }
+  .xp-bar-wrapper {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 1.5rem;
+  }
+  .xp-info { flex: 1; }
+  .xp-info .label { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .xp-info .level-text { font-size: 1.1rem; font-weight: bold; color: var(--accent2); }
+  .xp-bar-track { flex: 2; background: #1e293b; border-radius: 99px; height: 12px; overflow: hidden; }
+  .xp-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.6s ease; width: 0%;
+  }
+  .xp-text { font-size: 0.85rem; color: var(--muted); min-width: 80px; text-align: right; }
+  .stats-row { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .stat-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 100px;
+  }
+  .stat-card .val { font-size: 1.6rem; font-weight: bold; color: var(--accent2); }
+  .stat-card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .card h2 { font-size: 1.2rem; margin-bottom: 1.2rem; color: white; }
+  .result-banner {
+    display: none; border-radius: 12px; padding: 1.5rem;
+    text-align: center; margin-bottom: 1.5rem; animation: fadeIn 0.4s ease;
+  }
+  .result-banner.success { background: rgba(34,197,94,0.15); border: 1px solid var(--success); }
+  .result-banner.failure { background: rgba(239,68,68,0.12); border: 1px solid var(--error); }
+  .result-banner h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .result-banner .xp-earned { font-size: 1.1rem; color: var(--gold); font-weight: bold; margin-top: 0.5rem; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .difficulty-row { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .diff-btn {
+    padding: 0.5rem 1.2rem; border-radius: 8px; border: 1px solid var(--border);
+    background: #1e293b; color: var(--text); cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+  }
+  .diff-btn:hover { border-color: var(--accent2); }
+  .diff-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .start-btn {
+    width: 100%; padding: 0.9rem; border-radius: 10px; border: none;
+    background: var(--accent); color: white; font-size: 1rem; font-weight: bold;
+    cursor: pointer; transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  }
+  .start-btn:hover { background: #4752c4; }
+  .start-btn:disabled { background: #334155; cursor: not-allowed; }
+  #flashcard-area { display: none; }
+  .sequence-display {
+    display: flex; gap: 0.8rem; flex-wrap: wrap;
+    justify-content: center; margin: 1.5rem 0;
+  }
+  .seq-num {
+    width: 52px; height: 52px; border-radius: 10px;
+    background: linear-gradient(135deg, #1e3a5f, #1e293b);
+    border: 1px solid var(--accent2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: bold; color: var(--accent2);
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .flip-card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .flip-card { height: 130px; perspective: 1000px; cursor: pointer; }
+  .flip-card-inner {
+    width: 100%; height: 100%; transition: transform 0.6s;
+    transform-style: preserve-3d; position: relative;
+  }
+  .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+  .flip-front, .flip-back {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: bold; padding: 1rem; text-align: center;
+  }
+  .flip-front { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--border); color: var(--muted); }
+  .flip-front i { font-size: 2rem; color: var(--accent); }
+  .flip-back { background: linear-gradient(135deg, #1e3a5f, #0f2340); border: 1px solid var(--accent2); color: white; transform: rotateY(180deg); }
+  .input-row { display: flex; gap: 0.8rem; margin-top: 1rem; }
+  .seq-input {
+    flex: 1; padding: 0.8rem 1rem; border-radius: 8px;
+    background: #0f1113; border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text); font-size: 1rem;
+  }
+  .seq-input:focus { outline: none; border-color: var(--accent2); }
+  .submit-btn {
+    padding: 0.8rem 1.6rem; border-radius: 8px; border: none;
+    background: var(--success); color: white; font-weight: bold;
+    cursor: pointer; font-size: 0.95rem; transition: background 0.2s;
+  }
+  .submit-btn:hover { background: #16a34a; }
+  .timer-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+  .timer-label { font-size: 0.85rem; color: var(--muted); }
+  .timer-val { font-size: 1.1rem; font-weight: bold; color: var(--accent2); min-width: 36px; }
+  .timer-val.urgent { color: var(--error); animation: pulse 0.5s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
+  .xp-pop {
+    position: fixed; top: 30%; left: 50%; transform: translateX(-50%);
+    background: rgba(245,158,11,0.95); color: #000;
+    padding: 0.6rem 1.4rem; border-radius: 99px;
+    font-weight: bold; font-size: 1.1rem;
+    animation: floatUp 1.8s ease forwards; pointer-events: none; z-index: 9999;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-80px); }
+  }
+  .levelup-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); z-index: 9998;
+    align-items: center; justify-content: center; flex-direction: column; text-align: center;
+  }
+  .levelup-overlay.show { display: flex; }
+  .levelup-box {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 2px solid var(--gold); border-radius: 20px; padding: 3rem 2.5rem;
+    animation: scaleIn 0.5s ease;
+  }
+  @keyframes scaleIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .levelup-box h1 { font-size: 2.5rem; color: var(--gold); margin-bottom: 0.5rem; }
+  .levelup-box p { color: var(--text); font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .levelup-close {
+    padding: 0.7rem 2rem; border-radius: 8px; border: none;
+    background: var(--gold); color: #000; font-weight: bold; font-size: 1rem; cursor: pointer;
+  }
+  .history-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .history-table th { text-align: left; padding: 0.6rem 0.8rem; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .history-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+  .badge-correct { background: rgba(34,197,94,0.2); color: var(--success); padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.8rem; }
+  .badge-wrong { background: rgba(239,68,68,0.2); color: var(--error); padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.8rem; }
+  .hidden { display: none !important; }
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main-content { padding: 1rem; }
+    .xp-bar-wrapper { flex-direction: column; gap: 0.8rem; }
+    .stats-row { gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+  <aside class="sidebar">
+    <div class="avatar-preview"><i class="fas fa-user"></i></div>
+    <div class="welcome-text">Welcome, <span class="username" id="sidebar-username">...</span></div>
+    <a href="/dashboard"   class="sidebar-btn"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/memory"      class="sidebar-btn active"><i class="fas fa-brain"></i> Memory</a>
+    <a href="/quests"      class="sidebar-btn"><i class="fas fa-scroll"></i> Quests</a>
+    <a href="/flashcard"   class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
+    <a href="/pomodoro"    class="sidebar-btn"><i class="fas fa-clock"></i> Pomodoro</a>
+    <a href="/shop"        class="sidebar-btn"><i class="fas fa-store"></i> Shop</a>
+    <a href="/leaderboard" class="sidebar-btn"><i class="fas fa-trophy"></i> Leaderboard</a>
+    <a href="/analytics"   class="sidebar-btn"><i class="fas fa-chart-pie"></i> Analytics</a>
+    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </aside>
+  <main class="main-content">
+    <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <div class="page-header"><i class="fas fa-brain"></i><h1>Memory Training</h1></div>
+    <div class="xp-bar-wrapper">
+      <div class="xp-info">
+        <div class="label">Progress</div>
+        <div class="level-text">Level <span id="user-level">—</span></div>
+      </div>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill"></div></div>
+      <div class="xp-text" id="xp-text">— / — XP</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="val" id="stat-sessions">0</div><div class="lbl">Sessions</div></div>
+      <div class="stat-card"><div class="val" id="stat-correct">0</div><div class="lbl">Correct</div></div>
+      <div class="stat-card"><div class="val" id="stat-xp">0</div><div class="lbl">XP Earned</div></div>
+      <div class="stat-card"><div class="val" id="stat-streak">—</div><div class="lbl">Best Streak</div></div>
+    </div>
+    <div class="result-banner" id="result-banner">
+      <h2 id="result-title"></h2>
+      <p id="result-msg"></p>
+      <div class="xp-earned" id="result-xp"></div>
+    </div>
+    <div class="card" id="setup-card">
+      <h2><i class="fas fa-sliders-h"></i> Configure Session</h2>
+      <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1rem;">A number sequence will be shown. Memorize it, then recall it after the timer ends. Longer sequences = more XP.</p>
+      <label style="font-size:0.9rem; color:var(--muted); display:block; margin-bottom:0.5rem;">Sequence Length</label>
+      <div class="difficulty-row">
+        <button class="diff-btn active" data-len="4">Easy (4)</button>
+        <button class="diff-btn" data-len="6">Medium (6)</button>
+        <button class="diff-btn" data-len="8">Hard (8)</button>
+        <button class="diff-btn" data-len="10">Expert (10)</button>
+      </div>
+      <button class="start-btn" id="start-btn" onclick="startSession()"><i class="fas fa-play"></i> Start Training</button>
+    </div>
+    <div id="flashcard-area">
+      <div class="card" id="memorize-phase">
+        <div class="timer-row">
+          <i class="fas fa-eye" style="color:var(--accent2)"></i>
+          <span class="timer-label">Memorize — time remaining:</span>
+          <span class="timer-val" id="memorize-timer">30</span>s
+        </div>
+        <h2>Memorize This Sequence</h2>
+        <div class="sequence-display" id="sequence-display"></div>
+        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Click each card to flip and reveal the number:</p>
+        <div class="flip-card-grid" id="flip-card-grid"></div>
+        <button class="start-btn" style="margin-top:1rem;" onclick="goToRecall()"><i class="fas fa-pen"></i> I'm Ready — Test Me</button>
+      </div>
+      <div class="card hidden" id="recall-phase">
+        <div class="timer-row">
+          <i class="fas fa-clock" style="color:var(--error)"></i>
+          <span class="timer-label">Recall — time remaining:</span>
+          <span class="timer-val" id="recall-timer">60</span>s
+        </div>
+        <h2>Enter the Sequence</h2>
+        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1rem;">Type the numbers separated by spaces (e.g. <code style="color:var(--accent2)">3 7 1 9</code>)</p>
+        <div class="input-row">
+          <input type="text" class="seq-input" id="user-answer" placeholder="e.g. 3 7 1 9 ...">
+          <button class="submit-btn" onclick="submitAnswer()">Submit</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2><i class="fas fa-history"></i> Recent Sessions</h2>
+      <table class="history-table">
+        <thead><tr><th>Date</th><th>Length</th><th>Duration</th><th>Result</th><th>XP</th></tr></thead>
+        <tbody id="history-body"><tr><td colspan="5" style="color:var(--muted); text-align:center;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<div class="levelup-overlay" id="levelup-overlay">
+  <div class="levelup-box">
+    <h1>⚔️ LEVEL UP!</h1>
+    <p>You reached <strong>Level <span id="new-level">—</span></strong></p>
+    <p style="color:var(--muted); font-size:0.9rem;">Keep training to unlock more power.</p>
+    <button class="levelup-close" onclick="closeLevelUp()">Continue</button>
+  </div>
+</div>
+<script>
+  function getToken() { return localStorage.getItem('access_token'); }
+  function logout() { localStorage.removeItem('access_token'); document.cookie='access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;'; window.location.href='/login'; }
+  function authHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
+  function checkAuth() {
+    const token = getToken();
+    if (!token) { window.location.href = '/login'; return false; }
+    try {
+      const p = JSON.parse(atob(token.split('.')[1]));
+      if (Date.now() >= p.exp * 1000) { localStorage.removeItem('access_token'); window.location.href = '/login'; return false; }
+      return true;
+    } catch { window.location.href = '/login'; return false; }
+  }
+  let currentSessionId = null, currentSequence = [], selectedLength = 4;
+  let memorizeTimer = null, recallTimer = null, userLevel = 1, userXP = 0;
+  function xpForLevel(lvl) { return lvl * 100; }
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedLength = parseInt(btn.dataset.len);
+    });
+  });
+  async function loadUserData() {
+    try {
+      const res = await fetch('/users/me', { headers: authHeaders() });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      const u = await res.json();
+      userLevel = u.level || 1; userXP = u.xp || 0;
+      document.getElementById('sidebar-username').textContent = u.username || 'User';
+      updateXPBar(userXP, userLevel);
+    } catch (e) { console.error('Failed to load user', e); }
+  }
+  function updateXPBar(xp, level) {
+    const needed = xpForLevel(level), pct = Math.min((xp / needed) * 100, 100);
+    document.getElementById('xp-bar-fill').style.width = pct + '%';
+    document.getElementById('xp-text').textContent = `${xp} / ${needed} XP`;
+    document.getElementById('user-level').textContent = level;
+  }
+  async function loadHistory() {
+    try {
+      const res = await fetch('/memory/history', { headers: authHeaders() });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const sessions = Array.isArray(data) ? data : (data.sessions || []);
+      const correct = sessions.filter(s => s.is_correct).length;
+      const totalXP = sessions.reduce((a, s) => a + (s.xp_earned || 0), 0);
+      document.getElementById('stat-sessions').textContent = sessions.length;
+      document.getElementById('stat-correct').textContent = correct;
+      document.getElementById('stat-xp').textContent = totalXP;
+      let streak = 0, best = 0;
+      sessions.forEach(s => { if (s.is_correct) { streak++; best = Math.max(best, streak); } else streak = 0; });
+      document.getElementById('stat-streak').textContent = best;
+      const tbody = document.getElementById('history-body');
+      if (!sessions.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No sessions yet. Start training!</td></tr>'; return; }
+      tbody.innerHTML = sessions.slice(0, 10).map(s => `
+        <tr>
+          <td>${s.start_time ? new Date(s.start_time).toLocaleDateString() : '—'}</td>
+          <td>${s.sequence_length || '—'}</td>
+          <td>${s.duration ? s.duration + 's' : '—'}</td>
+          <td><span class="${s.is_correct ? 'badge-correct' : 'badge-wrong'}">${s.is_correct ? '✓ Correct' : '✗ Wrong'}</span></td>
+          <td style="color:var(--gold)">${s.xp_earned ? '+' + s.xp_earned : '0'}</td>
+        </tr>`).join('');
+    } catch (e) {
+      document.getElementById('history-body').innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">Could not load history.</td></tr>';
+    }
+  }
+  async function startSession() {
+    if (!checkAuth()) return;
+    const btn = document.getElementById('start-btn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+    hideResult();
+    try {
+      const res = await fetch('/memory/start', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ sequence_length: selectedLength }) });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      if (!res.ok) throw new Error('Failed to start session');
+      const data = await res.json();
+      currentSessionId = data.id;
+      currentSequence = JSON.parse(data.sequence || '[]');
+      document.getElementById('setup-card').classList.add('hidden');
+      document.getElementById('flashcard-area').style.display = 'block';
+      document.getElementById('memorize-phase').classList.remove('hidden');
+      document.getElementById('recall-phase').classList.add('hidden');
+      renderSequence(currentSequence); renderFlipCards(currentSequence); startMemorizeTimer(30);
+    } catch (e) { console.error(e); alert('Could not start session. Please try again.'); }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-play"></i> Start Training'; }
+  }
+  function renderSequence(seq) {
+    document.getElementById('sequence-display').innerHTML = seq.map((n, i) => `<div class="seq-num" style="animation-delay:${i*0.07}s">${n}</div>`).join('');
+  }
+  function renderFlipCards(seq) {
+    document.getElementById('flip-card-grid').innerHTML = seq.map((n, i) => `
+      <div class="flip-card" id="fc-${i}" onclick="flipCard(${i})">
+        <div class="flip-card-inner">
+          <div class="flip-front"><i class="fas fa-question"></i></div>
+          <div class="flip-back">${n}</div>
+        </div>
+      </div>`).join('');
+  }
+  function flipCard(i) { document.getElementById(`fc-${i}`).classList.toggle('flipped'); }
+  function startMemorizeTimer(seconds) {
+    let s = seconds; const el = document.getElementById('memorize-timer');
+    el.textContent = s; el.classList.remove('urgent'); clearInterval(memorizeTimer);
+    memorizeTimer = setInterval(() => { s--; el.textContent = s; if (s <= 10) el.classList.add('urgent'); if (s <= 0) { clearInterval(memorizeTimer); goToRecall(); } }, 1000);
+  }
+  function goToRecall() {
+    clearInterval(memorizeTimer);
+    document.getElementById('memorize-phase').classList.add('hidden');
+    document.getElementById('recall-phase').classList.remove('hidden');
+    document.getElementById('user-answer').value = '';
+    document.getElementById('user-answer').focus();
+    startRecallTimer(60);
+  }
+  function startRecallTimer(seconds) {
+    let s = seconds; const el = document.getElementById('recall-timer');
+    el.textContent = s; el.classList.remove('urgent'); clearInterval(recallTimer);
+    recallTimer = setInterval(() => { s--; el.textContent = s; if (s <= 10) el.classList.add('urgent'); if (s <= 0) { clearInterval(recallTimer); submitAnswer(); } }, 1000);
+  }
+  async function submitAnswer() {
+    clearInterval(recallTimer);
+    const raw = document.getElementById('user-answer').value.trim();
+    const userSeq = raw.split(/\s+/).map(Number).filter(n => !isNaN(n));
+    try {
+      const res = await fetch(`/memory/${currentSessionId}/submit`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ user_sequence: userSeq }) });
+      if (res.status === 401) { window.location.href = '/login'; return; }
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      showResult(data); await loadHistory(); await refreshXP(data.xp_earned || 0);
+    } catch (e) { console.error(e); alert('Failed to submit. Please try again.'); }
+  }
+  function showResult(data) {
+    document.getElementById('flashcard-area').style.display = 'none';
+    document.getElementById('setup-card').classList.remove('hidden');
+    const banner = document.getElementById('result-banner');
+    banner.style.display = 'block';
+    if (data.is_correct) {
+      banner.className = 'result-banner success';
+      document.getElementById('result-title').textContent = '🎉 Correct!';
+      document.getElementById('result-msg').textContent = `You nailed a ${data.sequence_length}-number sequence in ${data.duration}s!`;
+      document.getElementById('result-xp').textContent = data.xp_earned ? `+${data.xp_earned} XP earned!` : '';
+    } else {
+      banner.className = 'result-banner failure';
+      document.getElementById('result-title').textContent = '❌ Not quite!';
+      document.getElementById('result-msg').textContent = `The correct sequence was: ${currentSequence.join(' ')}`;
+      document.getElementById('result-xp').textContent = 'No XP this time — try again!';
+    }
+  }
+  function hideResult() { document.getElementById('result-banner').style.display = 'none'; }
+  async function refreshXP(xpEarned) {
+    try {
+      const res = await fetch('/users/me', { headers: authHeaders() });
+      if (!res.ok) return;
+      const u = await res.json();
+      const oldLevel = userLevel; userLevel = u.level || 1; userXP = u.xp || 0;
+      updateXPBar(userXP, userLevel);
+      if (xpEarned > 0) showXPPop(xpEarned);
+      if (u.level > oldLevel) showLevelUp(u.level);
+    } catch (e) { console.error(e); }
+  }
+  function showXPPop(amount) {
+    const el = document.createElement('div'); el.className = 'xp-pop'; el.textContent = `+${amount} XP`;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 1800);
+  }
+  function showLevelUp(newLvl) {
+    document.getElementById('new-level').textContent = newLvl;
+    document.getElementById('levelup-overlay').classList.add('show');
+  }
+  function closeLevelUp() { document.getElementById('levelup-overlay').classList.remove('show'); }
+  window.addEventListener('DOMContentLoaded', async () => { if (!checkAuth()) return; await loadUserData(); await loadHistory(); });
+</script>
+</body>
+</html>
