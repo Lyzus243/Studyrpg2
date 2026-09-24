@@ -11,6 +11,10 @@
 !static/templates/**
 !static/templates/admin/
 !static/templates/admin/**
+!static/css/
+!static/css/**
+!static/js/
+!static/js/**
 !tests/
 
 # Keep specific files

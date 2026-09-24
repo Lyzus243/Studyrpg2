@@ -106,6 +106,10 @@ async def admin_login_page(request: Request):
                 a { color: #7289da; text-decoration: none; }
                 a:hover { text-decoration: underline; }
             </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/journey.css?v=1">
+        <script src="/static/js/journey.js?v=1" defer></script>
         </head>
         <body>
             <div class="login-container">
@@ -366,6 +370,10 @@ async def admin_dashboard(
                     background: #677bc4;
                 }}
             </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/journey.css?v=1">
+        <script src="/static/js/journey.js?v=1" defer></script>
         </head>
         <body>
             <div class="container">
@@ -468,6 +476,10 @@ async def admin_boss_battles_page(
                     text-decoration: underline;
                 }}
             </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/journey.css?v=1">
+        <script src="/static/js/journey.js?v=1" defer></script>
         </head>
         <body>
             <div class="container">
