@@ -12,6 +12,9 @@ import os
 import uuid
 import openai
 from datetime import datetime
+from pypdf import PdfReader
+from docx import Document
+import io
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,6 +38,36 @@ except Exception as e:
 UPLOAD_DIR = "uploads/materials"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+def extract_text_from_upload(filename: str, content_type: Optional[str], raw: bytes) -> Optional[str]:
+    """Best-effort text extraction for uploaded study materials.
+    Supports plain text, PDF and DOCX. Returns None if nothing could be extracted
+    so the caller can decide how to handle an unreadable file."""
+    ext = (filename.rsplit(".", 1)[-1] if "." in filename else "").lower()
+    ctype = (content_type or "").lower()
+
+    try:
+        if ext == "pdf" or "pdf" in ctype:
+            reader = PdfReader(io.BytesIO(raw))
+            pages = [page.extract_text() or "" for page in reader.pages]
+            text = "\n".join(pages).strip()
+            return text or None
+
+        if ext == "docx" or "wordprocessingml" in ctype:
+            doc = Document(io.BytesIO(raw))
+            text = "\n".join(p.text for p in doc.paragraphs).strip()
+            return text or None
+
+        if ext in ("txt", "md") or ctype.startswith("text/"):
+            return raw.decode("utf-8", errors="ignore").strip() or None
+
+    except Exception as e:
+        logger.error(f"Failed to extract text from '{filename}' ({content_type}): {e}")
+        return None
+
+    # Unknown/unsupported type
+    return None
+
 class MaterialBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -44,7 +77,7 @@ class MaterialCreate(MaterialBase):
 
 class Material(MaterialBase):
     id: int
-    user_id: str
+    user_id: int
     file_path: Optional[str] = None
     file_type: Optional[str] = None
     created_at: datetime
@@ -345,13 +378,8 @@ async def create_material(
         content = await file.read()
         buffer.write(content)
     
-    # For text files, extract content
-    material_content = None
-    if file_type.startswith("text/"):
-        try:
-            material_content = content.decode("utf-8")
-        except:
-            material_content = None
+    # Extract readable text so the material can be analyzed / turned into a test
+    material_content = extract_text_from_upload(file.filename, file_type, content)
     
     # Create material in database
     db_material = models.Material(

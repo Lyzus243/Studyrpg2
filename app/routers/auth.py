@@ -222,7 +222,7 @@ async def get_current_user_optional(
     try:
         # Reuse the strict authentication logic from auth.py
         creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
-        user = await get_current_user(creds, db)
+        user = await get_current_user(request, creds, db)
         logger.info(f"Optional auth successful for user: {user.username}")
         return user
     except HTTPException as e:
@@ -371,6 +371,7 @@ async def auth_test():
 
 @auth_router.post("/token", response_model=Token)
 async def login_for_access_token(
+    request: Request,
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_async_session),
