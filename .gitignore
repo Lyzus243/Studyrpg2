@@ -17,6 +17,8 @@
 !static/js/**
 !static/images/
 !static/images/**
+!scripts/
+!scripts/**
 !tests/
 
 # Keep specific files
