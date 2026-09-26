@@ -567,6 +567,11 @@
                     <div id="user-avatar" class="avatar-preview">
                         <i class="fas fa-user"></i>
                     </div>
+                    <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
+                    <button type="button" class="btn btn-secondary" id="avatar-upload-btn" onclick="document.getElementById('avatar-file-input').click()">
+                        📷 Change Photo
+                    </button>
+                    <div id="avatar-upload-message"></div>
                     <div class="user-details">
                         <h1 id="user-username">Loading...</h1>
                         <p id="user-email">Loading...</p>
@@ -736,6 +741,53 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('profile-content').style.display = 'block';
         }
+
+        // Upload a custom profile picture
+        document.getElementById('avatar-file-input').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const msg = document.getElementById('avatar-upload-message');
+            const btn = document.getElementById('avatar-upload-btn');
+
+            if (file.size > 5 * 1024 * 1024) {
+                msg.innerHTML = '<div class="message error">Image must be smaller than 5 MB.</div>';
+                e.target.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+            msg.innerHTML = '';
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/users/me/avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }, // no Content-Type: browser sets the multipart boundary
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Upload failed. Please try again.');
+                }
+
+                const updatedUser = await response.json();
+                displayUserProfile(updatedUser);
+                msg.innerHTML = '<div class="message success">Profile picture updated!</div>';
+            } catch (error) {
+                console.error('Avatar upload error:', error);
+                msg.innerHTML = `<div class="message error">${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📷 Change Photo';
+                e.target.value = '';
+            }
+        });
 
         // Load user streak
         async function loadUserStreak() {
