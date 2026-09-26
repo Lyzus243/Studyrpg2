@@ -165,7 +165,7 @@
     <a href="/quests"         class="sidebar-btn"><i class="fas fa-scroll"></i> Quests</a>
     <a href="/leveling"       class="sidebar-btn"><i class="fas fa-chart-line"></i> Leveling</a>
     <a href="/memory"         class="sidebar-btn"><i class="fas fa-brain"></i> Memory</a>
-    <a href="/flashcard"      class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
+    <a href="/flashcards"      class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
     <a href="/leaderboard"    class="sidebar-btn"><i class="fas fa-trophy"></i> Leaderboard</a>
     <a href="/analytics"      class="sidebar-btn"><i class="fas fa-chart-pie"></i> Analytics</a>
     <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -174,19 +174,19 @@
     <a href="/dashboard" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
     <div class="page-header"><i class="fas fa-dragon"></i><h1>Group Boss Battles</h1></div>
     <div class="xp-banner" id="xp-banner">
-      <h3>🎉 Battle Complete!</h3>
+      <h3>ðŸŽ‰ Battle Complete!</h3>
       <div class="xp-amount" id="xp-banner-amount">+0 XP</div>
       <div style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;" id="xp-banner-sp"></div>
     </div>
     <div id="no-access-screen">
-      <div class="icon">🔒</div>
+      <div class="icon">ðŸ”’</div>
       <h2>Study Group Required</h2>
       <p>You need to be in a study group to access Boss Battles.<br>Join or create a group first, then come back.</p>
       <a href="/groups" class="join-group-btn"><i class="fas fa-users"></i> Go to Study Groups</a>
     </div>
     <div id="battle-content">
       <div class="matchmaking-banner">
-        <h2>⚔️ Auto Matchmaking</h2>
+        <h2>âš”ï¸ Auto Matchmaking</h2>
         <p>Matched with players of similar level. Answer questions correctly to charge your action bar, then unleash your role ability.</p>
         <button class="match-btn" id="find-battle-btn" onclick="findOrCreateBattle()"><i class="fas fa-search"></i> Find a Battle</button>
         <div class="matching-status" id="matching-status"><div class="spinner"></div><span>Searching for a battle...</span></div>
@@ -197,42 +197,42 @@
         <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem;">Answer questions to charge your bar. Each role has a different charge requirement and action.</p>
         <div class="role-grid">
           <div class="role-card" data-role="tank" onclick="selectRole('tank',this)">
-            <div class="role-icon">🛡️</div>
+            <div class="role-icon">ðŸ›¡ï¸</div>
             <div class="role-name" style="color:var(--tank)">Tank</div>
             <div class="role-desc">Absorbs damage, shields team from boss attacks</div>
-            <div class="role-stat" style="color:var(--tank)">2 correct = Shield · +50% Defence</div>
+            <div class="role-stat" style="color:var(--tank)">2 correct = Shield Â· +50% Defence</div>
           </div>
           <div class="role-card" data-role="attacker" onclick="selectRole('attacker',this)">
-            <div class="role-icon">⚔️</div>
+            <div class="role-icon">âš”ï¸</div>
             <div class="role-name" style="color:var(--attacker)">Attacker</div>
             <div class="role-desc">Deals damage to the boss with correct answers</div>
-            <div class="role-stat" style="color:var(--attacker)">1 correct = Attack · +30% Damage</div>
+            <div class="role-stat" style="color:var(--attacker)">1 correct = Attack Â· +30% Damage</div>
           </div>
           <div class="role-card" data-role="healer" onclick="selectRole('healer',this)">
-            <div class="role-icon">💚</div>
+            <div class="role-icon">ðŸ’š</div>
             <div class="role-name" style="color:var(--healer)">Healer</div>
             <div class="role-desc">Restores HP to team members</div>
-            <div class="role-stat" style="color:var(--healer)">2 correct = Heal · Revive ally</div>
+            <div class="role-stat" style="color:var(--healer)">2 correct = Heal Â· Revive ally</div>
           </div>
           <div class="role-card" data-role="support" onclick="selectRole('support',this)">
-            <div class="role-icon">✨</div>
+            <div class="role-icon">âœ¨</div>
             <div class="role-name" style="color:var(--support)">Support</div>
             <div class="role-desc">Buffs teammates' XP gain and damage output</div>
-            <div class="role-stat" style="color:var(--support)">1 correct = Buff · +20% Team XP</div>
+            <div class="role-stat" style="color:var(--support)">1 correct = Buff Â· +20% Team XP</div>
           </div>
         </div>
         <p style="font-size:0.8rem;color:var(--muted);">Selected role: <strong id="selected-role-label" style="color:var(--accent2)">None</strong></p>
       </div>
       <!-- Active Battle -->
       <div class="card hidden" id="active-battle-card">
-        <div class="card-title"><i class="fas fa-fire" style="color:var(--error)"></i> Active Battle — <span id="active-battle-name">—</span></div>
+        <div class="card-title"><i class="fas fa-fire" style="color:var(--error)"></i> Active Battle â€” <span id="active-battle-name">â€”</span></div>
         <div class="boss-section">
           <div class="boss-header">
-            <div class="boss-name" id="boss-display-name">🐉 Shadow Colossus</div>
+            <div class="boss-name" id="boss-display-name">ðŸ‰ Shadow Colossus</div>
             <div class="boss-phase" id="boss-phase-label">Phase 1</div>
           </div>
           <div class="hp-track"><div class="hp-fill" id="boss-hp-fill" style="width:100%"></div></div>
-          <div class="hp-text"><span id="boss-hp-current">—</span><span id="boss-hp-max">—</span></div>
+          <div class="hp-text"><span id="boss-hp-current">â€”</span><span id="boss-hp-max">â€”</span></div>
         </div>
         <!-- Members -->
         <div class="card-title" style="margin-bottom:0.8rem"><i class="fas fa-users" style="color:var(--accent2)"></i> Party Members</div>
@@ -247,13 +247,13 @@
             <div class="opts" id="q-opts"></div>
             <div class="q-feedback" id="q-feedback"></div>
           </div>
-          <button class="next-q-btn hidden" id="next-q-btn" onclick="loadQuestion()">Next Question →</button>
+          <button class="next-q-btn hidden" id="next-q-btn" onclick="loadQuestion()">Next Question â†’</button>
         </div>
         <!-- Actions -->
         <div class="card-title" style="margin-bottom:0.8rem"><i class="fas fa-crosshairs" style="color:var(--gold)"></i> Your Actions</div>
         <div class="action-row" id="action-buttons"></div>
         <div class="battle-stats">
-          <div><span>Your Role:</span> <strong id="your-role-display">—</strong></div>
+          <div><span>Your Role:</span> <strong id="your-role-display">â€”</strong></div>
           <div><span>Phase:</span> <strong id="phase-display">1</strong></div>
           <div><span>SP:</span> <strong id="sp-display">12</strong></div>
           <div><span>Damage Dealt:</span> <strong id="dmg-display">0</strong></div>
@@ -276,23 +276,23 @@
 <!-- Victory Overlay -->
 <div class="battle-overlay" id="victory-overlay">
   <div class="overlay-box victory">
-    <div class="big-icon">🏆</div><h1>Victory!</h1>
+    <div class="big-icon">ðŸ†</div><h1>Victory!</h1>
     <p style="color:#86efac">The boss has been defeated!</p>
     <div style="margin:1rem 0"><div class="xp-val" id="victory-xp">+0 XP</div><div class="sp-val" id="victory-sp">+0 Skill Points</div></div>
     <p style="color:var(--muted);font-size:0.85rem;">XP awarded to all party members.</p>
-    <button class="overlay-close" onclick="closeOverlay('victory-overlay')">Claim Rewards ⚔️</button>
+    <button class="overlay-close" onclick="closeOverlay('victory-overlay')">Claim Rewards âš”ï¸</button>
   </div>
 </div>
 <!-- Defeat Overlay -->
 <div class="battle-overlay" id="defeat-overlay">
   <div class="overlay-box defeat">
-    <div class="big-icon">💀</div><h1>Defeated...</h1>
+    <div class="big-icon">ðŸ’€</div><h1>Defeated...</h1>
     <p style="color:#fca5a5">The boss was too powerful this time.</p>
     <button class="overlay-close" style="background:var(--error);color:white;" onclick="closeOverlay('defeat-overlay')">Try Again</button>
   </div>
 </div>
 <script>
-  // ── Auth ──
+  // â”€â”€ Auth â”€â”€
   function getToken(){return localStorage.getItem('access_token');}
   function logout(){localStorage.removeItem('access_token');document.cookie='access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';window.location.href='/login';}
   function authHeaders(){return{'Authorization':`Bearer ${getToken()}`,'Content-Type':'application/json'};}
@@ -302,29 +302,29 @@
     catch{window.location.href='/login';return false;}
   }
 
-  // ── State ──
+  // â”€â”€ State â”€â”€
   let currentGroupId=null,currentBattleId=null,selectedRole=null;
   let skillPoints=12,ws=null,battlePhase=1,dmgDealt=0;
   let charge=0,chargeNeeded=1,charged=false,qAnswered=false;
 
   const ROLES={
-    tank:{label:'Tank',icon:'🛡️',color:'var(--tank)',chargeNeeded:2,actions:['shield','attack']},
-    attacker:{label:'Attacker',icon:'⚔️',color:'var(--attacker)',chargeNeeded:1,actions:['attack','special']},
-    healer:{label:'Healer',icon:'💚',color:'var(--healer)',chargeNeeded:2,actions:['heal','attack']},
-    support:{label:'Support',icon:'✨',color:'var(--support)',chargeNeeded:1,actions:['buff','attack']}
+    tank:{label:'Tank',icon:'ðŸ›¡ï¸',color:'var(--tank)',chargeNeeded:2,actions:['shield','attack']},
+    attacker:{label:'Attacker',icon:'âš”ï¸',color:'var(--attacker)',chargeNeeded:1,actions:['attack','special']},
+    healer:{label:'Healer',icon:'ðŸ’š',color:'var(--healer)',chargeNeeded:2,actions:['heal','attack']},
+    support:{label:'Support',icon:'âœ¨',color:'var(--support)',chargeNeeded:1,actions:['buff','attack']}
   };
   const ACTIONS={
-    attack:{label:'Attack',icon:'⚔️',cls:'btn-attack',damage:20,sp:0},
-    special:{label:'Special',icon:'💥',cls:'btn-attack',damage:45,sp:3},
-    shield:{label:'Shield',icon:'🛡️',cls:'btn-shield',damage:0,sp:2},
-    heal:{label:'Heal Ally',icon:'💚',cls:'btn-heal',damage:0,sp:2},
-    buff:{label:'Buff Team',icon:'⚡',cls:'btn-support',damage:0,sp:2}
+    attack:{label:'Attack',icon:'âš”ï¸',cls:'btn-attack',damage:20,sp:0},
+    special:{label:'Special',icon:'ðŸ’¥',cls:'btn-attack',damage:45,sp:3},
+    shield:{label:'Shield',icon:'ðŸ›¡ï¸',cls:'btn-shield',damage:0,sp:2},
+    heal:{label:'Heal Ally',icon:'ðŸ’š',cls:'btn-heal',damage:0,sp:2},
+    buff:{label:'Buff Team',icon:'âš¡',cls:'btn-support',damage:0,sp:2}
   };
 
-  // ── Questions Bank ──
+  // â”€â”€ Questions Bank â”€â”€
   const QUESTIONS=[
     {q:'What is the powerhouse of the cell?',opts:['Nucleus','Mitochondria','Ribosome','Golgi body'],ans:1},
-    {q:'What is 12 × 12?',opts:['124','144','132','148'],ans:1},
+    {q:'What is 12 Ã— 12?',opts:['124','144','132','148'],ans:1},
     {q:'Which planet is closest to the sun?',opts:['Venus','Earth','Mercury','Mars'],ans:2},
     {q:'What language runs in a web browser?',opts:['Python','Java','JavaScript','C++'],ans:2},
     {q:'What is H2O commonly known as?',opts:['Hydrogen','Oxygen','Salt','Water'],ans:3},
@@ -344,7 +344,7 @@
     document.getElementById('selected-role-label').textContent=ROLES[role].label;
   }
 
-  // ── Init ──
+  // â”€â”€ Init â”€â”€
   window.addEventListener('DOMContentLoaded',async()=>{
     if(!checkAuth())return;
     await loadUser();
@@ -393,11 +393,11 @@
       const status=b.is_completed?(b.passed?'<span class="badge badge-victory">Victory</span>':'<span class="badge badge-defeat">Defeat</span>'):'<span class="badge badge-active">Active</span>';
       return`<tr>
         <td>${b.name||'Battle #'+b.id}</td>
-        <td>${'★'.repeat(b.difficulty||1)}</td>
+        <td>${'â˜…'.repeat(b.difficulty||1)}</td>
         <td>${b.current_health} / ${b.group_health} <small style="color:var(--muted)">(${pct}%)</small></td>
         <td style="color:var(--gold)">+${b.reward_xp||0} XP</td>
         <td>${status}</td>
-        <td>${!b.is_completed?`<button class="join-btn" onclick="joinBattle(${b.id},'${b.name||'Boss Battle'}')">Join</button>`:'—'}</td>
+        <td>${!b.is_completed?`<button class="join-btn" onclick="joinBattle(${b.id},'${b.name||'Boss Battle'}')">Join</button>`:'â€”'}</td>
       </tr>`;
     }).join('');
   }
@@ -460,7 +460,7 @@
       document.getElementById('boss-hp-fill').style.width=pct+'%';
       document.getElementById('boss-hp-current').textContent=b.current_health;
       document.getElementById('boss-hp-max').textContent=`/ ${maxHp} HP`;
-      document.getElementById('boss-display-name').textContent='🐉 '+(b.name||'Shadow Colossus');
+      document.getElementById('boss-display-name').textContent='ðŸ‰ '+(b.name||'Shadow Colossus');
       battlePhase=pct>60?1:pct>30?2:3;
       document.getElementById('boss-phase-label').textContent=`Phase ${battlePhase}`;
       document.getElementById('phase-display').textContent=battlePhase;
@@ -506,7 +506,7 @@
     }).join('');
   }
 
-  // ── Question System ──
+  // â”€â”€ Question System â”€â”€
   function loadQuestion(){
     qAnswered=false;
     if(!charged){
@@ -532,9 +532,9 @@
       updateChargebar();
       if(charge>=chargeNeeded){
         charged=true;
-        fb.className='q-feedback ok'; fb.textContent='Charge complete! Use your action below ↓';
+        fb.className='q-feedback ok'; fb.textContent='Charge complete! Use your action below â†“';
         enableActionButtons();
-        addLog('Charge bar full — action ready!','system');
+        addLog('Charge bar full â€” action ready!','system');
       } else {
         fb.className='q-feedback ok'; fb.textContent=`Correct! Charge: ${charge}/${chargeNeeded}`;
         addLog(`Correct answer! Charge ${charge}/${chargeNeeded}`,'system');
@@ -544,7 +544,7 @@
       btns[idx].className='opt wrong';
       btns[q.ans].className='opt correct';
       fb.className='q-feedback bad'; fb.textContent='Wrong! Boss counter-attacks!';
-      addLog('Wrong answer — boss attacks the party!','boss');
+      addLog('Wrong answer â€” boss attacks the party!','boss');
       bossCounterAttack();
       document.getElementById('next-q-btn').classList.remove('hidden');
     }
@@ -568,7 +568,7 @@
     setTimeout(loadQuestion,300);
   }
 
-  // ── Actions ──
+  // â”€â”€ Actions â”€â”€
   async function doAction(actionKey){
     if(!charged||!currentBattleId)return;
     const action=ACTIONS[actionKey];
@@ -595,11 +595,11 @@
   }
 
   function bossCounterAttack(){
-    // Visual feedback only — backend handles actual HP changes via WS
-    addLog(`🐉 Boss attacks the party for ${10+battlePhase*5} damage!`,'boss');
+    // Visual feedback only â€” backend handles actual HP changes via WS
+    addLog(`ðŸ‰ Boss attacks the party for ${10+battlePhase*5} damage!`,'boss');
   }
 
-  // ── Battle Log ──
+  // â”€â”€ Battle Log â”€â”€
   function addLog(msg,type=''){
     const log=document.getElementById('battle-log');
     const entry=document.createElement('div');
@@ -609,7 +609,7 @@
     log.scrollTop=log.scrollHeight;
   }
 
-  // ── WebSocket ──
+  // â”€â”€ WebSocket â”€â”€
   function connectWebSocket(battleId){
     const token=getToken(),proto=location.protocol==='https:'?'wss':'ws';
     ws=new WebSocket(`${proto}://${location.host}/battles/group/${battleId}/ws?token=${token}`);
@@ -628,10 +628,10 @@
         }
         if(data.is_completed){if(data.passed)showVictory(200,10);else showDefeat();}
         break;
-      case 'heal': addLog(`💚 ${data.username||'Ally'} healed the party!`,'heal'); break;
-      case 'shield': addLog(`🛡️ ${data.username||'Tank'} raised a shield!`,'shield'); break;
+      case 'heal': addLog(`ðŸ’š ${data.username||'Ally'} healed the party!`,'heal'); break;
+      case 'shield': addLog(`ðŸ›¡ï¸ ${data.username||'Tank'} raised a shield!`,'shield'); break;
       case 'buff':
-        addLog(`⚡ ${data.username||'Support'} buffed the team! (+20% XP)`,'support');
+        addLog(`âš¡ ${data.username||'Support'} buffed the team! (+20% XP)`,'support');
         skillPoints=Math.min(skillPoints+2,20);
         document.getElementById('sp-display').textContent=skillPoints;
         break;

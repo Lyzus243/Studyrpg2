@@ -219,7 +219,7 @@
     <a href="/dashboard"   class="sidebar-btn"><i class="fas fa-home"></i> Dashboard</a>
     <a href="/memory"      class="sidebar-btn active"><i class="fas fa-brain"></i> Memory</a>
     <a href="/quests"      class="sidebar-btn"><i class="fas fa-scroll"></i> Quests</a>
-    <a href="/flashcard"   class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
+    <a href="/flashcards"   class="sidebar-btn"><i class="fas fa-clone"></i> Flashcards</a>
     <a href="/pomodoro"    class="sidebar-btn"><i class="fas fa-clock"></i> Pomodoro</a>
     <a href="/shop"        class="sidebar-btn"><i class="fas fa-store"></i> Shop</a>
     <a href="/leaderboard" class="sidebar-btn"><i class="fas fa-trophy"></i> Leaderboard</a>
@@ -232,16 +232,16 @@
     <div class="xp-bar-wrapper">
       <div class="xp-info">
         <div class="label">Progress</div>
-        <div class="level-text">Level <span id="user-level">—</span></div>
+        <div class="level-text">Level <span id="user-level">â€”</span></div>
       </div>
       <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill"></div></div>
-      <div class="xp-text" id="xp-text">— / — XP</div>
+      <div class="xp-text" id="xp-text">â€” / â€” XP</div>
     </div>
     <div class="stats-row">
       <div class="stat-card"><div class="val" id="stat-sessions">0</div><div class="lbl">Sessions</div></div>
       <div class="stat-card"><div class="val" id="stat-correct">0</div><div class="lbl">Correct</div></div>
       <div class="stat-card"><div class="val" id="stat-xp">0</div><div class="lbl">XP Earned</div></div>
-      <div class="stat-card"><div class="val" id="stat-streak">—</div><div class="lbl">Best Streak</div></div>
+      <div class="stat-card"><div class="val" id="stat-streak">â€”</div><div class="lbl">Best Streak</div></div>
     </div>
     <div class="result-banner" id="result-banner">
       <h2 id="result-title"></h2>
@@ -264,19 +264,19 @@
       <div class="card" id="memorize-phase">
         <div class="timer-row">
           <i class="fas fa-eye" style="color:var(--accent2)"></i>
-          <span class="timer-label">Memorize — time remaining:</span>
+          <span class="timer-label">Memorize â€” time remaining:</span>
           <span class="timer-val" id="memorize-timer">30</span>s
         </div>
         <h2>Memorize This Sequence</h2>
         <div class="sequence-display" id="sequence-display"></div>
         <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Click each card to flip and reveal the number:</p>
         <div class="flip-card-grid" id="flip-card-grid"></div>
-        <button class="start-btn" style="margin-top:1rem;" onclick="goToRecall()"><i class="fas fa-pen"></i> I'm Ready — Test Me</button>
+        <button class="start-btn" style="margin-top:1rem;" onclick="goToRecall()"><i class="fas fa-pen"></i> I'm Ready â€” Test Me</button>
       </div>
       <div class="card hidden" id="recall-phase">
         <div class="timer-row">
           <i class="fas fa-clock" style="color:var(--error)"></i>
-          <span class="timer-label">Recall — time remaining:</span>
+          <span class="timer-label">Recall â€” time remaining:</span>
           <span class="timer-val" id="recall-timer">60</span>s
         </div>
         <h2>Enter the Sequence</h2>
@@ -298,8 +298,8 @@
 </div>
 <div class="levelup-overlay" id="levelup-overlay">
   <div class="levelup-box">
-    <h1>⚔️ LEVEL UP!</h1>
-    <p>You reached <strong>Level <span id="new-level">—</span></strong></p>
+    <h1>âš”ï¸ LEVEL UP!</h1>
+    <p>You reached <strong>Level <span id="new-level">â€”</span></strong></p>
     <p style="color:var(--muted); font-size:0.9rem;">Keep training to unlock more power.</p>
     <button class="levelup-close" onclick="closeLevelUp()">Continue</button>
   </div>
@@ -361,10 +361,10 @@
       if (!sessions.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;">No sessions yet. Start training!</td></tr>'; return; }
       tbody.innerHTML = sessions.slice(0, 10).map(s => `
         <tr>
-          <td>${s.start_time ? new Date(s.start_time).toLocaleDateString() : '—'}</td>
-          <td>${s.sequence_length || '—'}</td>
-          <td>${s.duration ? s.duration + 's' : '—'}</td>
-          <td><span class="${s.is_correct ? 'badge-correct' : 'badge-wrong'}">${s.is_correct ? '✓ Correct' : '✗ Wrong'}</span></td>
+          <td>${s.start_time ? new Date(s.start_time).toLocaleDateString() : 'â€”'}</td>
+          <td>${s.sequence_length || 'â€”'}</td>
+          <td>${s.duration ? s.duration + 's' : 'â€”'}</td>
+          <td><span class="${s.is_correct ? 'badge-correct' : 'badge-wrong'}">${s.is_correct ? 'âœ“ Correct' : 'âœ— Wrong'}</span></td>
           <td style="color:var(--gold)">${s.xp_earned ? '+' + s.xp_earned : '0'}</td>
         </tr>`).join('');
     } catch (e) {
@@ -441,14 +441,14 @@
     banner.style.display = 'block';
     if (data.is_correct) {
       banner.className = 'result-banner success';
-      document.getElementById('result-title').textContent = '🎉 Correct!';
+      document.getElementById('result-title').textContent = 'ðŸŽ‰ Correct!';
       document.getElementById('result-msg').textContent = `You nailed a ${data.sequence_length}-number sequence in ${data.duration}s!`;
       document.getElementById('result-xp').textContent = data.xp_earned ? `+${data.xp_earned} XP earned!` : '';
     } else {
       banner.className = 'result-banner failure';
-      document.getElementById('result-title').textContent = '❌ Not quite!';
+      document.getElementById('result-title').textContent = 'âŒ Not quite!';
       document.getElementById('result-msg').textContent = `The correct sequence was: ${currentSequence.join(' ')}`;
-      document.getElementById('result-xp').textContent = 'No XP this time — try again!';
+      document.getElementById('result-xp').textContent = 'No XP this time â€” try again!';
     }
   }
   function hideResult() { document.getElementById('result-banner').style.display = 'none'; }

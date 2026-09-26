@@ -119,6 +119,13 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
+
+import json as _json
+def _escapejs(value):
+    """Escape a string for safe inclusion inside a JS string literal in templates."""
+    return _json.dumps(str(value))[1:-1]
+
+templates.env.filters["escapejs"] = _escapejs
 manager = ConnectionManager()
 
 # ------------------------ Admin restriction ------------------------
@@ -422,6 +429,10 @@ async def pomodoro_page(request: Request, user: models.User = Depends(get_authen
 @app.get("/memory", response_class=HTMLResponse)
 async def memory_page(request: Request, user: models.User = Depends(get_authenticated_user)):
     return templates.TemplateResponse("memory.html", {"request": request, "user": user})
+
+@app.get("/flashcards", response_class=HTMLResponse)
+async def flashcards_page(request: Request, user: models.User = Depends(get_authenticated_user)):
+    return templates.TemplateResponse("flashcards.html", {"request": request, "user": user})
 
 @app.get("/shop", response_class=HTMLResponse)
 async def shop_page(request: Request, user: models.User = Depends(get_authenticated_user)):

@@ -569,21 +569,21 @@
                     </div>
                     <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
                     <button type="button" class="btn btn-secondary" id="avatar-upload-btn" onclick="document.getElementById('avatar-file-input').click()">
-                        📷 Change Photo
+                        ðŸ“· Change Photo
                     </button>
                     <div id="avatar-upload-message"></div>
                     <div class="user-details">
                         <h1 id="user-username">Loading...</h1>
                         <p id="user-email">Loading...</p>
                         <div class="user-stats">
-                            <p class="stat-xp">🌟 <span id="user-xp">0</span> XP</p>
-                            <p class="stat-level">⭐ Level <span id="user-level">1</span></p>
-                            <p class="stat-streak">🔥 <span id="user-streak">0</span> Day Streak</p>
-                            <p class="stat-skill">💎 <span id="user-skill-points">0</span> Skill Points</p>
-                            <p class="stat-currency">💰 <span id="user-currency">0</span> Coins</p>
+                            <p class="stat-xp">ðŸŒŸ <span id="user-xp">0</span> XP</p>
+                            <p class="stat-level">â­ Level <span id="user-level">1</span></p>
+                            <p class="stat-streak">ðŸ”¥ <span id="user-streak">0</span> Day Streak</p>
+                            <p class="stat-skill">ðŸ’Ž <span id="user-skill-points">0</span> Skill Points</p>
+                            <p class="stat-currency">ðŸ’° <span id="user-currency">0</span> Coins</p>
                         </div>
                         <button class="edit-profile-btn" onclick="toggleEditForm()">
-                            ✏️ Edit Profile
+                            âœï¸ Edit Profile
                         </button>
                     </div>
                 </div>
@@ -614,7 +614,7 @@
 
                 <!-- Study Groups Section -->
                 <div class="section">
-                    <h2>👥 Study Groups</h2>
+                    <h2>ðŸ‘¥ Study Groups</h2>
                     <div id="study-groups">
                         <!-- Dynamically filled -->
                     </div>
@@ -622,7 +622,7 @@
 
                 <!-- Completed Quests Section -->
                 <div class="section">
-                    <h2>📜 Completed Quests</h2>
+                    <h2>ðŸ“œ Completed Quests</h2>
                     <div id="completed-quests">
                         <!-- Dynamically filled -->
                     </div>
@@ -630,7 +630,7 @@
 
                 <!-- Boss Battles Section -->
                 <div class="section">
-                    <h2>🐉 Boss Battles</h2>
+                    <h2><i class="fas fa-dragon" style="color:var(--accent); margin-right:0.5rem;"></i>Boss Battles</h2>
                     <div id="boss-battles">
                         <!-- Dynamically filled -->
                     </div>
@@ -784,7 +784,7 @@
                 msg.innerHTML = `<div class="message error">${error.message}</div>`;
             } finally {
                 btn.disabled = false;
-                btn.textContent = '📷 Change Photo';
+                btn.textContent = 'ðŸ“· Change Photo';
                 e.target.value = '';
             }
         });
@@ -830,7 +830,7 @@
                                 <h3>${group.name}</h3>
                                 <p>${group.description || 'Study group focused on learning'}</p>
                                 <div class="members">
-                                    <span class="icon">👥</span> ${group.member_count || 0} members
+                                    <span class="icon">ðŸ‘¥</span> ${group.member_count || 0} members
                                 </div>
                             </div>
                         </div>
@@ -869,7 +869,7 @@
                             <h3>${quest.title}</h3>
                             <p>${quest.description || 'Completed quest'}</p>
                             <div class="xp">
-                                <span class="icon">🌟</span> Earned ${quest.xp_reward || 0} XP
+                                <span class="icon">ðŸŒŸ</span> Earned ${quest.xp_reward || 0} XP
                             </div>
                         </div>
                     `;
@@ -907,10 +907,10 @@
                             <h3>${battle.name}</h3>
                             <p>${battle.description || 'Boss battle completed'}</p>
                             <div class="health">
-                                <span class="icon">❤️</span> Health: ${battle.health || '100%'}
+                                <span class="icon">â¤ï¸</span> Health: ${battle.health || '100%'}
                             </div>
                             <div class="status">
-                                <span class="icon">${battle.won ? '🏆' : '⚠️'}</span> 
+                                <span class="icon">${battle.won ? 'ðŸ†' : 'âš ï¸'}</span> 
                                 ${battle.won ? 'Victory' : 'Defeat'}
                             </div>
                         </div>

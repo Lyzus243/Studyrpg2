@@ -516,8 +516,8 @@
 <body>
     <!-- Pomodoro Timer -->
     <div class="pomodoro-timer collapsed" aria-label="Pomodoro Timer" id="pomodoro-timer">
-        <button class="toggle-button" onclick="togglePomodoro()" aria-label="Expand Pomodoro timer">🍅 Expand</button>
-        <h5>🍅 Pomodoro</h5>
+        <button class="toggle-button" onclick="togglePomodoro()" aria-label="Expand Pomodoro timer"><i class="fas fa-stopwatch"></i> Expand</button>
+        <h5>ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â¦ Pomodoro</h5>
         <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
         <input type="number" id="customMinutes" class="form-input" min="1" max="60" value="25" aria-label="Set timer duration in minutes">
         <div class="timer-buttons">
@@ -528,7 +528,7 @@
 
     <div class="container">
         <header class="header">
-            <h1>📚 Flashcards - StudyRPG</h1>
+            <h1><img src="/static/images/flashcards-logo.svg" alt="Flashcards" style="height:1.4em; vertical-align:middle; margin-right:0.5rem;"> Flashcards - StudyRPG</h1>
             <p>Manage and study your flashcard decks</p>
         </header>
 
@@ -551,8 +551,8 @@
         </section>
 
         <!-- Manual Deck Creation -->
-        <section class="section" aria-label="Create Deck">
-            <h2>✍️ Create Your Own Deck</h2>
+            <h2><img src="/static/images/icon-create-deck.svg" alt="" style="height:1.3em; vertical-align:middle; margin-right:0.5rem;"> Create Your Own Deck</h2>
+            <h2><i class="fas fa-pen" style="color:var(--accent); margin-right:0.5rem;"></i>Create Your Own Deck</h2>
             <form id="create-deck-form" class="form-grid">
                 <div class="form-group">
                     <label for="deck-name">Deck Name</label>
@@ -571,8 +571,8 @@
         </section>
 
         <!-- Manual Flashcard Creation -->
-        <section class="section" aria-label="Add Flashcard">
-            <h2>🎴 Add Flashcard</h2>
+            <h2><img src="/static/images/icon-add-flashcard.svg" alt="" style="height:1.3em; vertical-align:middle; margin-right:0.5rem;"> Add Flashcard</h2>
+            <h2><i class="fas fa-clone" style="color:var(--accent); margin-right:0.5rem;"></i>Add Flashcard</h2>
             <form id="create-flashcard-form" class="form-grid">
                 <div class="form-group">
                     <label for="deck-id">Select Deck</label>
@@ -599,8 +599,8 @@
         </section>
 
         <!-- Generate Flashcards -->
-        <section class="section" aria-label="Generate Flashcards">
-            <h2>🤖 Generate Flashcards</h2>
+            <h2><img src="/static/images/icon-generate.svg" alt="" style="height:1.3em; vertical-align:middle; margin-right:0.5rem;"> Generate Flashcards</h2>
+            <h2><i class="fas fa-robot" style="color:var(--accent); margin-right:0.5rem;"></i>Generate Flashcards</h2>
             <form id="generate-flashcards-form" class="form-grid">
                 <div class="form-group">
                     <label for="gen-deck-name">Deck Name</label>
@@ -676,7 +676,7 @@
             const timer = document.getElementById('pomodoro-timer');
             timer.classList.toggle('collapsed');
             const toggleButton = timer.querySelector('.toggle-button');
-            toggleButton.textContent = timer.classList.contains('collapsed') ? '🍅 Expand' : '🍅 Collapse';
+            toggleButton.textContent = timer.classList.contains('collapsed') ? 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â¦ Expand' : 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â¦ Collapse';
             toggleButton.setAttribute('aria-label', timer.classList.contains('collapsed') ? 'Expand Pomodoro timer' : 'Collapse Pomodoro timer');
         }
 

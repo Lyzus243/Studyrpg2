@@ -174,10 +174,12 @@ async def get_current_user(
         except HTTPException:
             raise
         except Exception:
-            pass  # DB error — allow through, log it
+            pass  # DB error â€” allow through, log it
 
     try:
-        result = await db.execute(select(models.User).where(models.User.username == username))
+        result = await db.execute(select(models.User).where(
+                or_(models.User.username == username, models.User.email == username)
+            ))
         user = result.scalar_one_or_none()
     except Exception:
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -390,7 +392,9 @@ async def login_for_access_token(
     try:
         # Find user by username
         result = await db.execute(
-            select(models.User).where(models.User.username == username)
+            select(models.User).where(
+                or_(models.User.username == username, models.User.email == username)
+            )
         )
         user = result.scalar_one_or_none()
 
@@ -450,7 +454,7 @@ async def logout(
     current_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    """Logout — blacklist the JWT and clear the cookie."""
+    """Logout â€” blacklist the JWT and clear the cookie."""
     token: str | None = None
     auth_header = request.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
@@ -470,7 +474,7 @@ async def logout(
                 expires_at = _dt.fromtimestamp(exp, tz=_tz.utc)
                 await blacklist_token(db, jti, expires_at)
         except Exception:
-            pass  # token already invalid — still clear cookie
+            pass  # token already invalid â€” still clear cookie
 
     await audit(db, action="logout", user_id=current_user.id, request=request)
     response.delete_cookie(key="access_token", path="/")

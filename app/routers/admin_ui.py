@@ -25,8 +25,8 @@ logger.setLevel(logging.INFO)
 load_dotenv()
 
 # Admin credentials from .env (same as admin.py)
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")  # ✅ ADD DEFAULT
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin1234567")  # ✅ ADD DEFAULT
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "Lyzus308")  # Ã¢Å“â€¦ ADD DEFAULT
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin1234567")  # Ã¢Å“â€¦ ADD DEFAULT
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "pumlezerti@necub.com")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGO", "HS256")
@@ -113,7 +113,7 @@ async def admin_login_page(request: Request):
         </head>
         <body>
             <div class="login-container">
-                <h1>🐉 Admin Portal Login</h1>
+                <h1><i class="fas fa-dragon" style="color:#7289da; margin-right:0.5rem;"></i>Admin Portal Login</h1>
                 <div id="error-message" class="error" style="display: none;"></div>
                 <div id="success-message" class="success" style="display: none;"></div>
                 <form id="login-form">
@@ -126,7 +126,7 @@ async def admin_login_page(request: Request):
                     <button type="submit" id="login-btn">Login to Admin Portal</button>
                 </form>
                 <div style="text-align: center; margin-top: 1rem;">
-                    <a href="/">← Back to StudyRPG</a>
+                    <a href="/">Ã¢â€ Â Back to StudyRPG</a>
                 </div>
             </div>
             <script>
@@ -150,7 +150,7 @@ async def admin_login_page(request: Request):
                     try {
                        const response = await fetch('/admin/api/login', {
                             method: 'POST',
-                            credentials: 'same-origin', // ✅ REQUIRED
+                            credentials: 'same-origin', // Ã¢Å“â€¦ REQUIRED
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
@@ -378,7 +378,7 @@ async def admin_dashboard(
         <body>
             <div class="container">
                 <div class="dashboard-header">
-                    <h1>🐉 StudyRPG Admin Dashboard</h1>
+                    <h1><i class="fas fa-dragon" style="color:#7289da; margin-right:0.5rem;"></i>StudyRPG Admin Dashboard</h1>
                     <p>Welcome, {current_user.username}!</p>
                 </div>
 
@@ -400,7 +400,7 @@ async def admin_dashboard(
                 <div class="nav-links">
                     <a href="/admin/boss-battles" class="nav-link">Boss Battles</a>
                     <a href="/admin" class="nav-link">Admin API</a>
-                    <a href="/" class="nav-link">← Back to StudyRPG</a>
+                    <a href="/" class="nav-link">Ã¢â€ Â Back to StudyRPG</a>
                 </div>
             </div>
         </body>
@@ -483,7 +483,7 @@ async def admin_boss_battles_page(
         </head>
         <body>
             <div class="container">
-                <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+                <a href="/admin/dashboard" class="back-link">Ã¢â€ Â Back to Dashboard</a>
                 <h2>Boss Battles Management ({len(boss_battles)})</h2>
                 <table>
                     <thead>

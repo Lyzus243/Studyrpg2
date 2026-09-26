@@ -72,14 +72,14 @@ async def submit_memory_training_session(
         db_session = result.scalars().first()
         
         if not db_session:
-            # ... error handling ...
-            
-            correct_sequence = json.loads(db_session.sequence)
-            db_session.is_completed = True
-            db_session.is_correct = correct_sequence == submission.user_sequence
-            db_session.end_time = datetime.utcnow()
-            db_session.duration = int((db_session.end_time - db_session.start_time).total_seconds())
-            db_session.score = db_session.sequence_length if db_session.is_correct else 0
+            raise HTTPException(status_code=404, detail="Session not found or already completed")
+
+        correct_sequence = json.loads(db_session.sequence)
+        db_session.is_completed = True
+        db_session.is_correct = correct_sequence == submission.user_sequence
+        db_session.end_time = datetime.utcnow()
+        db_session.duration = int((db_session.end_time - db_session.start_time).total_seconds())
+        db_session.score = db_session.sequence_length if db_session.is_correct else 0
         
         if db_session.is_correct:
             xp_reward = db_session.sequence_length * 10
