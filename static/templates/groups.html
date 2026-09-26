@@ -409,7 +409,7 @@ animation: gradientPulse 15s ease infinite;
             
             try {
                 const token = getToken();
-                const response = await fetch('/user/profile', {
+                const response = await fetch('/users/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -421,8 +421,8 @@ animation: gradientPulse 15s ease infinite;
                     document.getElementById('profile-name').textContent = userData.username;
                     
                     // Set profile picture if available
-                    if (userData.profile_picture) {
-                        document.getElementById('profile-picture').src = userData.profile_picture;
+                    if (userData.avatar_url) {
+                        document.getElementById('profile-picture').src = userData.avatar_url;
                     }
                 } else if (response.status === 401) {
                     localStorage.removeItem('access_token');
