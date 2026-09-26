@@ -58,8 +58,10 @@
 
         .shop-header {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            gap: 14px;
             margin-bottom: 30px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -81,6 +83,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
+            white-space: nowrap;
             background: rgba(255, 215, 0, 0.2);
             border: 1px solid gold;
             border-radius: 30px;

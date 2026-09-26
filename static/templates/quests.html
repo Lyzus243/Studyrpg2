@@ -696,6 +696,20 @@
                 document.getElementById('filter-completed').addEventListener('change', () => this.loadQuests());
                 document.getElementById('modal-overlay').addEventListener('click', () => this.closeModal());
                 document.querySelector('.modal .close-btn').addEventListener('click', () => this.closeModal());
+
+                // Scale suggested rewards to the chosen difficulty (1-5). The fields
+                // stay editable, so this is a starting suggestion, not a hard rule -
+                // it just stops every quest from defaulting to a flat 100 XP.
+                document.getElementById('quest-difficulty').addEventListener('change', (e) => {
+                    const d = parseInt(e.target.value) || 1;
+                    document.getElementById('quest-reward-xp').value = d * 100;
+                    document.getElementById('quest-reward-skill-points').value = d * 10;
+                });
+                document.getElementById('edit-quest-difficulty').addEventListener('change', (e) => {
+                    const d = parseInt(e.target.value) || 1;
+                    document.getElementById('edit-quest-reward-xp').value = d * 100;
+                    document.getElementById('edit-quest-reward-skill-points').value = d * 10;
+                });
             }
 
             closeModal() {

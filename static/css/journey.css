@@ -55,7 +55,7 @@ img, video, svg, canvas, iframe { max-width: 100%; }
 img, video { height: auto; }
 pre, code { white-space: pre-wrap; word-break: break-word; }
 table { max-width: 100%; }
-p, li, td, th, h1, h2, h3, h4, h5, h6, label, span, a, small { overflow-wrap: anywhere; }
+p, li, td, th, h1, h2, h3, h4, h5, h6, label, span, a, small { overflow-wrap: break-word; word-break: normal; }
 
 /* ---------- Typography ---------- */
 :where(h1, h2, h3, h4, h5, h6) { color: var(--j-text) !important; font-family: var(--j-font) !important; font-weight: 800; letter-spacing: -.01em; }
@@ -219,7 +219,7 @@ tbody tr:hover td { background: rgba(244, 217, 138, .18) !important; }
 .main-content { flex: 1 1 auto; min-width: 0; max-width: none; margin: 0; }
 
 /* ---------- Grids collapse gracefully ---------- */
-.tool-grid, .grid, [class*="-grid"], [class*="grid-"], .cards, .card-grid, .stats-grid, .quick-stats {
+.tool-grid, .grid, [class*="-grid"], [class*="grid-"], .cards, .card-grid, .stats-grid, .quick-stats, .card-container {
   display: grid; gap: clamp(10px, 2vw, 20px);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
